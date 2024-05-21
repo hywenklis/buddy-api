@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      time: "09:00"
+    open-pull-requests-limit: 20
+    labels:
+      - "dependencies"
+    target-branch: "develop"
+    commit-message:
+      prefix: "Atualização de dependências: "
+    allow:
+      - dependency-type: "direct"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    target-branch: "develop"
+    allow:
+      - dependency-name: "actions/*"

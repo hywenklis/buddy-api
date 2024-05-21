@@ -1,0 +1,31 @@
+server:
+  forward-headers-strategy: framework
+
+  error:
+    include-message: always
+
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: buddy
+
+  main:
+    allow-bean-definition-overriding: true
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    ddl-auto: update
+    open-in-view: true
+
+springdoc.swagger-ui.path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
