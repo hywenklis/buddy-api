@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: "postgres:latest"
+    container_name: "buddy"
+    environment:
+      - "POSTGRES_DB=buddydb"
+      - "POSTGRES_PASSWORD=buddypassword"
+      - "POSTGRES_USER=buddyuser"
+    ports:
+      - "5432:5432"
+    volumes:
+      - buddy-pgdata:/var/lib/postgresql/data
+
+volumes:
+  buddy-pgdata:
+    driver: local
