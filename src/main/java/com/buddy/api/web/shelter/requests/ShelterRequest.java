@@ -1,4 +1,4 @@
-package com.buddy.api.web.shelter.responses;
+package com.buddy.api.web.shelter.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

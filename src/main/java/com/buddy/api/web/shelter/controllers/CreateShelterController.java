@@ -3,7 +3,7 @@ package com.buddy.api.web.shelter.controllers;
 import com.buddy.api.domains.shelter.services.CreateShelter;
 import com.buddy.api.web.shelter.mappers.ShelterMapperRequest;
 import com.buddy.api.web.shelter.mappers.ShelterMapperResponse;
-import com.buddy.api.web.shelter.responses.ShelterRequest;
+import com.buddy.api.web.shelter.requests.ShelterRequest;
 import com.buddy.api.web.shelter.responses.ShelterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
