@@ -37,7 +37,7 @@ public class PetEntity {
     private Integer age;
     private Double weight;
     private String description;
-    private String avatarUrl;
+    private String avatar;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetImageEntity> images;

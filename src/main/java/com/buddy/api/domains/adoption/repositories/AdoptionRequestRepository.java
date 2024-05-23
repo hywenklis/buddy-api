@@ -4,12 +4,9 @@ import com.buddy.api.domains.adoption.entities.AdoptionRequestEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequestEntity, Long> {
-    List<AdoptionRequestEntity> findByPetId(Long petId);
-
-    List<AdoptionRequestEntity> findByShelterId(Long shelterId);
+public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequestEntity, UUID> {
 }
 
