@@ -35,6 +35,7 @@ public class ShelterEntity {
     private String address;
     private String phoneNumber;
     private String email;
+    private String avatar;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetEntity> pets;
@@ -53,6 +54,7 @@ public class ShelterEntity {
                          String address,
                          String phoneNumber,
                          String email,
+                         String avatar,
                          List<PetEntity> pets,
                          LocalDateTime createDate,
                          LocalDateTime updateDate
@@ -64,6 +66,7 @@ public class ShelterEntity {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.avatar = avatar;
         this.pets = pets == null ? List.of() : List.copyOf(pets);
         this.createDate = createDate;
         this.updateDate = updateDate;

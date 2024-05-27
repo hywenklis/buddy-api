@@ -14,6 +14,7 @@ public record ShelterDto(UUID id,
                          String address,
                          String phoneNumber,
                          String email,
+                         String avatar,
                          List<PetDto> pets) {
     public ShelterDto {
         pets = pets == null ? List.of() : List.copyOf(pets);

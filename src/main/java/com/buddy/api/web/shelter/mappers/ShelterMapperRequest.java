@@ -22,4 +22,3 @@ public interface ShelterMapperRequest {
     @Mapping(target = "phoneNumber", ignore = true)
     ShelterDto mapToDto(ShelterRequest shelterRequest);
 }
-
