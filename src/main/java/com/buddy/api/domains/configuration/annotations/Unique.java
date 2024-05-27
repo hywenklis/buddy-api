@@ -4,7 +4,6 @@ import com.buddy.api.domains.configuration.annotations.validators.UniqueValidato
 import com.buddy.api.domains.enums.UniqueType;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

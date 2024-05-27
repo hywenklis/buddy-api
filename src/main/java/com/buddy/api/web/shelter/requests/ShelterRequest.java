@@ -1,12 +1,12 @@
 package com.buddy.api.web.shelter.requests;
 
+import static com.buddy.api.domains.enums.UniqueType.CPF;
+import static com.buddy.api.domains.enums.UniqueType.EMAIL;
+
 import com.buddy.api.domains.configuration.annotations.Unique;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.br.CPF;
-
-import static com.buddy.api.domains.enums.UniqueType.CPF;
-import static com.buddy.api.domains.enums.UniqueType.EMAIL;
 
 public record ShelterRequest(@NotBlank(message = "Nome do abrigo obrigatório")
                              String nameShelter,

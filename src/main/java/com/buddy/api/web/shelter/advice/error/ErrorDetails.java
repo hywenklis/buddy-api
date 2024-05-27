@@ -1,9 +1,8 @@
 package com.buddy.api.web.shelter.advice.error;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.http.HttpStatus;
-
 import java.time.LocalDateTime;
+import org.springframework.http.HttpStatus;
 
 public record ErrorDetails(String field,
                            String message,

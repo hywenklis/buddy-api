@@ -17,8 +17,8 @@ public class CreateShelterImpl implements CreateShelter {
 
     @Override
     @Transactional
-    public ShelterDto create(final ShelterDto shelterDto) {
+    public void create(final ShelterDto shelterDto) {
         final var savedShelter = shelterRepository.save(mapper.mapToEntity(shelterDto));
-        return mapper.mapToDto(savedShelter);
+        mapper.mapToDto(savedShelter);
     }
 }

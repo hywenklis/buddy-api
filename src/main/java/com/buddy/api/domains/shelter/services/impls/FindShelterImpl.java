@@ -4,10 +4,9 @@ import com.buddy.api.domains.shelter.dtos.ShelterDto;
 import com.buddy.api.domains.shelter.mappers.ShelterDomainMapper;
 import com.buddy.api.domains.shelter.repositories.ShelterRepository;
 import com.buddy.api.domains.shelter.services.FindShelter;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
