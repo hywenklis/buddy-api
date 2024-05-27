@@ -37,7 +37,6 @@ public class ShelterEntity {
     private String address;
     private String phoneNumber;
     private String email;
-    private String password;
 
     @OneToMany
     private List<PetEntity> pets;

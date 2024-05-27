@@ -14,6 +14,5 @@ public record ShelterDto(UUID id,
                          String address,
                          String phoneNumber,
                          String email,
-                         String password,
                          List<PetDto> pets) {
 }
