@@ -1,4 +1,4 @@
-package com.buddy.api.web.shelter.advice.error;
+package com.buddy.api.web.advice.error;
 
 import java.util.List;
 

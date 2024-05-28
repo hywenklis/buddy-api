@@ -1,8 +1,8 @@
-package com.buddy.api.web.shelter.advice.controller;
+package com.buddy.api.web.advice.controller;
 
 import com.buddy.api.domains.exceptions.NotFoundException;
-import com.buddy.api.web.shelter.advice.error.ErrorDetails;
-import com.buddy.api.web.shelter.advice.error.ErrorResponse;
+import com.buddy.api.web.advice.error.ErrorDetails;
+import com.buddy.api.web.advice.error.ErrorResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
