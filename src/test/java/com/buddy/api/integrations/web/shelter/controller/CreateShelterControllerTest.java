@@ -102,4 +102,95 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
     }
+
+    @Test
+    @DisplayName("Should return bad request if nameShelter is not filled in")
+    void should_return_bad_request_name_shelter_not_filled() throws Exception {
+        var request = createShelterRequest(
+                null,
+                randomAlphabetic(10),
+                generateValidCpf(),
+                generateValidEmail()
+        );
+
+        mockMvc
+                .perform(post("/v1/shelters/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("nameShelter"))
+                .andExpect(jsonPath("$.errors[0].message").value("Name of mandatory shelter"))
+                .andExpect(jsonPath("$.errors[0].httpStatus").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return bad request if nameResponsible is not filled in")
+    void should_return_bad_request_name_responsible_not_filled() throws Exception {
+        var request = createShelterRequest(
+                randomAlphabetic(10),
+                null,
+                generateValidCpf(),
+                generateValidEmail()
+        );
+
+        mockMvc
+                .perform(post("/v1/shelters/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("nameResponsible"))
+                .andExpect(jsonPath("$.errors[0].message")
+                        .value("Responsible for the mandatory shelter"))
+                .andExpect(jsonPath("$.errors[0].httpStatus").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return bad request if cpfResponsible is not filled in")
+    void should_return_bad_request_cpf_responsible_not_filled() throws Exception {
+        var request = createShelterRequest(
+                randomAlphabetic(10),
+                randomAlphabetic(10),
+                null,
+                generateValidEmail()
+        );
+
+        mockMvc
+                .perform(post("/v1/shelters/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("cpfResponsible"))
+                .andExpect(jsonPath("$.errors[0].message")
+                        .value("Mandatory responsible person's CPF"))
+                .andExpect(jsonPath("$.errors[0].httpStatus").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return bad request if email is not filled in")
+    void should_return_bad_request_email_not_filled() throws Exception {
+        var request = createShelterRequest(
+                randomAlphabetic(10),
+                randomAlphabetic(10),
+                generateValidCpf(),
+                null
+        );
+
+        mockMvc
+                .perform(post("/v1/shelters/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("email"))
+                .andExpect(jsonPath("$.errors[0].message")
+                        .value("Mandatory EMAIL"))
+                .andExpect(jsonPath("$.errors[0].httpStatus").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
+    }
 }
