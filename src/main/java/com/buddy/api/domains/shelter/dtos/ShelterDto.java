@@ -26,8 +26,9 @@ public record ShelterDto(UUID id,
     }
 
     public static class ShelterDtoBuilder {
-        public void pets(List<PetDto> pets) {
+        public ShelterDtoBuilder pets(List<PetDto> pets) {
             this.pets = pets == null ? List.of() : List.copyOf(pets);
+            return this;
         }
     }
 }

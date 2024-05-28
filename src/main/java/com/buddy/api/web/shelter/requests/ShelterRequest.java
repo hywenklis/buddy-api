@@ -6,8 +6,10 @@ import static com.buddy.api.domains.enums.UniqueType.EMAIL;
 import com.buddy.api.domains.configuration.annotations.Unique;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import org.hibernate.validator.constraints.br.CPF;
 
+@Builder
 public record ShelterRequest(@NotBlank(message = "Name of mandatory shelter")
                              String nameShelter,
 

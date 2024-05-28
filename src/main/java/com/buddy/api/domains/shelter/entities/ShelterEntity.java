@@ -90,8 +90,9 @@ public class ShelterEntity {
     public static class ShelterEntityBuilder {
         private List<PetEntity> pets;
 
-        public void pets(List<PetEntity> pets) {
+        public ShelterEntityBuilder pets(List<PetEntity> pets) {
             this.pets = pets == null ? List.of() : List.copyOf(pets);
+            return this;
         }
     }
 }
