@@ -16,12 +16,12 @@ public class FindShelterImpl implements FindShelter {
     private final ShelterDomainMapper mapper;
 
     @Override
-    public Optional<ShelterDto> findShelterByCpfResponsible(String cpfResponsible) {
+    public Optional<ShelterDto> findShelterByCpfResponsible(final String cpfResponsible) {
         return shelterRepository.findShelterByCpfResponsible(cpfResponsible).map(mapper::mapToDto);
     }
 
     @Override
-    public Optional<ShelterDto> findShelterByEmail(String email) {
+    public Optional<ShelterDto> findShelterByEmail(final String email) {
         return shelterRepository.findByEmail(email).map(mapper::mapToDto);
     }
 }

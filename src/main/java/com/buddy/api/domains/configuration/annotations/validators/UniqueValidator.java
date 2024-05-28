@@ -2,7 +2,7 @@ package com.buddy.api.domains.configuration.annotations.validators;
 
 import com.buddy.api.domains.configuration.annotations.Unique;
 import com.buddy.api.domains.enums.UniqueType;
-import com.buddy.api.domains.shelter.repositories.ShelterRepository;
+import com.buddy.api.domains.shelter.services.FindShelter;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.Map;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UniqueValidator implements ConstraintValidator<Unique, String> {
 
-    private final ShelterRepository shelterRepository;
+    private final FindShelter findShelter;
 
     private Map<UniqueType, Function<String, Optional<?>>> repositoryMap;
     private UniqueType type;
@@ -26,8 +26,8 @@ public class UniqueValidator implements ConstraintValidator<Unique, String> {
         type = constraintAnnotation.value();
 
         repositoryMap = Map.of(
-                UniqueType.CPF, shelterRepository::findShelterByCpfResponsible,
-                UniqueType.EMAIL, shelterRepository::findByEmail
+                UniqueType.CPF, findShelter::findShelterByCpfResponsible,
+                UniqueType.EMAIL, findShelter::findShelterByEmail
         );
     }
 
