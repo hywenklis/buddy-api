@@ -1,0 +1,17 @@
+spring:
+  devtools.add-properties: false
+  config:
+    import: "optional:configtree:/run/secrets/"
+  application:
+    name: locale
+  config.activate.on-profile: qa,prod
+  cloud:
+    config:
+      name: ${spring.application.name}
+      uri: https://jaiminho.propresto.app/api
+      username: 'jaiminho-admin'
+      password: ${config_password}
+      label: ${CONFIG_SERVER_LABEL}
+      fail-fast: true
+encrypt:
+  key: ${config_key}
