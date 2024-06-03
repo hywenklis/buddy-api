@@ -3,7 +3,7 @@ spring:
   config:
     import: "optional:configtree:/run/secrets/"
   application:
-    name: locale
+    name: buddy
   config.activate.on-profile: qa,prod
   cloud:
     config:
