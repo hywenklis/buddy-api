@@ -1,12 +1,21 @@
+server:
+  forward-headers-strategy: framework
+  error:
+    include-message: always
+  servlet:
+    context-path: /api
+
 spring:
-  profiles:
-    active: test
+  main:
+    allow-bean-definition-overriding: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    generate-ddl: true
+    ddl-auto: create-drop
+    open-in-view: true
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update
