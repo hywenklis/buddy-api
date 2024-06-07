@@ -24,5 +24,8 @@ public record ShelterRequest(@NotBlank(message = "Name of mandatory shelter")
                              @Email
                              @Unique(value = EMAIL, message = "EMAIL must be unique")
                              @NotBlank(message = "Mandatory EMAIL")
-                             String email) {
+                             String email,
+
+                             @NotBlank(message = "Avatar for the mandatory shelter")
+                             String avatar) {
 }

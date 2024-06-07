@@ -24,7 +24,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 randomAlphabetic(10),
                 randomAlphabetic(10),
                 generateValidCpf(),
-                generateValidEmail()
+                generateValidEmail(),
+                randomAlphabetic(10)
         );
 
         mockMvc
@@ -43,7 +44,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 randomAlphabetic(10),
                 randomAlphabetic(10),
                 generateValidCpf(),
-                generateValidEmail()
+                generateValidEmail(),
+                randomAlphabetic(10)
         );
 
         shelterComponent.createShelter(
@@ -53,7 +55,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 null,
                 null,
                 null,
-                null,
+                request.avatar(),
                 null
         );
 
@@ -77,7 +79,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 randomAlphabetic(10),
                 randomAlphabetic(10),
                 generateValidCpf(),
-                generateValidEmail()
+                generateValidEmail(),
+                randomAlphabetic(10)
         );
 
         shelterComponent.createShelter(
@@ -87,7 +90,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 request.email(),
                 null,
                 null,
-                null,
+                request.avatar(),
                 null
         );
 
@@ -110,7 +113,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 null,
                 randomAlphabetic(10),
                 generateValidCpf(),
-                generateValidEmail()
+                generateValidEmail(),
+                randomAlphabetic(10)
         );
 
         mockMvc
@@ -132,7 +136,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 randomAlphabetic(10),
                 null,
                 generateValidCpf(),
-                generateValidEmail()
+                generateValidEmail(),
+                randomAlphabetic(10)
         );
 
         mockMvc
@@ -155,7 +160,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 randomAlphabetic(10),
                 randomAlphabetic(10),
                 null,
-                generateValidEmail()
+                generateValidEmail(),
+                randomAlphabetic(10)
         );
 
         mockMvc
@@ -178,7 +184,8 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 randomAlphabetic(10),
                 randomAlphabetic(10),
                 generateValidCpf(),
-                null
+                null,
+                randomAlphabetic(10)
         );
 
         mockMvc
