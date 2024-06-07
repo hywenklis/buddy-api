@@ -7,6 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record PetDto(UUID id,
+                     UUID shelterId,
                      String name,
                      String specie,
                      String sex,

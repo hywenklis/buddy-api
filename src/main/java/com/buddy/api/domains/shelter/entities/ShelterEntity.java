@@ -12,7 +12,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
@@ -37,8 +37,9 @@ public class ShelterEntity {
     private String email;
     private String avatar;
 
+    @Getter
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PetEntity> pets;
+    private List<PetEntity> pets = new ArrayList<>();
 
     @Column(name = "CREATE_DATE")
     private LocalDateTime createDate;
@@ -67,13 +68,9 @@ public class ShelterEntity {
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.avatar = avatar;
-        this.pets = pets == null ? List.of() : List.copyOf(pets);
+        this.pets = pets != null ? new ArrayList<>(pets) : new ArrayList<>();
         this.createDate = createDate;
         this.updateDate = updateDate;
-    }
-
-    public List<PetEntity> getPets() {
-        return Collections.unmodifiableList(pets);
     }
 
     @PrePersist
@@ -85,14 +82,5 @@ public class ShelterEntity {
     @PreUpdate
     public void onPreUpdate() {
         this.updateDate = LocalDateTime.now();
-    }
-
-    public static class ShelterEntityBuilder {
-        private List<PetEntity> pets;
-
-        public ShelterEntityBuilder pets(List<PetEntity> pets) {
-            this.pets = pets == null ? List.of() : List.copyOf(pets);
-            return this;
-        }
     }
 }

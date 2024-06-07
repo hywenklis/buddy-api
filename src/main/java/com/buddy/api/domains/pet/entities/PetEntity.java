@@ -1,26 +1,32 @@
 package com.buddy.api.domains.pet.entities;
 
+import com.buddy.api.domains.shelter.entities.ShelterEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "PET")
 @Getter
+@Setter
 @NoArgsConstructor
 public class PetEntity {
 
@@ -36,8 +42,12 @@ public class PetEntity {
     private String description;
     private String avatar;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PetImageEntity> images;
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PetImageEntity> images = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "shelter_id")
+    private ShelterEntity shelter;
 
     @Column(name = "CREATE_DATE")
     private LocalDateTime createDate;
@@ -56,8 +66,8 @@ public class PetEntity {
                      String avatar,
                      List<PetImageEntity> images,
                      LocalDateTime createDate,
-                     LocalDateTime updateDate
-    ) {
+                     LocalDateTime updateDate,
+                     ShelterEntity shelter) {
         this.id = id;
         this.name = name;
         this.specie = specie;
@@ -66,9 +76,14 @@ public class PetEntity {
         this.weight = weight;
         this.description = description;
         this.avatar = avatar;
-        this.images = images == null ? List.of() : List.copyOf(images);
+        this.images = images != null ? new ArrayList<>(images) : new ArrayList<>();
         this.createDate = createDate;
         this.updateDate = updateDate;
+        this.shelter = shelter;
+
+        if (this.images != null) {
+            this.images.forEach(image -> image.setPet(this));
+        }
     }
 
     public List<PetImageEntity> getImages() {
@@ -87,8 +102,10 @@ public class PetEntity {
     }
 
     public static class PetEntityBuilder {
+        private List<PetImageEntity> images = new ArrayList<>();
+
         public PetEntityBuilder images(List<PetImageEntity> images) {
-            this.images = images == null ? List.of() : List.copyOf(images);
+            this.images = images != null ? new ArrayList<>(images) : new ArrayList<>();
             return this;
         }
     }
