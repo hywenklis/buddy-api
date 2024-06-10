@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,8 @@ import lombok.Setter;
 @Table(name = "PET")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class PetEntity {
 
@@ -54,36 +57,6 @@ public class PetEntity {
 
     @Column(name = "UPDATE_DATE")
     private LocalDateTime updateDate;
-
-    @Builder
-    public PetEntity(UUID id,
-                     String name,
-                     String specie,
-                     String sex,
-                     Integer age,
-                     Double weight,
-                     String description,
-                     String avatar,
-                     List<PetImageEntity> images,
-                     LocalDateTime createDate,
-                     LocalDateTime updateDate,
-                     ShelterEntity shelter) {
-        this.id = id;
-        this.name = name;
-        this.specie = specie;
-        this.sex = sex;
-        this.age = age;
-        this.weight = weight;
-        this.description = description;
-        this.avatar = avatar;
-        this.createDate = createDate;
-        this.updateDate = updateDate;
-        this.shelter = shelter;
-        if (images != null) {
-            this.images = new ArrayList<>(images);
-            this.images.forEach(image -> image.setPet(this));
-        }
-    }
 
     public List<PetImageEntity> getImages() {
         return Collections.unmodifiableList(images);
