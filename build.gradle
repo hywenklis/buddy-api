@@ -5,7 +5,7 @@ plugins {
 	id 'jacoco'
 	id 'checkstyle'
 	id 'com.github.spotbugs' version '6.0.15'
-	id 'com.palantir.git-version' version '3.0.0'
+	id 'com.palantir.git-version' version '3.1.0'
 }
 
 bootJar {
