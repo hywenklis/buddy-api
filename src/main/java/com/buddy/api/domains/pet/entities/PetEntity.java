@@ -76,12 +76,11 @@ public class PetEntity {
         this.weight = weight;
         this.description = description;
         this.avatar = avatar;
-        this.images = images != null ? new ArrayList<>(images) : new ArrayList<>();
         this.createDate = createDate;
         this.updateDate = updateDate;
         this.shelter = shelter;
-
-        if (this.images != null) {
+        if (images != null) {
+            this.images = new ArrayList<>(images);
             this.images.forEach(image -> image.setPet(this));
         }
     }
@@ -99,14 +98,5 @@ public class PetEntity {
     @PreUpdate
     public void onPreUpdate() {
         this.updateDate = LocalDateTime.now();
-    }
-
-    public static class PetEntityBuilder {
-        private List<PetImageEntity> images = new ArrayList<>();
-
-        public PetEntityBuilder images(List<PetImageEntity> images) {
-            this.images = images != null ? new ArrayList<>(images) : new ArrayList<>();
-            return this;
-        }
     }
 }

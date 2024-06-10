@@ -15,6 +15,7 @@ public interface PetDomainMapper {
     @Mapping(target = "shelter", ignore = true)
     PetEntity mapToEntity(PetDto petDto);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "pet", ignore = true)
     @Mapping(target = "updateDate", ignore = true)
     @Mapping(target = "createDate", ignore = true)

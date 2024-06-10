@@ -1,7 +1,6 @@
 package com.buddy.api.domains.pet.services.impls;
 
 import com.buddy.api.domains.pet.dtos.PetDto;
-import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.pet.mappers.PetDomainMapper;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.pet.services.CreatePet;
@@ -28,17 +27,9 @@ public class CreatePetImpl implements CreatePet {
         var petEntity = mapper.mapToEntity(petDto);
         petEntity.setShelter(shelter);
 
-        final PetEntity finalPetEntity = petEntity;
+        petEntity.getImages().forEach(image -> image.setPet(petEntity));
 
-        // Associar cada imagem ao pet
-        if (finalPetEntity.getImages() != null) {
-            finalPetEntity.getImages().forEach(image -> image.setPet(finalPetEntity));
-        }
-
-        // Salvar o pet com as imagens
-        petEntity = petRepository.save(finalPetEntity);
-
-        // Adicionar o pet ao shelter e salvar
+        petRepository.save(petEntity);
         shelter.getPets().add(petEntity);
         shelterRepository.save(shelter);
     }

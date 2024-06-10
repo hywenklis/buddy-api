@@ -54,4 +54,3 @@ public class PetImageEntity {
         this.updateDate = LocalDateTime.now();
     }
 }
-

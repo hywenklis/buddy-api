@@ -1,6 +1,5 @@
 package com.buddy.api.domains.pet.dtos;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
@@ -23,12 +22,6 @@ public record PetDto(UUID id,
 
     @Override
     public List<PetImageDto> images() {
-        return Collections.unmodifiableList(this.images);
-    }
-
-    public static class PetDtoBuilder {
-        public void images(List<PetImageDto> images) {
-            this.images = images == null ? List.of() : List.copyOf(images);
-        }
+        return List.copyOf(this.images);
     }
 }
