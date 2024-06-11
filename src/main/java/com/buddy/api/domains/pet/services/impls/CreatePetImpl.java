@@ -1,5 +1,6 @@
 package com.buddy.api.domains.pet.services.impls;
 
+import com.buddy.api.domains.exceptions.NotFoundException;
 import com.buddy.api.domains.pet.dtos.PetDto;
 import com.buddy.api.domains.pet.mappers.PetDomainMapper;
 import com.buddy.api.domains.pet.repositories.PetRepository;
@@ -22,7 +23,7 @@ public class CreatePetImpl implements CreatePet {
     @Transactional
     public void create(final PetDto petDto) {
         var shelter = shelterRepository.findById(petDto.shelterId())
-                .orElseThrow(() -> new EntityNotFoundException("Shelter not found"));
+                .orElseThrow(() -> new NotFoundException("shelterId", "Shelter not found"));
 
         var petEntity = mapper.mapToEntity(petDto);
         petEntity.setShelter(shelter);
