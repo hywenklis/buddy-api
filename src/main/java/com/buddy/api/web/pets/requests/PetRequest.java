@@ -29,6 +29,6 @@ public record PetRequest(
         String avatar,
         List<PetImageRequest> images,
 
-        @NotBlank(message = "ShelterId of mandatory pet")
+        @NotNull(message = "ShelterId of mandatory pet")
         UUID shelterId
 ) {}
