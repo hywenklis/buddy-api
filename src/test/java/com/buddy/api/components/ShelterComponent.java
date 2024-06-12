@@ -2,6 +2,7 @@ package com.buddy.api.components;
 
 import static com.buddy.api.builders.shelter.ShelterBuilder.createShelterEntity;
 
+import com.buddy.api.builders.shelter.ShelterBuilder;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.shelter.entities.ShelterEntity;
 import com.buddy.api.domains.shelter.repositories.ShelterRepository;
@@ -37,5 +38,13 @@ public class ShelterComponent {
                         pets
                 )
         );
+    }
+
+    public ShelterEntity createShelter() {
+        return shelterRepository.save(ShelterBuilder.createShelterEntity());
+    }
+
+    public ShelterEntity createShelterNoPets() {
+        return shelterRepository.save(ShelterBuilder.createShelterEntityNoPets());
     }
 }

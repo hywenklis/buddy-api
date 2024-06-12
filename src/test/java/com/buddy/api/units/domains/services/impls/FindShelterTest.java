@@ -47,15 +47,7 @@ class FindShelterTest extends UnitTestAbstract {
                 randomAlphabetic(10),
                 null);
 
-        var shelterEntity = createShelterEntity(
-                shelterDto.nameShelter(),
-                shelterDto.nameResponsible(),
-                shelterDto.cpfResponsible(),
-                shelterDto.email(),
-                shelterDto.address(),
-                shelterDto.phoneNumber(),
-                shelterDto.avatar(),
-                null);
+        var shelterEntity = createShelterEntity(shelterDto);
 
         when(shelterDomainMapper.mapToDto(shelterEntity)).thenReturn(shelterDto);
         when(shelterRepository.findShelterByCpfResponsible(cpfResponsible))
@@ -104,15 +96,7 @@ class FindShelterTest extends UnitTestAbstract {
                 randomAlphabetic(10),
                 null);
 
-        var shelterEntity = createShelterEntity(
-                shelterDto.nameShelter(),
-                shelterDto.nameResponsible(),
-                shelterDto.cpfResponsible(),
-                shelterDto.email(),
-                shelterDto.address(),
-                shelterDto.phoneNumber(),
-                shelterDto.avatar(),
-                null);
+        var shelterEntity = createShelterEntity(shelterDto);
 
         when(shelterDomainMapper.mapToDto(shelterEntity)).thenReturn(shelterDto);
         when(shelterRepository.findByEmail(email)).thenReturn(Optional.of(shelterEntity));

@@ -32,4 +32,8 @@ public class PetComponent {
                 name, specie, sex, age, weight, description, avatar, images, shelter
         ));
     }
+
+    public PetEntity createPet() {
+        return petRepository.save(createPetEntity());
+    }
 }

@@ -1,5 +1,9 @@
 package com.buddy.api.builders.pet;
 
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
+
+import com.buddy.api.builders.shelter.ShelterBuilder;
 import com.buddy.api.domains.pet.dtos.PetDto;
 import com.buddy.api.domains.pet.dtos.PetImageDto;
 import com.buddy.api.domains.pet.entities.PetEntity;
@@ -32,6 +36,20 @@ public class PetBuilder {
                 .description(description)
                 .avatar(avatar)
                 .images(images)
+                .shelterId(shelterId)
+                .build();
+    }
+
+    public static PetRequest createPetRequest(UUID shelterId) {
+        return PetRequest.builder()
+                .name(randomAlphabetic(10))
+                .specie(randomAlphabetic(10))
+                .sex(randomAlphabetic(10))
+                .age(Integer.valueOf(randomNumeric(1)))
+                .weight(Double.valueOf(randomNumeric(1)))
+                .description(randomAlphabetic(10))
+                .avatar(randomAlphabetic(10))
+                .images(List.of(PetImageBuilder.createPetRequest()))
                 .shelterId(shelterId)
                 .build();
     }
@@ -80,6 +98,23 @@ public class PetBuilder {
                 .avatar(avatar)
                 .images(images)
                 .shelter(shelter)
+                .createDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static PetEntity createPetEntity() {
+        return PetEntity.builder()
+                .id(UUID.randomUUID())
+                .name(randomAlphabetic(10))
+                .specie(randomAlphabetic(10))
+                .sex(randomAlphabetic(10))
+                .age(Integer.valueOf(randomNumeric(10)))
+                .weight(Double.valueOf(randomNumeric(10)))
+                .description(randomAlphabetic(10))
+                .avatar(randomAlphabetic(10))
+                .images(List.of(PetImageBuilder.createPetEntityCompleted()))
+                .shelter(ShelterBuilder.createShelterEntity())
                 .createDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .build();

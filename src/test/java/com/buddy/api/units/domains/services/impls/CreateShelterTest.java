@@ -37,27 +37,8 @@ class CreateShelterTest extends UnitTestAbstract {
     void save_shelter_success() {
 
         // Given
-        final var shelterDto = ShelterBuilder.createShelterDto(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                List.of()
-        );
-
-        final var shelterEntity = ShelterBuilder.createShelterEntity(
-                shelterDto.nameShelter(),
-                shelterDto.nameResponsible(),
-                shelterDto.cpfResponsible(),
-                shelterDto.email(),
-                shelterDto.address(),
-                shelterDto.phoneNumber(),
-                shelterDto.avatar(),
-                List.of()
-        );
+        final var shelterDto = ShelterBuilder.createShelterDto();
+        final var shelterEntity = ShelterBuilder.createShelterEntity(shelterDto);
 
         // Mock
         when(mapper.mapToEntity(shelterDto)).thenReturn(shelterEntity);
