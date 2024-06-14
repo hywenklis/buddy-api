@@ -19,7 +19,8 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      actions: write
+      contents: write
       issues: read
       checks: write
       pull-requests: write
