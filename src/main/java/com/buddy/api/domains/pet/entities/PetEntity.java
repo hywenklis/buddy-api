@@ -15,7 +15,6 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -57,10 +56,6 @@ public class PetEntity {
 
     @Column(name = "UPDATE_DATE")
     private LocalDateTime updateDate;
-
-    public List<PetImageEntity> getImages() {
-        return Collections.unmodifiableList(images);
-    }
 
     @PrePersist
     public void onPrePersist() {

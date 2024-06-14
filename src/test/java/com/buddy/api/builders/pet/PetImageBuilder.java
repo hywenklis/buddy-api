@@ -19,27 +19,25 @@ public class PetImageBuilder {
         return PetImageRequest.builder().imageUrl(randomAlphabetic(10)).build();
     }
 
-    public static PetImageDto createPetDto(String imageUrl) {
+    public static PetImageDto createPetImageDto(String imageUrl) {
         return PetImageDto.builder().imageUrl(imageUrl).build();
     }
 
-    public static PetImageEntity createPetEntity(String imageUrl, PetEntity pet) {
-        return PetImageEntity.builder()
-                .id(UUID.randomUUID())
-                .imageUrl(imageUrl)
-                .pet(pet)
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
-    }
-
-    public static PetImageEntity createPetEntityCompleted() {
+    public static PetImageEntity createPetImageEntityCompleted() {
         return PetImageEntity.builder()
                 .id(UUID.randomUUID())
                 .imageUrl(randomAlphabetic(10))
                 .pet(PetBuilder.createPetEntity())
                 .createDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static PetImageEntity createPetImageEntity(String imageUrl, PetEntity petEntity) {
+        return PetImageEntity.builder()
+                .id(UUID.randomUUID())
+                .imageUrl(imageUrl)
+                .pet(petEntity)
                 .build();
     }
 }

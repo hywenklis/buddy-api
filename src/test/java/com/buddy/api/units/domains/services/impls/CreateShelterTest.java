@@ -1,6 +1,5 @@
 package com.buddy.api.units.domains.services.impls;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.times;
@@ -13,7 +12,6 @@ import com.buddy.api.domains.shelter.mappers.ShelterDomainMapper;
 import com.buddy.api.domains.shelter.repositories.ShelterRepository;
 import com.buddy.api.domains.shelter.services.impls.CreateShelterImpl;
 import com.buddy.api.units.UnitTestAbstract;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

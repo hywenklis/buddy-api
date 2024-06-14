@@ -43,6 +43,7 @@ public class ShelterEntity {
     private String avatar;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<PetEntity> pets = new ArrayList<>();
 
     @Column(name = "CREATE_DATE")

@@ -1,5 +1,8 @@
 package com.buddy.api.builders.pet;
 
+import static com.buddy.api.builders.pet.PetImageBuilder.createPetImageDto;
+import static com.buddy.api.builders.pet.PetImageBuilder.createPetImageEntityCompleted;
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 
@@ -18,14 +21,14 @@ import java.util.UUID;
 public class PetBuilder {
 
     public static PetRequest createPetRequest(String name,
-                                                  String specie,
-                                                  String sex,
-                                                  Integer age,
-                                                  Double weight,
-                                                  String description,
-                                                  String avatar,
-                                                  List<PetImageRequest> images,
-                                                  UUID shelterId
+                                              String specie,
+                                              String sex,
+                                              Integer age,
+                                              Double weight,
+                                              String description,
+                                              String avatar,
+                                              List<PetImageRequest> images,
+                                              UUID shelterId
     ) {
         return PetRequest.builder()
                 .name(name)
@@ -55,15 +58,15 @@ public class PetBuilder {
     }
 
     public static PetDto createPetDto(UUID id,
-                                          UUID shelterId,
-                                          String name,
-                                          String specie,
-                                          String sex,
-                                          Integer age,
-                                          Double weight,
-                                          String description,
-                                          String avatar,
-                                          List<PetImageDto> images) {
+                                      UUID shelterId,
+                                      String name,
+                                      String specie,
+                                      String sex,
+                                      Integer age,
+                                      Double weight,
+                                      String description,
+                                      String avatar,
+                                      List<PetImageDto> images) {
         return PetDto.builder()
                 .id(id)
                 .shelterId(shelterId)
@@ -78,17 +81,32 @@ public class PetBuilder {
                 .build();
     }
 
+    public static PetDto createPetDto(UUID shelterId) {
+        return PetDto.builder()
+                .id(randomUUID())
+                .shelterId(shelterId)
+                .name(randomAlphabetic(10))
+                .specie(randomAlphabetic(10))
+                .sex(randomAlphabetic(10))
+                .age(Integer.valueOf(randomNumeric(2)))
+                .avatar(randomAlphabetic(10))
+                .weight(Double.valueOf(randomNumeric(2)))
+                .description(randomAlphabetic(10))
+                .images(List.of(createPetImageDto(randomAlphabetic(10))))
+                .build();
+    }
+
     public static PetEntity createPetEntity(String name,
-                                                String specie,
-                                                String sex,
-                                                Integer age,
-                                                Double weight,
-                                                String description,
-                                                String avatar,
-                                                List<PetImageEntity> images,
-                                                ShelterEntity shelter) {
+                                            String specie,
+                                            String sex,
+                                            Integer age,
+                                            Double weight,
+                                            String description,
+                                            String avatar,
+                                            List<PetImageEntity> images,
+                                            ShelterEntity shelter) {
         return PetEntity.builder()
-                .id(UUID.randomUUID())
+                .id(randomUUID())
                 .name(name)
                 .specie(specie)
                 .sex(sex)
@@ -105,18 +123,103 @@ public class PetBuilder {
 
     public static PetEntity createPetEntity() {
         return PetEntity.builder()
-                .id(UUID.randomUUID())
+                .id(randomUUID())
                 .name(randomAlphabetic(10))
                 .specie(randomAlphabetic(10))
                 .sex(randomAlphabetic(10))
-                .age(Integer.valueOf(randomNumeric(10)))
-                .weight(Double.valueOf(randomNumeric(10)))
+                .age(Integer.valueOf(randomNumeric(2)))
+                .weight(Double.valueOf(randomNumeric(2)))
                 .description(randomAlphabetic(10))
                 .avatar(randomAlphabetic(10))
-                .images(List.of(PetImageBuilder.createPetEntityCompleted()))
+                .images(List.of(createPetImageEntityCompleted()))
                 .shelter(ShelterBuilder.createShelterEntity())
                 .createDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
+                .build();
+    }
+
+    public static PetEntity createPetEntity(PetDto petDto,
+                                            ShelterEntity shelterEntity,
+                                            PetImageEntity petImageEntity
+    ) {
+        return PetEntity.builder()
+                .id(petDto.id())
+                .name(petDto.name())
+                .specie(petDto.specie())
+                .sex(petDto.sex())
+                .age(petDto.age())
+                .weight(petDto.weight())
+                .description(petDto.description())
+                .avatar(petDto.avatar())
+                .shelter(shelterEntity)
+                .images(List.of(petImageEntity))
+                .build();
+    }
+
+    public static PetEntity createPetEntity(PetDto petDto,
+                                            ShelterEntity shelterEntity,
+                                            List<PetImageEntity> petImageEntity
+    ) {
+        return PetEntity.builder()
+                .id(petDto.id())
+                .name(petDto.name())
+                .specie(petDto.specie())
+                .sex(petDto.sex())
+                .age(petDto.age())
+                .weight(petDto.weight())
+                .description(petDto.description())
+                .avatar(petDto.avatar())
+                .shelter(shelterEntity)
+                .images(petImageEntity)
+                .build();
+    }
+
+    public static PetEntity createPetEntityWithoutImages(PetDto petDto,
+                                                         ShelterEntity shelterEntity
+    ) {
+        return PetEntity.builder()
+                .id(petDto.id())
+                .name(petDto.name())
+                .specie(petDto.specie())
+                .sex(petDto.sex())
+                .age(petDto.age())
+                .weight(petDto.weight())
+                .description(petDto.description())
+                .avatar(petDto.avatar())
+                .shelter(shelterEntity)
+                .build();
+    }
+
+    public static PetDto createPetDtoWithImages(UUID shelterId) {
+        return PetDto.builder()
+                .id(randomUUID())
+                .name(randomAlphabetic(10))
+                .specie(randomAlphabetic(10))
+                .sex(randomAlphabetic(10))
+                .age(Integer.valueOf(randomNumeric(2)))
+                .weight(Double.valueOf(randomNumeric(2)))
+                .description(randomAlphabetic(10))
+                .avatar(randomAlphabetic(10))
+                .shelterId(shelterId)
+                .images(List.of(
+                        createPetImageDto(randomAlphabetic(10)),
+                        createPetImageDto(randomAlphabetic(10)))
+                )
+                .build();
+    }
+
+    public static PetDto createPetDtoWithoutImages(UUID shelterId) {
+        return PetDto.builder()
+                .id(randomUUID())
+                .name(randomAlphabetic(10))
+                .specie(randomAlphabetic(10))
+                .sex(randomAlphabetic(10))
+                .age(Integer.valueOf(randomNumeric(2)))
+                .weight(Double.valueOf(randomNumeric(2)))
+                .description(randomAlphabetic(10))
+                .avatar(randomAlphabetic(10))
+                .shelterId(shelterId)
+                .images(List.of())
                 .build();
     }
 }

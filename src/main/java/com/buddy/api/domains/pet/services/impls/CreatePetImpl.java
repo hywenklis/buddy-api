@@ -6,8 +6,8 @@ import com.buddy.api.domains.pet.mappers.PetDomainMapper;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.pet.services.CreatePet;
 import com.buddy.api.domains.shelter.repositories.ShelterRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,9 +28,16 @@ public class CreatePetImpl implements CreatePet {
         var petEntity = mapper.mapToEntity(petDto);
         petEntity.setShelter(shelter);
 
-        petEntity.getImages().forEach(image -> image.setPet(petEntity));
+        if (petEntity.getImages() != null) {
+            petEntity.getImages().forEach(image -> image.setPet(petEntity));
+        }
 
         petRepository.save(petEntity);
+
+        if (shelter.getPets() == null) {
+            shelter.setPets(new ArrayList<>());
+        }
+
         shelter.getPets().add(petEntity);
         shelterRepository.save(shelter);
     }
