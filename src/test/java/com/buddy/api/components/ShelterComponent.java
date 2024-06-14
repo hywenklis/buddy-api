@@ -18,16 +18,16 @@ public class ShelterComponent {
         this.shelterRepository = shelterRepository;
     }
 
-    public ShelterEntity createShelter(final String nameShelter,
-                                       final String nameResponsible,
-                                       final String cpfResponsible,
-                                       final String email,
-                                       final String address,
-                                       final String phoneNumber,
-                                       final String avatar,
-                                       final List<PetEntity> pets
+    public void createShelter(final String nameShelter,
+                              final String nameResponsible,
+                              final String cpfResponsible,
+                              final String email,
+                              final String address,
+                              final String phoneNumber,
+                              final String avatar,
+                              final List<PetEntity> pets
     ) {
-        return shelterRepository.save(createShelterEntity(
+        shelterRepository.save(createShelterEntity(
                         nameShelter,
                         nameResponsible,
                         cpfResponsible,
@@ -38,10 +38,6 @@ public class ShelterComponent {
                         pets
                 )
         );
-    }
-
-    public ShelterEntity createShelter() {
-        return shelterRepository.save(ShelterBuilder.createShelterEntity());
     }
 
     public ShelterEntity createShelterNoPets() {
