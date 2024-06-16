@@ -1,16 +1,19 @@
 package com.buddy.api.domains.pet.dtos;
 
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 
 @Builder
 public record PetDto(UUID id,
+                     UUID shelterId,
                      String name,
                      String specie,
                      String sex,
                      Integer age,
+                     LocalDate birthDate,
+                     String location,
                      Double weight,
                      String description,
                      String avatar,
@@ -22,12 +25,6 @@ public record PetDto(UUID id,
 
     @Override
     public List<PetImageDto> images() {
-        return Collections.unmodifiableList(this.images);
-    }
-
-    public static class PetDtoBuilder {
-        public void images(List<PetImageDto> images) {
-            this.images = images == null ? List.of() : List.copyOf(images);
-        }
+        return List.copyOf(this.images);
     }
 }
