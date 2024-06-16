@@ -87,6 +87,8 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
         assertThat(savedPetEntity.getSex()).isEqualTo(petEntity.getSex());
         assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
+        assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
+        assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
         assertThat(savedPetEntity.getAvatar()).isEqualTo(petEntity.getAvatar());
         assertThat(savedPetEntity.getWeight()).isEqualTo(petEntity.getWeight());
         assertThat(savedPetEntity.getDescription()).isEqualTo(petEntity.getDescription());
@@ -140,6 +142,8 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
         assertThat(savedPetEntity.getSex()).isEqualTo(petEntity.getSex());
         assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
+        assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
+        assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
         assertThat(savedPetEntity.getAvatar()).isEqualTo(petEntity.getAvatar());
         assertThat(savedPetEntity.getWeight()).isEqualTo(petEntity.getWeight());
         assertThat(savedPetEntity.getDescription()).isEqualTo(petEntity.getDescription());
@@ -188,6 +192,8 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
         assertThat(savedPetEntity.getSex()).isEqualTo(petEntity.getSex());
         assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
+        assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
+        assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
         assertThat(savedPetEntity.getAvatar()).isEqualTo(petEntity.getAvatar());
         assertThat(savedPetEntity.getWeight()).isEqualTo(petEntity.getWeight());
         assertThat(savedPetEntity.getDescription()).isEqualTo(petEntity.getDescription());

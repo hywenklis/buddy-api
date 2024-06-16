@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,8 @@ public class PetEntity {
     private String specie;
     private String sex;
     private Integer age;
+    private LocalDate birthDate;
+    private String location;
     private Double weight;
     private String description;
     private String avatar;

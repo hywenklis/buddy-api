@@ -1,5 +1,6 @@
 package com.buddy.api.domains.pet.dtos;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
@@ -11,6 +12,8 @@ public record PetDto(UUID id,
                      String specie,
                      String sex,
                      Integer age,
+                     LocalDate birthDate,
+                     String location,
                      Double weight,
                      String description,
                      String avatar,

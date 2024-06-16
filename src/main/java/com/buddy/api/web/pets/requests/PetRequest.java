@@ -2,6 +2,7 @@ package com.buddy.api.web.pets.requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
@@ -19,6 +20,10 @@ public record PetRequest(
 
         @NotNull(message = "Age of mandatory pet")
         Integer age,
+
+        LocalDate birthDate,
+
+        String location,
 
         @NotNull(message = "Weight of mandatory pet")
         Double weight,
