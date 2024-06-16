@@ -1,3 +1,5 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.0'
@@ -112,6 +114,13 @@ tasks.withType(Checkstyle).configureEach {
 	}
 }
 
+tasks.withType(SpotBugsTask).configureEach {
+	reports {
+		xml.required = false
+		html.required = true
+	}
+}
+
 checkstyleMain {
 	dependsOn compileJava
 }
@@ -125,4 +134,5 @@ spotbugs {
 	ignoreFailures = false
 	showStackTraces = true
 	showProgress = true
+	excludeFilter = file('config/spotbugs/spotbugs-exclude.xml')
 }
