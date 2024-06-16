@@ -19,7 +19,8 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      actions: write
+      contents: write
       issues: read
       checks: write
       pull-requests: write
@@ -71,3 +72,32 @@ jobs:
         run: |
           echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+
+      - name: Create and push tag
+        run: |
+          git fetch --prune --tags
+          VERSION=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
+          if [ -z "$VERSION" ]; then
+            # Se nenhuma tag existir, crie uma tag inicial
+            VERSION="1.0.0"
+            git tag $VERSION
+          else
+            VERSION_BITS=(${VERSION//./ })
+            VNUM1=${VERSION_BITS[0]}
+            VNUM2=${VERSION_BITS[1]}
+            VNUM3=${VERSION_BITS[2]}
+            if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+              VNUM3=$((VNUM3+1))
+            elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
+              VNUM2=$((VNUM2+1))
+              VNUM3=0
+            fi
+            NEW_TAG="$VNUM1.$VNUM2.$VNUM3"
+            while git rev-parse "$NEW_TAG" >/dev/null 2>&1; do
+              VNUM3=$((VNUM3+1))
+              NEW_TAG="$VNUM1.$VNUM2.$VNUM3"
+            done
+            echo "Updating $VERSION to $NEW_TAG"
+            git tag $NEW_TAG
+          fi
+          git push origin --tags
