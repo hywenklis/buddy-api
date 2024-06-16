@@ -20,13 +20,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should register a new shelter successfully")
     void register_new_shelter_success() throws Exception {
-        var request = createShelterRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                generateValidCpf(),
-                generateValidEmail(),
-                randomAlphabetic(10)
-        );
+        var request = createShelterRequest();
 
         mockMvc
                 .perform(post("/v1/shelters/register")
@@ -40,13 +34,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if there is already "
             + " a cpf registered in the database")
     void should_return_bad_request_cpf_registered_db() throws Exception {
-        var request = createShelterRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                generateValidCpf(),
-                generateValidEmail(),
-                randomAlphabetic(10)
-        );
+        var request = createShelterRequest();
 
         shelterComponent.createShelter(
                 request.nameShelter(),
@@ -75,13 +63,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if there is already "
             + " a email registered in the database")
     void should_return_bad_request_email_registered_db() throws Exception {
-        var request = createShelterRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                generateValidCpf(),
-                generateValidEmail(),
-                randomAlphabetic(10)
-        );
+        var request = createShelterRequest();
 
         shelterComponent.createShelter(
                 request.nameShelter(),
