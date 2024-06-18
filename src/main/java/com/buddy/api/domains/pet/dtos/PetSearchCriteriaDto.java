@@ -2,6 +2,7 @@ package com.buddy.api.domains.pet.dtos;
 
 import com.buddy.api.domains.shelter.dtos.ShelterCompactDto;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record PetSearchCriteriaDto(UUID id,
@@ -14,5 +15,6 @@ public record PetSearchCriteriaDto(UUID id,
                                    String location,
                                    Double weight,
                                    String description,
-                                   ShelterCompactDto shelterCompactDto) {
+                                   ShelterCompactDto shelterCompactDto,
+                                   List<PetImageDto> images) {
 }
