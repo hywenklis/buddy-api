@@ -30,8 +30,14 @@ public interface PetDomainMapper {
     PetImageDto mapToDto(PetImageEntity petImageEntity);
 
     @Mapping(target = "shelterId", source = "petEntity", qualifiedByName = "extractShelterId")
-    @Mapping(target = "shelterCompactDto.nameShelter", source = "petEntity", qualifiedByName = "extractShelterName")
-    @Mapping(target = "shelterCompactDto.avatar", source = "petEntity", qualifiedByName = "extractShelterAvatar")
+    @Mapping(target = "shelterCompactDto.nameShelter",
+            source = "petEntity",
+            qualifiedByName = "extractShelterName"
+    )
+    @Mapping(target = "shelterCompactDto.avatar",
+            source = "petEntity",
+            qualifiedByName = "extractShelterAvatar"
+    )
     PetSearchCriteriaDto mapParamsToDto(PetEntity petEntity);
 
     @Named("extractShelterId")

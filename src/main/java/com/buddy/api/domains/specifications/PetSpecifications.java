@@ -15,14 +15,20 @@ public class PetSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("id"), params.id()));
             }
             if (params.shelterId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("shelter").get("id"), params.shelterId()));
+                predicates.add(criteriaBuilder.equal(
+                        root.get("shelter").get("id"),
+                        params.shelterId())
+                );
             }
             if (params.name() != null) {
                 // Supondo que name seja String
                 predicates.add(criteriaBuilder.like(root.get("name"), "%" + params.name() + "%"));
             }
             if (params.specie() != null) {
-                predicates.add(criteriaBuilder.like(root.get("specie"), "%" + params.specie() + "%"));
+                predicates.add(criteriaBuilder.like(
+                        root.get("specie"),
+                        "%" + params.specie() + "%")
+                );
             }
             if (params.sex() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("sex"), params.sex()));
@@ -34,13 +40,19 @@ public class PetSpecifications {
                 predicates.add(criteriaBuilder.equal(root.get("birthDate"), params.birthDate()));
             }
             if (params.location() != null) {
-                predicates.add(criteriaBuilder.like(root.get("location"), "%" + params.location() + "%"));
+                predicates.add(criteriaBuilder.like(
+                        root.get("location"),
+                        "%" + params.location() + "%")
+                );
             }
             if (params.weight() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("weight"), params.weight()));
             }
             if (params.description() != null) {
-                predicates.add(criteriaBuilder.like(root.get("description"), "%" + params.description() + "%"));
+                predicates.add(criteriaBuilder.like(
+                        root.get("description"),
+                        "%" + params.description() + "%")
+                );
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

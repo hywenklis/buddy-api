@@ -19,7 +19,8 @@ public class FindPetImpl implements FindPet {
     private final PetDomainMapper mapper;
 
     @Override
-    public Page<PetSearchCriteriaDto> findPets(PetSearchCriteriaRequest searchParams, Pageable pageable) {
+    public Page<PetSearchCriteriaDto> findPets(PetSearchCriteriaRequest searchParams,
+                                               Pageable pageable) {
         return petRepository.findAll(PetSpecifications.withParams(searchParams), pageable)
                 .map(mapper::mapParamsToDto);
     }

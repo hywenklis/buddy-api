@@ -26,8 +26,12 @@ public class FindPetController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get pets", description = "Get pets based on search criteria with pagination")
-    public Page<PetParamsResponse> findPetsBySearchParams(PetSearchCriteriaRequest searchCriteria, Pageable pageable) {
+    @Operation(
+            summary = "Get pets",
+            description = "Get pets based on search criteria with pagination"
+    )
+    public Page<PetParamsResponse> findPetsBySearchParams(PetSearchCriteriaRequest searchCriteria,
+                                                          Pageable pageable) {
         return service.findPets(searchCriteria, pageable)
                 .map(mapperResponse::mapToParamsResponse);
     }
