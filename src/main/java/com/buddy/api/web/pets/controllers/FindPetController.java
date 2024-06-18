@@ -5,6 +5,7 @@ import com.buddy.api.web.pets.mappers.PetMapperParamsResponse;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
 import com.buddy.api.web.pets.responses.PetParamsResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,11 +29,17 @@ public class FindPetController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(
             summary = "Get pets",
-            description = "Get pets based on search criteria with pagination"
+            description = "Get pets based on search criteria with pagination. "
+                   + "You can provide various search parameters to filter the results."
     )
-    public Page<PetParamsResponse> findPetsBySearchParams(PetSearchCriteriaRequest searchCriteria,
-                                                          Pageable pageable) {
-        return service.findPets(searchCriteria, pageable)
+    public Page<PetParamsResponse> findPetsBySearchParams(
+            @Parameter(description = "Search criteria for filtering pets")
+            PetSearchCriteriaRequest petSearchCriteriaRequest,
+
+            @Parameter(description = "Pagination information")
+            Pageable pageable
+    ) {
+        return service.findPets(petSearchCriteriaRequest, pageable)
                 .map(mapperResponse::mapToParamsResponse);
     }
 }
