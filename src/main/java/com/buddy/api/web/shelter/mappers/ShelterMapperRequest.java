@@ -18,6 +18,8 @@ public interface ShelterMapperRequest {
         shelterDtoBuilder.pets(null);
     }
 
+    @Mapping(target = "pets", ignore = true)
+    @Mapping(target = "address", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "phoneNumber", ignore = true)
     ShelterDto mapToDto(ShelterRequest shelterRequest);
