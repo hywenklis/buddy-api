@@ -39,8 +39,7 @@ public class PetEntity {
 
     private String name;
     private String specie;
-    private String sex;
-    private Integer age;
+    private String gender;
     private LocalDate birthDate;
     private String location;
     private Double weight;
