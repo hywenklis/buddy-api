@@ -30,12 +30,11 @@ public class FindPetController {
     @Operation(
             summary = "Get pets",
             description = "Get pets based on search criteria with pagination. "
-                   + "You can provide various search parameters to filter the results."
+                  + "You can provide various search parameters to filter the results."
     )
     public Page<PetParamsResponse> findPetsBySearchParams(
             @Parameter(description = "Search criteria for filtering pets")
             PetSearchCriteriaRequest petSearchCriteriaRequest,
-
             @Parameter(description = "Pagination information")
             Pageable pageable
     ) {
