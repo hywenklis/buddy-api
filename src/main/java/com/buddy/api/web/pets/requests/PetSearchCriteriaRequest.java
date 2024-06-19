@@ -16,22 +16,25 @@ public record PetSearchCriteriaRequest(
         @Schema(description = "Name of the pet", example = "Buddy")
         @Nullable String name,
 
-        @Schema(description = "Species of the pet", example = "Cão, Gato, Réptil, Peixe")
+        @Schema(description = "Species of the pet",
+                example = "Cachorro, Gato, Pássaro, Peixe, Réptil")
         @Nullable String species,
 
         @Schema(description = "Gender of the pet", example = "Macho, Fêmea")
         @Nullable String gender,
 
-        @Schema(description = "Age range of the pet", example = "0-1 ano, 1-2 anos, 2-3 anos, 3-5 anos, 5-10 anos, 10+ anos")
+        @Schema(description = "Age range of the pet",
+                example = "0-1 ano, 1-2 anos, 2-3 anos, 3-5 anos, 5-10 anos, 10+ anos")
         @Nullable String ageRange,
 
         @Schema(description = "Birth date of the pet", example = "2021-01-01")
         @Nullable LocalDate birthDate,
 
-        @Schema(description = "Location of the pet", example = "New York")
+        @Schema(description = "Location of the pet", example = "Maceió, Alagoas")
         @Nullable String location,
 
-        @Schema(description = "Weight range of the pet", example = "0-5 kg, 5-10 kg, 10-20 kg, 20-30 kg, 30+ kg")
+        @Schema(description = "Weight range of the pet",
+                example = "0-5 kg, 5-10 kg, 10-20 kg, 20-30 kg, 30+ kg")
         @Nullable String weightRange,
 
         @Schema(description = "Description of the pet", example = "A friendly dog")

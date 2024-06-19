@@ -6,13 +6,16 @@ import com.buddy.api.domains.enums.Species;
 import com.buddy.api.domains.enums.WeightRange;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
+import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
+
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import org.springframework.data.jpa.domain.Specification;
 
 public class PetSpecifications {
 
@@ -38,11 +41,8 @@ public class PetSpecifications {
                             Species.valueOfDescription(value).getDescription()));
 
             addPredicateIfNotNull(predicates, params.gender(),
-                    value -> criteriaBuilder.equal(root.get("sex"),
+                    value -> criteriaBuilder.equal(root.get("gender"),
                             Gender.valueOfDescription(value).getDescription()));
-
-            addPredicateIfNotNull(predicates, params.birthDate(),
-                    value -> criteriaBuilder.equal(root.get("birthDate"), value));
 
             addPredicateIfNotNull(predicates, params.location(),
                     value -> criteriaBuilder.like(root.get("location"), "%" + value + "%"));
@@ -55,13 +55,17 @@ public class PetSpecifications {
             addPredicateIfNotNull(predicates, params.description(),
                     value -> criteriaBuilder.like(root.get("description"), "%" + value + "%"));
 
+            // Filtragem por faixa de idade
             if (params.ageRange() != null) {
                 AgeRange ageRange = AgeRange.fromDescription(params.ageRange());
+
+                // Calculate minimum and maximum birth date based on age range
                 LocalDate today = LocalDate.now();
-                addPredicateIfNotNull(predicates, params.birthDate(), birthDate -> {
-                    int age = calculateAge(birthDate, today);
-                    return criteriaBuilder.between(criteriaBuilder.literal(age), ageRange.getMin(), ageRange.getMax());
-                });
+                LocalDate minBirthDate = today.minusYears(ageRange.getMax());
+                LocalDate maxBirthDate = today.minusYears(ageRange.getMin() - 1); // Adjust for potential negative min
+
+                // Filter by birthDate between min and max (inclusive)
+                predicates.add(criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate));
             }
 
             if (predicates.isEmpty()) {
@@ -78,14 +82,6 @@ public class PetSpecifications {
             Function<T, Predicate> predicateFunction) {
         if (value != null) {
             predicates.add(predicateFunction.apply(value));
-        }
-    }
-
-    private static int calculateAge(LocalDate birthDate, LocalDate currentDate) {
-        if ((birthDate != null) && (currentDate != null)) {
-            return Period.between(birthDate, currentDate).getYears();
-        } else {
-            return 0;
         }
     }
 }

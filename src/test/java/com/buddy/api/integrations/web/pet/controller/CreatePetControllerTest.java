@@ -110,7 +110,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
-    @DisplayName("Should return bad request if sex name is not filled in")
+    @DisplayName("Should return bad request if gender name is not filled in")
     void should_return_bad_request_sex_name_not_filled() throws Exception {
         var shelter = shelterComponent.createShelterNoPets();
 
@@ -131,7 +131,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors[0].field").value("sex"))
+                .andExpect(jsonPath("$.errors[0].field").value("gender"))
                 .andExpect(jsonPath("$.errors[0].message").value("Sex of mandatory pet"))
                 .andExpect(jsonPath("$.errors[0].httpStatus").value("BAD_REQUEST"))
                 .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))

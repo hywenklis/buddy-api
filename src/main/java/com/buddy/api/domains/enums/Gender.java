@@ -1,18 +1,15 @@
 package com.buddy.api.domains.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum Gender {
     MACHO("Macho"),
     FEMEA("Fêmea");
 
     private final String description;
-
-    Gender(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 
     public static Gender valueOfDescription(String description) {
         for (Gender gender : values()) {

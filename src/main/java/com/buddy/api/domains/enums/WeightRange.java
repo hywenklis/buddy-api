@@ -1,5 +1,10 @@
 package com.buddy.api.domains.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum WeightRange {
     ZERO_TO_FIVE("0-5 kg", 0.0, 5.0),
     FIVE_TO_TEN("5-10 kg", 5.0, 10.0),
@@ -10,24 +15,6 @@ public enum WeightRange {
     private final String description;
     private final double min;
     private final double max;
-
-    WeightRange(String description, double min, double max) {
-        this.description = description;
-        this.min = min;
-        this.max = max;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public double getMin() {
-        return min;
-    }
-
-    public double getMax() {
-        return max;
-    }
 
     public static WeightRange fromDescription(String description) {
         for (WeightRange range : values()) {

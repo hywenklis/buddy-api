@@ -1,20 +1,18 @@
 package com.buddy.api.domains.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum Species {
-    CÃO("Cão"),
+    CAO("Cachorro"),
     GATO("Gato"),
+    PASSARO("Pássaro"),
     REPTIL("Réptil"),
     PEIXE("Peixe");
 
     private final String description;
-
-    Species(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 
     public static Species valueOfDescription(String description) {
         for (Species species : values()) {

@@ -85,7 +85,7 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getName()).isEqualTo(petEntity.getName());
         assertThat(savedPetEntity.getShelter()).isEqualTo(petEntity.getShelter());
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
-        assertThat(savedPetEntity.getSex()).isEqualTo(petEntity.getSex());
+        assertThat(savedPetEntity.getGender()).isEqualTo(petEntity.getGender());
         assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
         assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
         assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
@@ -140,7 +140,7 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getName()).isEqualTo(petEntity.getName());
         assertThat(savedPetEntity.getShelter()).isEqualTo(petEntity.getShelter());
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
-        assertThat(savedPetEntity.getSex()).isEqualTo(petEntity.getSex());
+        assertThat(savedPetEntity.getGender()).isEqualTo(petEntity.getGender());
         assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
         assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
         assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
@@ -190,7 +190,7 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getName()).isEqualTo(petEntity.getName());
         assertThat(savedPetEntity.getShelter()).isEqualTo(petEntity.getShelter());
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
-        assertThat(savedPetEntity.getSex()).isEqualTo(petEntity.getSex());
+        assertThat(savedPetEntity.getGender()).isEqualTo(petEntity.getGender());
         assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
         assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
         assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
