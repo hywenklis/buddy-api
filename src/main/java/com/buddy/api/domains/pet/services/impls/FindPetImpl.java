@@ -11,6 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class FindPetImpl implements FindPet {
@@ -23,5 +26,13 @@ public class FindPetImpl implements FindPet {
                                                Pageable pageable) {
         return petRepository.findAll(PetSpecifications.withParams(searchParams), pageable)
                 .map(mapper::mapParamsToDto);
+    }
+
+    @Override
+    public List<PetSearchCriteriaDto> findAllPets(PetSearchCriteriaRequest searchParams) {
+        return petRepository.findAll(PetSpecifications.withParams(searchParams))
+                .stream()
+                .map(mapper::mapParamsToDto)
+                .collect(Collectors.toList());
     }
 }

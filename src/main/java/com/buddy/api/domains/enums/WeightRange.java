@@ -38,4 +38,3 @@ public enum WeightRange {
         throw new IllegalArgumentException("Unknown weight range: " + description);
     }
 }
-

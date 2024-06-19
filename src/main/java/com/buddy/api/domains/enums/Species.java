@@ -1,11 +1,10 @@
 package com.buddy.api.domains.enums;
 
 public enum Species {
-    CÃO("Cachorro"),
+    CÃO("Cão"),
     GATO("Gato"),
     REPTIL("Réptil"),
-    PEIXE("Peixe"),
-    PASSARO("Pássaro");
+    PEIXE("Peixe");
 
     private final String description;
 
@@ -26,5 +25,3 @@ public enum Species {
         throw new IllegalArgumentException("Unknown species: " + description);
     }
 }
-
-
