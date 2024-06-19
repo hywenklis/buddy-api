@@ -23,8 +23,7 @@ public class PetBuilder {
 
     public static PetRequest createPetRequest(String name,
                                               String specie,
-                                              String sex,
-                                              Integer age,
+                                              String gender,
                                               Double weight,
                                               String description,
                                               String avatar,
@@ -34,8 +33,7 @@ public class PetBuilder {
         return PetRequest.builder()
                 .name(name)
                 .specie(specie)
-                .sex(sex)
-                .age(age)
+                .gender(gender)
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(weight)
@@ -50,8 +48,7 @@ public class PetBuilder {
         return PetRequest.builder()
                 .name(randomAlphabetic(10))
                 .specie(randomAlphabetic(10))
-                .sex(randomAlphabetic(10))
-                .age(Integer.valueOf(randomNumeric(1)))
+                .gender(randomAlphabetic(10))
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(Double.valueOf(randomNumeric(1)))
@@ -66,7 +63,7 @@ public class PetBuilder {
                                       UUID shelterId,
                                       String name,
                                       String specie,
-                                      String sex,
+                                      String gender,
                                       Integer age,
                                       Double weight,
                                       String description,
@@ -77,8 +74,7 @@ public class PetBuilder {
                 .shelterId(shelterId)
                 .name(name)
                 .specie(specie)
-                .sex(sex)
-                .age(age)
+                .gender(gender)
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .avatar(avatar)
@@ -94,8 +90,7 @@ public class PetBuilder {
                 .shelterId(shelterId)
                 .name(randomAlphabetic(10))
                 .specie(randomAlphabetic(10))
-                .sex(randomAlphabetic(10))
-                .age(Integer.valueOf(randomNumeric(2)))
+                .gender(randomAlphabetic(10))
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .avatar(randomAlphabetic(10))
@@ -107,8 +102,7 @@ public class PetBuilder {
 
     public static PetEntity createPetEntity(String name,
                                             String specie,
-                                            String sex,
-                                            Integer age,
+                                            String gender,
                                             Double weight,
                                             String description,
                                             String avatar,
@@ -118,8 +112,7 @@ public class PetBuilder {
                 .id(randomUUID())
                 .name(name)
                 .specie(specie)
-                .sex(sex)
-                .age(age)
+                .gender(gender)
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(weight)
@@ -137,8 +130,7 @@ public class PetBuilder {
                 .id(randomUUID())
                 .name(randomAlphabetic(10))
                 .specie(randomAlphabetic(10))
-                .sex(randomAlphabetic(10))
-                .age(Integer.valueOf(randomNumeric(2)))
+                .gender(randomAlphabetic(10))
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(Double.valueOf(randomNumeric(2)))
@@ -159,8 +151,7 @@ public class PetBuilder {
                 .id(petDto.id())
                 .name(petDto.name())
                 .specie(petDto.specie())
-                .sex(petDto.sex())
-                .age(petDto.age())
+                .gender(petDto.gender())
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(petDto.weight())
@@ -179,8 +170,7 @@ public class PetBuilder {
                 .id(petDto.id())
                 .name(petDto.name())
                 .specie(petDto.specie())
-                .sex(petDto.sex())
-                .age(petDto.age())
+                .gender(petDto.gender())
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(petDto.weight())
@@ -198,8 +188,7 @@ public class PetBuilder {
                 .id(petDto.id())
                 .name(petDto.name())
                 .specie(petDto.specie())
-                .sex(petDto.sex())
-                .age(petDto.age())
+                .gender(petDto.gender())
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(petDto.weight())
@@ -214,8 +203,7 @@ public class PetBuilder {
                 .id(randomUUID())
                 .name(randomAlphabetic(10))
                 .specie(randomAlphabetic(10))
-                .sex(randomAlphabetic(10))
-                .age(Integer.valueOf(randomNumeric(2)))
+                .gender(randomAlphabetic(10))
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(Double.valueOf(randomNumeric(2)))
@@ -234,8 +222,7 @@ public class PetBuilder {
                 .id(randomUUID())
                 .name(randomAlphabetic(10))
                 .specie(randomAlphabetic(10))
-                .sex(randomAlphabetic(10))
-                .age(Integer.valueOf(randomNumeric(2)))
+                .gender(randomAlphabetic(10))
                 .birthDate(LocalDate.now())
                 .location(randomAlphabetic(10))
                 .weight(Double.valueOf(randomNumeric(2)))
