@@ -6,18 +6,15 @@ import com.buddy.api.domains.enums.Species;
 import com.buddy.api.domains.enums.WeightRange;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
-import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
-
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import org.springframework.data.jpa.domain.Specification;
 
-public class PetSpecifications {
+// TODO: Refatorar essa classe pois está muito grande e complexa
+public final class PetSpecifications {
 
     private PetSpecifications() {
         throw new UnsupportedOperationException("Utility class");
@@ -55,17 +52,16 @@ public class PetSpecifications {
             addPredicateIfNotNull(predicates, params.description(),
                     value -> criteriaBuilder.like(root.get("description"), "%" + value + "%"));
 
-            // Filtragem por faixa de idade
             if (params.ageRange() != null) {
                 AgeRange ageRange = AgeRange.fromDescription(params.ageRange());
 
-                // Calculate minimum and maximum birth date based on age range
                 LocalDate today = LocalDate.now();
                 LocalDate minBirthDate = today.minusYears(ageRange.getMax());
-                LocalDate maxBirthDate = today.minusYears(ageRange.getMin() - 1); // Adjust for potential negative min
+                LocalDate maxBirthDate = today.minusYears(ageRange.getMin() - 1);
 
-                // Filter by birthDate between min and max (inclusive)
-                predicates.add(criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate));
+                predicates.add(
+                        criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                );
             }
 
             if (predicates.isEmpty()) {

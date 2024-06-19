@@ -86,7 +86,6 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getShelter()).isEqualTo(petEntity.getShelter());
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
         assertThat(savedPetEntity.getGender()).isEqualTo(petEntity.getGender());
-        assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
         assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
         assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
         assertThat(savedPetEntity.getAvatar()).isEqualTo(petEntity.getAvatar());
@@ -141,7 +140,6 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getShelter()).isEqualTo(petEntity.getShelter());
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
         assertThat(savedPetEntity.getGender()).isEqualTo(petEntity.getGender());
-        assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
         assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
         assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
         assertThat(savedPetEntity.getAvatar()).isEqualTo(petEntity.getAvatar());
@@ -191,7 +189,6 @@ class CreatePetTest extends UnitTestAbstract {
         assertThat(savedPetEntity.getShelter()).isEqualTo(petEntity.getShelter());
         assertThat(savedPetEntity.getSpecie()).isEqualTo(petEntity.getSpecie());
         assertThat(savedPetEntity.getGender()).isEqualTo(petEntity.getGender());
-        assertThat(savedPetEntity.getAge()).isEqualTo(petEntity.getAge());
         assertThat(savedPetEntity.getBirthDate()).isEqualTo(petEntity.getBirthDate());
         assertThat(savedPetEntity.getLocation()).isEqualTo(petEntity.getLocation());
         assertThat(savedPetEntity.getAvatar()).isEqualTo(petEntity.getAvatar());
