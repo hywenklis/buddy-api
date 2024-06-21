@@ -56,12 +56,38 @@ public final class PetSpecifications {
                 AgeRange ageRange = AgeRange.fromDescription(params.ageRange());
 
                 LocalDate today = LocalDate.now();
-                LocalDate minBirthDate = today.minusYears(ageRange.getMax());
-                LocalDate maxBirthDate = today.minusYears(ageRange.getMin() - 1);
+                LocalDate minBirthDate;
+                LocalDate maxBirthDate;
 
-                predicates.add(
-                        criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
-                );
+                switch (ageRange.getDescription()) {
+                    case "10+ anos" -> {
+                        minBirthDate = today.minusYears(ageRange.getMin());
+                        predicates.add(
+                                criteriaBuilder.lessThanOrEqualTo(root.get("birthDate"), minBirthDate)
+                        );
+                    }
+                    case "0-1 anos" -> {
+                        minBirthDate = today.minusYears(ageRange.getMax() + 1).plusDays(1);
+                        maxBirthDate = today.minusYears(ageRange.getMin()).plusDays(1).minusDays(1); // até o dia atual
+                        predicates.add(
+                                criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                        );
+                    }
+                    case "1-2 anos" -> {
+                        minBirthDate = today.minusYears(ageRange.getMax() + 1).plusDays(1);
+                        maxBirthDate = today.minusYears(ageRange.getMin()).plusDays(1).minusDays(1);
+                        predicates.add(
+                                criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                        );
+                    }
+                    default -> {
+                        minBirthDate = today.minusYears(ageRange.getMax() + 1).plusDays(1);
+                        maxBirthDate = today.minusYears(ageRange.getMin()).plusDays(1).minusDays(1);
+                        predicates.add(
+                                criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                        );
+                    }
+                }
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
