@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Species {
-    CAO("Cachorro"),
+    CAO("Cão"),
     GATO("Gato"),
     PASSARO("Pássaro"),
     REPTIL("Réptil"),
