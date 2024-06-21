@@ -6,7 +6,6 @@ import com.buddy.api.domains.enums.Species;
 import com.buddy.api.domains.enums.WeightRange;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,9 +23,6 @@ public final class PetSpecifications {
     public static Specification<PetEntity> withParams(PetSearchCriteriaRequest params) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            root.fetch("images", JoinType.LEFT);
-            query.distinct(true);
 
             addPredicateIfNotNull(predicates, params.id(),
                     value -> criteriaBuilder.equal(root.get("id"), value));
@@ -66,10 +62,6 @@ public final class PetSpecifications {
                 predicates.add(
                         criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
                 );
-            }
-
-            if (predicates.isEmpty()) {
-                return null;
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
