@@ -8,10 +8,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,24 +25,25 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Pet", description = "Endpoints related to pets")
 public class FindPetController {
 
-    private final FindPet service;
+    private final FindPet findPetService;
     private final PetMapperParamsResponse mapperResponse;
+    private final PagedResourcesAssembler<PetParamsResponse> pagedResourcesAssembler;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Get pets",
+            summary = "Get pets with pagination",
             description = "Get pets based on search criteria with pagination. "
                     + "You can provide various search parameters to filter the results."
     )
-    public Page<PetParamsResponse> findPetsBySearchParams(
+    public PagedModel<EntityModel<PetParamsResponse>> findPetsBySearchParams(
             @Parameter(description = "Search criteria for filtering pets")
             PetSearchCriteriaRequest petSearchCriteriaRequest,
             @Parameter(description = "Pagination information")
             Pageable pageable
     ) {
-        return service.findPets(petSearchCriteriaRequest, pageable)
-                .map(mapperResponse::mapToParamsResponse);
+        var petPage = findPetService.findPets(petSearchCriteriaRequest, pageable);
+        return pagedResourcesAssembler.toModel(petPage.map(mapperResponse::mapToParamsResponse));
     }
 
     @GetMapping("/all")
@@ -55,9 +57,9 @@ public class FindPetController {
             @Parameter(description = "Search criteria for filtering pets")
             PetSearchCriteriaRequest petSearchCriteriaRequest
     ) {
-        return service.findAllPets(petSearchCriteriaRequest)
+        return findPetService.findAllPets(petSearchCriteriaRequest)
                 .stream()
                 .map(mapperResponse::mapToParamsResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
