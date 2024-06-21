@@ -7,6 +7,7 @@ import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.pet.services.FindPet;
 import com.buddy.api.domains.specifications.PetSpecifications;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
@@ -38,6 +39,7 @@ public class FindPetImpl implements FindPet {
         var petEntities = petRepository.findAll(PetSpecifications.withParams(searchParams));
         petEntities.forEach(this::initializeProxies);
         return petEntities.stream()
+                .sorted(Comparator.comparing(PetEntity::getCreateDate))
                 .map(mapper::mapParamsToDto)
                 .toList();
     }
