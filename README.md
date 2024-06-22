@@ -2,7 +2,7 @@
 
 # 🐾 Buddy - backend
 
-Projeto de backend para o aplicativo de adoção de animais de estimação referente ao projeo integrador V-B do curso de análise de sistemas do CESMAC.
+Projeto de backend para o aplicativo de adoção de animais de estimação referente ao projeto integrador V-B do curso de análise de sistemas do CESMAC.
 
 #### Swagger:
 
