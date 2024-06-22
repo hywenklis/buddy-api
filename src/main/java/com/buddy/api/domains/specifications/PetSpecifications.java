@@ -63,28 +63,54 @@ public final class PetSpecifications {
                     case "10+ anos" -> {
                         minBirthDate = today.minusYears(ageRange.getMin());
                         predicates.add(
-                                criteriaBuilder.lessThanOrEqualTo(root.get("birthDate"), minBirthDate)
+                                criteriaBuilder.lessThanOrEqualTo(
+                                        root.get("birthDate"), minBirthDate
+                                )
                         );
                     }
                     case "0-1 anos" -> {
-                        minBirthDate = today.minusYears(ageRange.getMax() + 1).plusDays(1);
-                        maxBirthDate = today.minusYears(ageRange.getMin()).plusDays(1).minusDays(1); // até o dia atual
+                        minBirthDate = today.minusYears(ageRange.getMax());
+                        maxBirthDate = today;
                         predicates.add(
-                                criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                                criteriaBuilder.between(
+                                        root.get("birthDate"), minBirthDate, maxBirthDate
+                                )
                         );
                     }
                     case "1-2 anos" -> {
-                        minBirthDate = today.minusYears(ageRange.getMax() + 1).plusDays(1);
-                        maxBirthDate = today.minusYears(ageRange.getMin()).plusDays(1).minusDays(1);
+                        minBirthDate = today.minusYears(2).plusDays(1);
+                        maxBirthDate = today.minusYears(1);
                         predicates.add(
-                                criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                                criteriaBuilder.between(
+                                        root.get("birthDate"), minBirthDate, maxBirthDate
+                                )
                         );
                     }
-                    default -> {
-                        minBirthDate = today.minusYears(ageRange.getMax() + 1).plusDays(1);
-                        maxBirthDate = today.minusYears(ageRange.getMin()).plusDays(1).minusDays(1);
+                    case "2-3 anos" -> {
+                        minBirthDate = today.minusYears(3).plusDays(1);
+                        maxBirthDate = today.minusYears(2);
                         predicates.add(
-                                criteriaBuilder.between(root.get("birthDate"), minBirthDate, maxBirthDate)
+                                criteriaBuilder.between(
+                                        root.get("birthDate"), minBirthDate, maxBirthDate
+                                )
+                        );
+                    }
+                    case "3-5 anos" -> {
+                        minBirthDate = today.minusYears(5).plusDays(1);
+                        maxBirthDate = today.minusYears(3);
+                        predicates.add(
+                                criteriaBuilder.between(
+                                        root.get("birthDate"), minBirthDate, maxBirthDate
+                                )
+                        );
+                    }
+                    case "5-10 anos" -> {
+                        minBirthDate = today.minusYears(10).plusDays(1);
+                        maxBirthDate = today.minusYears(5);
+                        predicates.add(
+                                criteriaBuilder.between(
+                                        root.get("birthDate"), minBirthDate, maxBirthDate
+                                )
                         );
                     }
                 }
