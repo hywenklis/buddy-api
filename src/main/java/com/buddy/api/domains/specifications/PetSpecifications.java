@@ -113,6 +113,9 @@ public final class PetSpecifications {
                                 )
                         );
                     }
+                    default -> throw new IllegalArgumentException(
+                            "Unknown age range " + ageRange.getDescription()
+                    );
                 }
             }
 
