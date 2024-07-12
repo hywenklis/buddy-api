@@ -2,8 +2,25 @@
 
 # 🐾 Buddy - backend
 
-Projeto de backend para o aplicativo de adoção de animais de estimação referente ao projeto integrador V-B do curso de análise de sistemas do CESMAC.
+API para aplicação de adoção de animais de estimação.
 
 #### Swagger:
 
 https://buddy.propresto.app/api/swagger-ui/index.html#/
+
+## Motivo
+
+## Documentação
+
+## Como contribuir
+
+## Termos de Uso
+
+## Autor
+
+| [<img src="https://github.com/hywenklis.png?size=115" width=115><br><sub>@hywenklis</sub>](https://github.com/hywenklis) |
+|:------------------------------------------------------------------------------------------------------------------------:|
+
+## Pessoas que já contribuíram
+
+<a href="https://github.com/hywenklis/buddy-backend/graphs/contributors"><img src="https://contrib.rocks/image?repo=hywenklis/buddy-backend" /></a>
