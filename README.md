@@ -75,8 +75,8 @@ Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
     ```
 
 ## Termos de Uso
-
 Ao contribuir para este projeto, você concorda em seguir os termos e condições definidos no nosso código de conduta.
+>**Leia nosso Código de Conduta**([Código de Conduta](CODE_OF_CONDUCT.md))
 
 ## Autor
 
