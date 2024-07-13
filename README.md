@@ -84,5 +84,8 @@ Ao contribuir para este projeto, você concorda em seguir os termos e condiçõe
 |:------------------------------------------------------------------------------------------------------------------------:|
 
 ## Pessoas que já contribuíram
+<a href="https://github.com/hywenklis/buddy-backend/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hywenklis/buddy-backend" />
+</a>
 
-<a href="https://github.com/hywenklis/buddy-backend/graphs/contributors"><img src="https://contrib.rocks/image?repo=hywenklis/buddy-backend" /></a>
+Made with [contrib.rocks](https://contrib.rocks).
