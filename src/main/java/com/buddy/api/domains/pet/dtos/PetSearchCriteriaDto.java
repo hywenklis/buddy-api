@@ -8,6 +8,7 @@ import java.util.UUID;
 public record PetSearchCriteriaDto(UUID id,
                                    UUID shelterId,
                                    String name,
+                                   String avatar,
                                    String specie,
                                    String gender,
                                    LocalDate birthDate,

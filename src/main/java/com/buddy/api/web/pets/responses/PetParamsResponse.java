@@ -10,6 +10,7 @@ import lombok.Builder;
 public record PetParamsResponse(UUID id,
                                 UUID shelterId,
                                 String name,
+                                String avatar,
                                 String specie,
                                 String gender,
                                 LocalDate birthDate,

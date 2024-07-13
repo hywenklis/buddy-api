@@ -37,4 +37,3 @@ public class CreatePetController {
         return mapperResponse.mapToResponse();
     }
 }
-
