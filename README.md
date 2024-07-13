@@ -9,8 +9,7 @@
 [https://buddy.propresto.app/api/swagger-ui/index.html#/](https://buddy.propresto.app/api/swagger-ui/index.html#/)
 
 #### Página WEB:
-
-[https://buddy-front.vercel.app/](https://buddy-front.vercel.app/)
+Em migração...
 
 ## Motivo
 
