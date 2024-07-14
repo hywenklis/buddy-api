@@ -1,6 +1,6 @@
 ## Guia Completo para Contribuidores
 
-Caso você esteja lendo esta versão de README, você está pegando o projeto num estágio extremamente inicial, porém empolgante, pois há várias coisas a serem definidas. Então, caso queira contribuir, utilize as issues para entender quais pontos ainda não foram resolvidos, conversar conosco e contribuir.
+Caso você esteja lendo esta versão do README, você está pegando o projeto em um estágio extremamente inicial, mas empolgante, pois há várias coisas a serem definidas. Então, caso queira contribuir, utilize as issues para entender quais pontos ainda não foram resolvidos, conversar conosco e contribuir.
 
 Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
 
@@ -16,7 +16,8 @@ Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
      git clone https://github.com/<SEU_USUARIO>/buddy-backend.git
      ```
      *Substitua `<SEU_USUARIO>` pelo seu nome de usuário no GitHub.*
-3.  **Tipos de branchs:**
+
+3. **Tipos de branches:**
    - **main:** *Branch principal do projeto, onde o código estável é armazenado.*
    - **develop:** *Branch de desenvolvimento, onde as novas features são criadas e testadas.*
    - **feature:** *Branches criadas a partir da develop para implementação de novas features.*
@@ -26,9 +27,9 @@ Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
 4. **Crie uma branch para sua contribuição:**
    - Crie uma branch para cada feature ou correção que você for implementar. Por exemplo:
      ```bash
-     git checkout -b minha-feature
+     git checkout -b feature/minha-feature
      ```
-     *Substitua `minha-feature` pelo nome da sua branch. tenha em mente de sempre ter o prefixo do tipo de branchs ex: `feature/nome-relacionado`*
+     *Substitua `minha-feature` pelo nome da sua branch. Lembre-se de usar o prefixo correto, como `feature/nome-relacionado`.*
 
 5. **Implemente sua contribuição:**
    - Faça as alterações no código de acordo com sua feature ou correção.
@@ -41,7 +42,7 @@ Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
 6. **Envie sua branch para o GitHub:**
    - Envie sua branch para o seu fork remoto:
      ```bash
-     git push origin minha-feature
+     git push origin feature/minha-feature
      ```
 
 7. **Crie uma pull request:**
