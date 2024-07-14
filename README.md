@@ -4,12 +4,10 @@
 
 > API para aplicação de adoção de animais de estimação. Vamos ajudar animais a encontrar um lar?
 
-#### 🚀Swagger:
-
-[https://buddy.propresto.app/api/swagger-ui/index.html#/](https://buddy.propresto.app/api/swagger-ui/index.html#/)
-
-#### 🌐 Página WEB:
-Em migração...
+##
+#### 🚀Swagger: [clique aqui](https://buddy.propresto.app/api/swagger-ui/index.html#/)
+#### 🌐 Página WEB: [clique aqui](https://buddy-front.vercel.app/)
+##
 
 ## 💡 Motivo
 
