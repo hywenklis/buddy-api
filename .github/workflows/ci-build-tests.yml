@@ -74,9 +74,9 @@ jobs:
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
 
       - name: Create and push tag
-        if: github.repository == 'hywenklis/buddy-backend'
+        if: github.event_name == 'push' && contains(github.ref, 'refs/heads/')
         env:
-          PAT: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git fetch --prune --tags
           VERSION=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null)
@@ -102,5 +102,4 @@ jobs:
             echo "Updating $VERSION to $NEW_TAG"
             git tag $NEW_TAG
           fi
-          git remote set-url origin https://x-access-token:${PAT}@github.com/hywenklis/buddy-backend.git
           git push origin --tags
