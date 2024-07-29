@@ -18,7 +18,7 @@ jobs:
   build_and_test:
     name: Build and Test
     runs-on: ubuntu-latest
-    environment: pr-checks
+    environment: pr_checks
     permissions:
       actions: write
       contents: write
