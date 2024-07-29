@@ -1,52 +1,22 @@
-name: CI Pipeline
+name: CI Publish Results
 
 on:
-  push:
-    branches:
-      - master
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - master
-      - main
-      - develop
-      - 'release/*'
-      - 'hotfix/*'
+  workflow_run:
+    types: [ completed ]
+    workflows: [ CI Tests ]
 
 jobs:
-  build_and_test:
-    name: Build and Test
+  publish_results:
+    name: Publish Test Results
     runs-on: ubuntu-latest
     permissions:
       actions: write
-      contents: read
-      issues: read
-      checks: write
+      contents: write
+      issues: write
       pull-requests: write
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Use Gradle Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Build and test with Gradle wrapper
-        run: |
-          chmod +x gradlew
-          ./gradlew clean build test jacocoTestReport
+      - uses: actions/checkout@v4
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
