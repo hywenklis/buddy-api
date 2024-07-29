@@ -45,4 +45,3 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew clean build test jacocoTestReport
-

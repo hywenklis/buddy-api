@@ -2,8 +2,9 @@ name: CI Publish Results
 
 on:
   workflow_run:
-    types: [ completed ]
-    workflows: [ CI Tests ]
+    workflows: ["CI Tests"]
+    types:
+      - completed
 
 jobs:
   publish_results:
@@ -31,7 +32,7 @@ jobs:
         uses: madrapps/jacoco-report@v1.6.1
         continue-on-error: true
         with:
-          paths: ${{ github.workspace }}/**/build/reports/jacoco/test/*.xml,
+          paths: ${{ github.workspace }}/**/build/reports/jacoco/test/*.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
           min-coverage-changed-files: 80
