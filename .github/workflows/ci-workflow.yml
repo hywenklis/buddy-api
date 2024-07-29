@@ -1,15 +1,60 @@
-name: CI Publish Results
+name: CI Workflow
 
 on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+      - main
+      - develop
+      - 'release/*'
+      - 'hotfix/*'
   workflow_run:
-    workflows: ["CI Tests"]
+    workflows: ["CI Workflow"]
     types:
       - completed
 
 jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Use Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build and test with Gradle wrapper
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build test jacocoTestReport
+
   publish_results:
     name: Publish Test Results
+    needs: build_and_test
     runs-on: ubuntu-latest
+    if: github.event.forced == false  # Ensures it doesn't run for forced pushes
     permissions:
       actions: write
       contents: write
@@ -47,7 +92,7 @@ jobs:
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
 
       - name: Create and push tag
-        if: github.event_name == 'push' && contains(github.ref, 'refs/heads/')
+        if: github.event_name == 'push' && contains(github.ref, 'refs/heads/') && github.repository_owner == 'hywenklis'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
