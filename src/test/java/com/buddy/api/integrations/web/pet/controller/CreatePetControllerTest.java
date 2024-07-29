@@ -34,7 +34,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
-    @DisplayName("Should return not found if the shelter id does not exists")
+    @DisplayName("Should return not found if the shelter id does not exists in the database")
     void should_return_not_found_shelterId_not_exists() throws Exception {
         var request = createPetRequest(UUID.randomUUID());
 
