@@ -1,4 +1,11 @@
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=flat&logo=openjdk&logoColor=white)
+![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=flat&logo=spring&logoColor=white)
+[![codecov](https://codecov.io/gh/hywenklis/buddy-api/graph/badge.svg?token=LQ5ZANNWWN)](https://codecov.io/gh/hywenklis/buddy-api)
+![Build Status](https://github.com/hywenklis/buddy-api/actions/workflows/ci-build-tests.yml/badge.svg)
+![Dependabot Status](https://img.shields.io/badge/dependabot-active-brightgreen.svg)
+![GitHub](https://img.shields.io/github/license/hywenklis/buddy-api.svg)
+![GitHub contributors](https://img.shields.io/github/contributors/hywenklis/buddy-api.svg)
+![GitHub issues](https://img.shields.io/github/issues/hywenklis/buddy-api.svg)
 
 # 🐾 Buddy - API
 
