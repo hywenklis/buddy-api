@@ -1,4 +1,4 @@
-name: CI Workflow
+name: CI Pipeline
 
 on:
   push:
@@ -13,19 +13,17 @@ on:
       - develop
       - 'release/*'
       - 'hotfix/*'
-  workflow_run:
-    workflows: ["CI Workflow"]
-    types:
-      - completed
 
 jobs:
   build_and_test:
     name: Build and Test
     runs-on: ubuntu-latest
     permissions:
-      actions: read
-      contents: read
+      actions: write
+      contents: write
       issues: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout Code
@@ -49,21 +47,6 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew clean build test jacocoTestReport
-
-  publish_results:
-    name: Publish Test Results
-    needs: build_and_test
-    runs-on: ubuntu-latest
-    if: github.event.forced == false  # Ensures it doesn't run for forced pushes
-    permissions:
-      actions: write
-      contents: write
-      issues: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -92,7 +75,7 @@ jobs:
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
 
       - name: Create and push tag
-        if: github.event_name == 'push' && contains(github.ref, 'refs/heads/') && github.repository_owner == 'hywenklis'
+        if: github.event_name == 'push' && contains(github.ref, 'refs/heads/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
