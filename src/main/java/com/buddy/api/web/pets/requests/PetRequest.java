@@ -35,7 +35,9 @@ public record PetRequest(
         @NotBlank(message = "Description of mandatory pet")
         String description,
 
+        @NotBlank(message = "Avatar of mandatory pet")
         String avatar,
+
         List<PetImageRequest> images,
 
         @NotNull(message = "ShelterId of mandatory pet")

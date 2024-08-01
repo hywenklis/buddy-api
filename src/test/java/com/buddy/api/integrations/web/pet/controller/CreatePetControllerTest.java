@@ -216,4 +216,32 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
     }
+
+    @Test
+    @DisplayName("Should return bad request if avatar is not filled in")
+    void should_return_bad_request_avatar_not_filled() throws Exception {
+        var shelter = shelterComponent.createShelterNoPets();
+
+        var request = PetBuilder.createPetRequest(
+                randomAlphabetic(10),
+                randomAlphabetic(10),
+                randomAlphabetic(10),
+                Double.valueOf(randomNumeric(1)),
+                randomAlphabetic(10),
+                null,
+                List.of(),
+                shelter.getId()
+        );
+
+        mockMvc
+                .perform(post("/v1/pets/register")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("avatar"))
+                .andExpect(jsonPath("$.errors[0].message").value("Avatar of mandatory pet"))
+                .andExpect(jsonPath("$.errors[0].httpStatus").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.errors[0].errorCode").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.errors[0].timestamp").isNotEmpty());
+    }
 }
