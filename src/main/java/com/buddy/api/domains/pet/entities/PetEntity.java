@@ -44,6 +44,8 @@ public class PetEntity {
     private String location;
     private Double weight;
     private String description;
+
+    @Column(nullable = false)
     private String avatar;
 
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
