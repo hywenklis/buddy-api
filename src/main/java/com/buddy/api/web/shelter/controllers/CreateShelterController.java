@@ -29,8 +29,8 @@ public class CreateShelterController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-            summary = "Register shelter",
-            description = "Register shelter with their appropriate information"
+        summary = "Register shelter",
+        description = "Register shelter with their appropriate information"
     )
     public ShelterResponse registration(@RequestBody @Valid ShelterRequest shelterRequest) {
         service.create(mapperRequest.mapToDto(shelterRequest));
