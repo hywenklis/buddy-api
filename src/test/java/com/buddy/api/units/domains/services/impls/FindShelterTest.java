@@ -38,20 +38,20 @@ class FindShelterTest extends UnitTestAbstract {
         var cpfResponsible = randomAlphabetic(10);
 
         var shelterDto = createShelterDto(
-                randomAlphabetic(10),
-                cpfResponsible,
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                null);
+            randomAlphabetic(10),
+            cpfResponsible,
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            null);
 
         var shelterEntity = createShelterEntity(shelterDto);
 
         when(shelterDomainMapper.mapToDto(shelterEntity)).thenReturn(shelterDto);
         when(shelterRepository.findShelterByCpfResponsible(cpfResponsible))
-                .thenReturn(Optional.of(shelterEntity));
+            .thenReturn(Optional.of(shelterEntity));
 
         // When
         var shelterByCpfResponsible = findShelter.findShelterByCpfResponsible(cpfResponsible);
@@ -61,13 +61,13 @@ class FindShelterTest extends UnitTestAbstract {
         assertThat(shelterByCpfResponsible.get().id()).isEqualTo(shelterDto.id());
 
         assertThat(shelterByCpfResponsible.get().nameShelter())
-                .isEqualTo(shelterDto.nameShelter());
+            .isEqualTo(shelterDto.nameShelter());
 
         assertThat(shelterByCpfResponsible.get().nameResponsible())
-                .isEqualTo(shelterDto.nameResponsible());
+            .isEqualTo(shelterDto.nameResponsible());
 
         assertThat(shelterByCpfResponsible.get().cpfResponsible())
-                .isEqualTo(shelterDto.cpfResponsible());
+            .isEqualTo(shelterDto.cpfResponsible());
 
         assertThat(shelterByCpfResponsible.get().email()).isEqualTo(shelterDto.email());
         assertThat(shelterByCpfResponsible.get().address()).isEqualTo(shelterDto.address());
@@ -87,14 +87,14 @@ class FindShelterTest extends UnitTestAbstract {
         var email = randomAlphabetic(10);
 
         var shelterDto = createShelterDto(
-                randomAlphabetic(10),
-                email,
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                null);
+            randomAlphabetic(10),
+            email,
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            null);
 
         var shelterEntity = createShelterEntity(shelterDto);
 
@@ -109,13 +109,13 @@ class FindShelterTest extends UnitTestAbstract {
         assertThat(shelterByEmail.get().id()).isEqualTo(shelterDto.id());
 
         assertThat(shelterByEmail.get().nameShelter())
-                .isEqualTo(shelterDto.nameShelter());
+            .isEqualTo(shelterDto.nameShelter());
 
         assertThat(shelterByEmail.get().nameResponsible())
-                .isEqualTo(shelterDto.nameResponsible());
+            .isEqualTo(shelterDto.nameResponsible());
 
         assertThat(shelterByEmail.get().cpfResponsible())
-                .isEqualTo(shelterDto.cpfResponsible());
+            .isEqualTo(shelterDto.cpfResponsible());
 
         assertThat(shelterByEmail.get().email()).isEqualTo(shelterDto.email());
         assertThat(shelterByEmail.get().address()).isEqualTo(shelterDto.address());
@@ -134,7 +134,7 @@ class FindShelterTest extends UnitTestAbstract {
         var cpfResponsible = randomAlphabetic(10);
 
         when(shelterRepository.findShelterByCpfResponsible(cpfResponsible))
-                .thenReturn(Optional.empty());
+            .thenReturn(Optional.empty());
 
         // When
         var shelter = findShelter.findShelterByCpfResponsible(cpfResponsible);

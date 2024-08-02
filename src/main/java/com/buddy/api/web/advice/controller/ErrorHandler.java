@@ -17,13 +17,13 @@ public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(
-            NotFoundException ex) {
+        NotFoundException ex) {
         ErrorDetails error = new ErrorDetails(
-                ex.getFieldName(),
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND,
-                HttpStatus.NOT_FOUND.value(),
-                LocalDateTime.now());
+            ex.getFieldName(),
+            ex.getMessage(),
+            HttpStatus.NOT_FOUND,
+            HttpStatus.NOT_FOUND.value(),
+            LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(List.of(error)));
     }
 
@@ -36,13 +36,13 @@ public class ErrorHandler {
 
     private List<ErrorDetails> mapValidationErrors(BindingResult bindingResult) {
         return bindingResult.getFieldErrors()
-                .stream()
-                .map(fieldError -> new ErrorDetails(
-                        fieldError.getField(),
-                        fieldError.getDefaultMessage(),
-                        HttpStatus.BAD_REQUEST,
-                        HttpStatus.BAD_REQUEST.value(),
-                        LocalDateTime.now()))
-                .toList();
+            .stream()
+            .map(fieldError -> new ErrorDetails(
+                fieldError.getField(),
+                fieldError.getDefaultMessage(),
+                HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()))
+            .toList();
     }
 }

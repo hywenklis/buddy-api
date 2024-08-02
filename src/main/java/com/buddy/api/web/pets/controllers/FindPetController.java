@@ -32,15 +32,15 @@ public class FindPetController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Get pets with pagination",
-            description = "Get pets based on search criteria with pagination. "
-                    + "You can provide various search parameters to filter the results."
+        summary = "Get pets with pagination",
+        description = "Get pets based on search criteria with pagination. "
+            + "You can provide various search parameters to filter the results."
     )
     public PagedModel<EntityModel<PetParamsResponse>> findPetsBySearchParams(
-            @Parameter(description = "Search criteria for filtering pets")
-            PetSearchCriteriaRequest petSearchCriteriaRequest,
-            @Parameter(description = "Pagination information")
-            Pageable pageable
+        @Parameter(description = "Search criteria for filtering pets")
+        PetSearchCriteriaRequest petSearchCriteriaRequest,
+        @Parameter(description = "Pagination information")
+        Pageable pageable
     ) {
         var petPage = findPetService.findPets(petSearchCriteriaRequest, pageable);
         return pagedResourcesAssembler.toModel(petPage.map(mapperResponse::mapToParamsResponse));
@@ -49,17 +49,17 @@ public class FindPetController {
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
     @Operation(
-            summary = "Get all pets",
-            description = "Get all pets based on search criteria without pagination. "
-                    + "You can provide various search parameters to filter the results."
+        summary = "Get all pets",
+        description = "Get all pets based on search criteria without pagination. "
+            + "You can provide various search parameters to filter the results."
     )
     public List<PetParamsResponse> findAllPetsBySearchParams(
-            @Parameter(description = "Search criteria for filtering pets")
-            PetSearchCriteriaRequest petSearchCriteriaRequest
+        @Parameter(description = "Search criteria for filtering pets")
+        PetSearchCriteriaRequest petSearchCriteriaRequest
     ) {
         return findPetService.findAllPets(petSearchCriteriaRequest)
-                .stream()
-                .map(mapperResponse::mapToParamsResponse)
-                .toList();
+            .stream()
+            .map(mapperResponse::mapToParamsResponse)
+            .toList();
     }
 }

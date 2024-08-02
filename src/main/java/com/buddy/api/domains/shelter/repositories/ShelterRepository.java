@@ -13,4 +13,3 @@ public interface ShelterRepository extends JpaRepository<ShelterEntity, UUID> {
 
     Optional<ShelterEntity> findByEmail(final String email);
 }
-

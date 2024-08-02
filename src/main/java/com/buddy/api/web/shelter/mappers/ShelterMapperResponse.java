@@ -1,6 +1,5 @@
 package com.buddy.api.web.shelter.mappers;
 
-import com.buddy.api.domains.shelter.dtos.ShelterDto;
 import com.buddy.api.web.shelter.responses.ShelterResponse;
 import org.mapstruct.Mapper;
 

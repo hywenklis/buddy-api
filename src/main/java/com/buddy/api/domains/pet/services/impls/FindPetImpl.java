@@ -39,9 +39,9 @@ public class FindPetImpl implements FindPet {
         var petEntities = petRepository.findAll(PetSpecifications.withParams(searchParams));
         petEntities.forEach(this::initializeProxies);
         return petEntities.stream()
-                .sorted(Comparator.comparing(PetEntity::getCreateDate))
-                .map(mapper::mapParamsToDto)
-                .toList();
+            .sorted(Comparator.comparing(PetEntity::getCreateDate))
+            .map(mapper::mapParamsToDto)
+            .toList();
     }
 
     private void initializeProxies(PetEntity pet) {

@@ -10,34 +10,35 @@ import lombok.Builder;
 
 @Builder
 public record PetRequest(
-        @Schema(description = "Name of the pet", example = "Buddy")
-        @NotBlank(message = "Name of mandatory pet")
-        String name,
+    @Schema(description = "Name of the pet", example = "Buddy")
+    @NotBlank(message = "Name of mandatory pet")
+    String name,
 
-        @Schema(description = "Species of the pet",
-                example = "Cachorro, Gato, Pássaro, Peixe, Réptil")
-        @NotBlank(message = "Specie of mandatory pet")
-        String specie,
+    @Schema(description = "Species of the pet",
+        example = "Cachorro, Gato, Pássaro, Peixe, Réptil")
+    @NotBlank(message = "Specie of mandatory pet")
+    String specie,
 
-        @Schema(description = "Gender of the pet", example = "Macho, Fêmea")
-        @NotBlank(message = "Gender of mandatory pet")
-        String gender,
+    @Schema(description = "Gender of the pet", example = "Macho, Fêmea")
+    @NotBlank(message = "Gender of mandatory pet")
+    String gender,
 
-        @Schema(description = "Birth date of the pet", example = "2021-01-01")
-        LocalDate birthDate,
+    @Schema(description = "Birth date of the pet", example = "2021-01-01")
+    LocalDate birthDate,
 
-        @Schema(description = "Location of the pet", example = "Maceió, Alagoas")
-        String location,
+    @Schema(description = "Location of the pet", example = "Maceió, Alagoas")
+    String location,
 
-        @NotNull(message = "Weight of mandatory pet")
-        Double weight,
+    @NotNull(message = "Weight of mandatory pet")
+    Double weight,
 
-        @NotBlank(message = "Description of mandatory pet")
-        String description,
+    @NotBlank(message = "Description of mandatory pet")
+    String description,
 
-        String avatar,
-        List<PetImageRequest> images,
+    String avatar,
+    List<PetImageRequest> images,
 
-        @NotNull(message = "ShelterId of mandatory pet")
-        UUID shelterId
-) {}
+    @NotNull(message = "ShelterId of mandatory pet")
+    UUID shelterId
+) {
+}
