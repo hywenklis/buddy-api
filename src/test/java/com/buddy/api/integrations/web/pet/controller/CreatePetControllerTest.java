@@ -41,8 +41,8 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
-    @DisplayName("Should return not found if there is no shelter id passed in the request")
-    void should_return_not_found() throws Exception {
+    @DisplayName("Should return not found if the shelter id does not exists in the database")
+    void should_return_not_found_shelterId_not_exists() throws Exception {
         var request = createPetRequest(UUID.randomUUID());
 
         mockMvc
