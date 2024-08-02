@@ -5,4 +5,3 @@ public enum AdoptionStatus {
     APPROVED,
     REJECTED
 }
-

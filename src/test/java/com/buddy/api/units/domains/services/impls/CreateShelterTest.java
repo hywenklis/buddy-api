@@ -31,7 +31,7 @@ class CreateShelterTest extends UnitTestAbstract {
 
     @Test
     @DisplayName("Should return success"
-            + "when registering an shelter that does not exist in the database")
+        + "when registering an shelter that does not exist in the database")
     void save_shelter_success() {
 
         // Given

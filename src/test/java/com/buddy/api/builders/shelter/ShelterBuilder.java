@@ -23,22 +23,22 @@ public class ShelterBuilder {
                                                       String avatar
     ) {
         return ShelterRequest.builder()
-                .nameShelter(nameShelter)
-                .nameResponsible(nameResponsible)
-                .cpfResponsible(cpfResponsible)
-                .email(email)
-                .avatar(avatar)
-                .build();
+            .nameShelter(nameShelter)
+            .nameResponsible(nameResponsible)
+            .cpfResponsible(cpfResponsible)
+            .email(email)
+            .avatar(avatar)
+            .build();
     }
 
     public static ShelterRequest createShelterRequest() {
         return ShelterRequest.builder()
-                .nameShelter(randomAlphabetic(10))
-                .nameResponsible(randomAlphabetic(10))
-                .cpfResponsible(generateValidCpf())
-                .email(generateValidEmail())
-                .avatar(randomAlphabetic(10))
-                .build();
+            .nameShelter(randomAlphabetic(10))
+            .nameResponsible(randomAlphabetic(10))
+            .cpfResponsible(generateValidCpf())
+            .email(generateValidEmail())
+            .avatar(randomAlphabetic(10))
+            .build();
     }
 
     public static ShelterDto createShelterDto(String nameShelter,
@@ -50,28 +50,28 @@ public class ShelterBuilder {
                                               String avatar,
                                               List<PetDto> pets) {
         return ShelterDto.builder()
-                .nameShelter(nameShelter)
-                .nameResponsible(nameResponsible)
-                .cpfResponsible(cpfResponsible)
-                .address(address)
-                .phoneNumber(phoneNumber)
-                .email(email)
-                .avatar(avatar)
-                .pets(pets)
-                .build();
+            .nameShelter(nameShelter)
+            .nameResponsible(nameResponsible)
+            .cpfResponsible(cpfResponsible)
+            .address(address)
+            .phoneNumber(phoneNumber)
+            .email(email)
+            .avatar(avatar)
+            .pets(pets)
+            .build();
     }
 
     public static ShelterDto createShelterDto() {
         return ShelterDto.builder()
-                .nameShelter(randomAlphabetic(10))
-                .nameResponsible(randomAlphabetic(10))
-                .cpfResponsible(randomAlphabetic(10))
-                .address(randomAlphabetic(10))
-                .phoneNumber(randomAlphabetic(10))
-                .email(randomAlphabetic(10))
-                .avatar(randomAlphabetic(10))
-                .pets(List.of())
-                .build();
+            .nameShelter(randomAlphabetic(10))
+            .nameResponsible(randomAlphabetic(10))
+            .cpfResponsible(randomAlphabetic(10))
+            .address(randomAlphabetic(10))
+            .phoneNumber(randomAlphabetic(10))
+            .email(randomAlphabetic(10))
+            .avatar(randomAlphabetic(10))
+            .pets(List.of())
+            .build();
     }
 
     public static ShelterEntity createShelterEntity(String nameShelter,
@@ -83,65 +83,65 @@ public class ShelterBuilder {
                                                     String avatar,
                                                     List<PetEntity> pets) {
         return ShelterEntity.builder()
-                .id(UUID.randomUUID())
-                .nameShelter(nameShelter)
-                .nameResponsible(nameResponsible)
-                .cpfResponsible(cpfResponsible)
-                .address(address)
-                .phoneNumber(phoneNumber)
-                .email(email)
-                .avatar(avatar)
-                .pets(pets)
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
+            .id(UUID.randomUUID())
+            .nameShelter(nameShelter)
+            .nameResponsible(nameResponsible)
+            .cpfResponsible(cpfResponsible)
+            .address(address)
+            .phoneNumber(phoneNumber)
+            .email(email)
+            .avatar(avatar)
+            .pets(pets)
+            .createDate(LocalDateTime.now())
+            .updateDate(LocalDateTime.now())
+            .build();
     }
 
     public static ShelterEntity createShelterEntity() {
         return ShelterEntity.builder()
-                .id(UUID.randomUUID())
-                .nameShelter(randomAlphabetic(10))
-                .nameResponsible(randomAlphabetic(10))
-                .cpfResponsible(generateValidCpf())
-                .address(randomAlphabetic(10))
-                .phoneNumber(randomAlphabetic(10))
-                .email(generateValidEmail())
-                .avatar(randomAlphabetic(10))
-                .pets(List.of(PetBuilder.createPetEntity()))
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
+            .id(UUID.randomUUID())
+            .nameShelter(randomAlphabetic(10))
+            .nameResponsible(randomAlphabetic(10))
+            .cpfResponsible(generateValidCpf())
+            .address(randomAlphabetic(10))
+            .phoneNumber(randomAlphabetic(10))
+            .email(generateValidEmail())
+            .avatar(randomAlphabetic(10))
+            .pets(List.of(PetBuilder.createPetEntity()))
+            .createDate(LocalDateTime.now())
+            .updateDate(LocalDateTime.now())
+            .build();
     }
 
     public static ShelterEntity createShelterEntity(final ShelterDto shelterDto) {
         return ShelterEntity.builder()
-                .id(UUID.randomUUID())
-                .nameShelter(shelterDto.nameShelter())
-                .nameResponsible(shelterDto.nameResponsible())
-                .cpfResponsible(shelterDto.cpfResponsible())
-                .address(shelterDto.address())
-                .phoneNumber(shelterDto.phoneNumber())
-                .email(shelterDto.email())
-                .avatar(shelterDto.avatar())
-                .pets(List.of())
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
+            .id(UUID.randomUUID())
+            .nameShelter(shelterDto.nameShelter())
+            .nameResponsible(shelterDto.nameResponsible())
+            .cpfResponsible(shelterDto.cpfResponsible())
+            .address(shelterDto.address())
+            .phoneNumber(shelterDto.phoneNumber())
+            .email(shelterDto.email())
+            .avatar(shelterDto.avatar())
+            .pets(List.of())
+            .createDate(LocalDateTime.now())
+            .updateDate(LocalDateTime.now())
+            .build();
     }
 
     public static ShelterEntity createShelterEntityNoPets() {
         return ShelterEntity.builder()
-                .id(UUID.randomUUID())
-                .nameShelter(randomAlphabetic(10))
-                .nameResponsible(randomAlphabetic(10))
-                .cpfResponsible(generateValidCpf())
-                .address(randomAlphabetic(10))
-                .phoneNumber(randomAlphabetic(10))
-                .email(generateValidEmail())
-                .avatar(randomAlphabetic(10))
-                .pets(List.of())
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
+            .id(UUID.randomUUID())
+            .nameShelter(randomAlphabetic(10))
+            .nameResponsible(randomAlphabetic(10))
+            .cpfResponsible(generateValidCpf())
+            .address(randomAlphabetic(10))
+            .phoneNumber(randomAlphabetic(10))
+            .email(generateValidEmail())
+            .avatar(randomAlphabetic(10))
+            .pets(List.of())
+            .createDate(LocalDateTime.now())
+            .updateDate(LocalDateTime.now())
+            .build();
     }
 }

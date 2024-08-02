@@ -61,8 +61,8 @@ class CreatePetTest extends UnitTestAbstract {
         final var petDto = createPetDto(shelterEntity.getId());
         final var petEntity = createPetEntityWithoutImages(petDto, shelterEntity);
         final var petImageEntity = createPetImageEntity(
-                petDto.images().getFirst().imageUrl(),
-                petEntity
+            petDto.images().getFirst().imageUrl(),
+            petEntity
         );
 
         petEntity.setImages(List.of(petImageEntity));
@@ -105,8 +105,8 @@ class CreatePetTest extends UnitTestAbstract {
 
         // When / Then
         assertThatThrownBy(() -> createPet.create(petDto))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage("Shelter not found");
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Shelter not found");
 
         verify(petRepository, never()).save(any());
     }
@@ -160,13 +160,13 @@ class CreatePetTest extends UnitTestAbstract {
         final var petEntity = createPetEntity(petDto, shelterEntity, new ArrayList<>());
 
         final var petImageEntity1 = createPetImageEntity(
-                petDto.images().get(0).imageUrl(),
-                petEntity
+            petDto.images().get(0).imageUrl(),
+            petEntity
         );
 
         final var petImageEntity2 = createPetImageEntity(
-                petDto.images().get(1).imageUrl(),
-                petEntity
+            petDto.images().get(1).imageUrl(),
+            petEntity
         );
 
         petEntity.setImages(List.of(petImageEntity1, petImageEntity2));
@@ -199,7 +199,7 @@ class CreatePetTest extends UnitTestAbstract {
 
     @Test
     @DisplayName("Should return success when "
-           + "registering multiple pets to the same shelter")
+        + "registering multiple pets to the same shelter")
     void save_multiple_pets_success() {
 
         // Given
@@ -215,7 +215,7 @@ class CreatePetTest extends UnitTestAbstract {
         when(mapper.mapToEntity(petDto1)).thenReturn(petEntity1);
         when(mapper.mapToEntity(petDto2)).thenReturn(petEntity2);
         when(shelterRepository.findById(petDto1.shelterId()))
-                .thenReturn(Optional.of(shelterEntity));
+            .thenReturn(Optional.of(shelterEntity));
         when(petRepository.save(petEntity1)).thenReturn(petEntity1);
         when(petRepository.save(petEntity2)).thenReturn(petEntity2);
 
