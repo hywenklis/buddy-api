@@ -26,8 +26,8 @@ public class UniqueValidator implements ConstraintValidator<Unique, String> {
         type = constraintAnnotation.value();
 
         repositoryMap = Map.of(
-                UniqueType.CPF, findShelter::findShelterByCpfResponsible,
-                UniqueType.EMAIL, findShelter::findShelterByEmail
+            UniqueType.CPF, findShelter::findShelterByCpfResponsible,
+            UniqueType.EMAIL, findShelter::findShelterByEmail
         );
     }
 

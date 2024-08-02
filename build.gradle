@@ -91,7 +91,6 @@ springBoot {
 }
 
 tasks.named('test') {
-    dependsOn checkstyleMain, checkstyleTest, pmdMain, pmdTest, spotbugsMain, spotbugsTest
     useJUnitPlatform()
     finalizedBy("jacocoTestReport")
 }
@@ -105,7 +104,7 @@ tasks.jacocoTestReport {
 }
 
 checkstyle {
-    toolVersion = '10.12.7'
+    toolVersion = '10.17.0'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     maxWarnings = 0
     showViolations = true

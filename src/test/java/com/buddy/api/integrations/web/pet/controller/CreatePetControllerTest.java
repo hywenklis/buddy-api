@@ -33,11 +33,11 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var request = createPetRequest(shelter.getId());
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("successfully created"));
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.message").value("successfully created"));
     }
 
     @Test
@@ -46,15 +46,15 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var request = createPetRequest(UUID.randomUUID());
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("shelterId"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Shelter not found"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value("NOT_FOUND"))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.NOT_FOUND.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("shelterId"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Shelter not found"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.NOT_FOUND.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.NOT_FOUND.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 
     @Test
@@ -63,26 +63,26 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-                null,
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                Double.valueOf(randomNumeric(1)),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                List.of(),
-                shelter.getId()
+            null,
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            Double.valueOf(randomNumeric(1)),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            List.of(),
+            shelter.getId()
         );
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("name"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Name of mandatory pet"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("name"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Name of mandatory pet"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 
     @Test
@@ -91,26 +91,26 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-                randomAlphabetic(10),
-                null,
-                randomAlphabetic(10),
-                Double.valueOf(randomNumeric(1)),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                List.of(),
-                shelter.getId()
+            randomAlphabetic(10),
+            null,
+            randomAlphabetic(10),
+            Double.valueOf(randomNumeric(1)),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            List.of(),
+            shelter.getId()
         );
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("specie"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Specie of mandatory pet"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("specie"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Specie of mandatory pet"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 
     @Test
@@ -119,26 +119,26 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                null,
-                Double.valueOf(randomNumeric(1)),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                List.of(),
-                shelter.getId()
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            null,
+            Double.valueOf(randomNumeric(1)),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            List.of(),
+            shelter.getId()
         );
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("gender"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Gender of mandatory pet"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("gender"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Gender of mandatory pet"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 
     @Test
@@ -147,26 +147,26 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                null,
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                List.of(),
-                shelter.getId()
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            null,
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            List.of(),
+            shelter.getId()
         );
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("weight"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Weight of mandatory pet"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("weight"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Weight of mandatory pet"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 
     @Test
@@ -175,51 +175,51 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                Double.valueOf(randomNumeric(1)),
-                null,
-                randomAlphabetic(10),
-                List.of(),
-                shelter.getId()
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            Double.valueOf(randomNumeric(1)),
+            null,
+            randomAlphabetic(10),
+            List.of(),
+            shelter.getId()
         );
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("description"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Description of mandatory pet"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("description"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Description of mandatory pet"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 
     @Test
     @DisplayName("Should return bad request if shelterId is not filled in")
     void should_return_bad_request_shelterId_not_filled() throws Exception {
         var request = PetBuilder.createPetRequest(
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                Double.valueOf(randomNumeric(1)),
-                randomAlphabetic(10),
-                randomAlphabetic(10),
-                List.of(),
-                null
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            Double.valueOf(randomNumeric(1)),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            List.of(),
+            null
         );
 
         mockMvc
-                .perform(post(PET_REGISTER_URL)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(ERROR_FIELD_PATH).value("shelterId"))
-                .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("ShelterId of mandatory pet"))
-                .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST))
-                .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+            .perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("shelterId"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("ShelterId of mandatory pet"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
     }
 }

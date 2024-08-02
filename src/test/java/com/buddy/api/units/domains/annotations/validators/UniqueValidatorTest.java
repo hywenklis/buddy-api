@@ -25,7 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 
-
 class UniqueValidatorTest extends UnitTestAbstract {
 
     @Mock
@@ -99,22 +98,22 @@ class UniqueValidatorTest extends UnitTestAbstract {
 
     private static Stream<Arguments> provideNullOrEmptyValues() {
         return Stream.of(
-                Arguments.of((String) null),
-                Arguments.of("")
+            Arguments.of((String) null),
+            Arguments.of("")
         );
     }
 
     private static Stream<Arguments> provideNonUniqueValues() {
         return Stream.of(
-                Arguments.of(CPF, "nonUniqueCpf"),
-                Arguments.of(EMAIL, "nonUniqueEmail")
+            Arguments.of(CPF, "nonUniqueCpf"),
+            Arguments.of(EMAIL, "nonUniqueEmail")
         );
     }
 
     private static Stream<Arguments> provideUniqueValues() {
         return Stream.of(
-                Arguments.of(CPF, "uniqueCpf"),
-                Arguments.of(EMAIL, "uniqueEmail")
+            Arguments.of(CPF, "uniqueCpf"),
+            Arguments.of(EMAIL, "uniqueEmail")
         );
     }
 
@@ -124,10 +123,10 @@ class UniqueValidatorTest extends UnitTestAbstract {
                                       ShelterDto shelterDtoByEmail) {
         if (type == CPF) {
             when(findShelter.findShelterByCpfResponsible(nonUniqueValue)).thenReturn(
-                    Optional.of(shelterDtoByCpf));
+                Optional.of(shelterDtoByCpf));
         } else if (type == EMAIL) {
             when(findShelter.findShelterByEmail(nonUniqueValue)).thenReturn(
-                    Optional.of(shelterDtoByEmail));
+                Optional.of(shelterDtoByEmail));
         }
     }
 

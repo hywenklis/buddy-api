@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PetRepository extends JpaRepository<PetEntity, UUID>,
-        JpaSpecificationExecutor<PetEntity> {
+    JpaSpecificationExecutor<PetEntity> {
 
     @EntityGraph(attributePaths = {"images", "shelter"})
     List<PetEntity> findAll(Specification<PetEntity> spec);
