@@ -19,16 +19,16 @@ public class PetComponent {
     }
 
     public PetEntity createPet(final String name,
-                                   final String specie,
-                                   final String gender,
-                                   final Double weight,
-                                   final String description,
-                                   final String avatar,
-                                   final List<PetImageEntity> images,
-                                   final ShelterEntity shelter
+                               final String specie,
+                               final String gender,
+                               final Double weight,
+                               final String description,
+                               final String avatar,
+                               final List<PetImageEntity> images,
+                               final ShelterEntity shelter
     ) {
         return petRepository.save(createPetEntity(
-                name, specie, gender, weight, description, avatar, images, shelter
+            name, specie, gender, weight, description, avatar, images, shelter
         ));
     }
 

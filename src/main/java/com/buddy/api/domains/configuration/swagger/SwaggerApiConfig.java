@@ -21,19 +21,19 @@ public class SwaggerApiConfig {
     @Bean
     public OpenAPI swaggerApi() {
         return new OpenAPI()
-                .components(new Components())
-                .info(new Info()
-                        .title("Microservice " + " - [" + buildProperties.getName() + "]")
-                        .description(
-                                "Artifact: " + buildProperties.getArtifact()
-                                        + " | Timestamp of the Build: "
-                                        + buildProperties.getTime().atZone(ZoneId.systemDefault()))
-                        .version(buildProperties.getVersion())
-                        .license(getLicense()));
+            .components(new Components())
+            .info(new Info()
+                .title("Microservice " + " - [" + buildProperties.getName() + "]")
+                .description(
+                    "Artifact: " + buildProperties.getArtifact()
+                        + " | Timestamp of the Build: "
+                        + buildProperties.getTime().atZone(ZoneId.systemDefault()))
+                .version(buildProperties.getVersion())
+                .license(getLicense()));
     }
 
     private License getLicense() {
         return new License()
-                .name(String.format("%s developed by hywenklis", buildProperties.getName()));
+            .name(String.format("%s developed by hywenklis", buildProperties.getName()));
     }
 }

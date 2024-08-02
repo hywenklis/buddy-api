@@ -28,15 +28,15 @@ public class ShelterComponent {
                               final List<PetEntity> pets
     ) {
         shelterRepository.save(createShelterEntity(
-                        nameShelter,
-                        nameResponsible,
-                        cpfResponsible,
-                        email,
-                        address,
-                        phoneNumber,
-                        avatar,
-                        pets
-                )
+                nameShelter,
+                nameResponsible,
+                cpfResponsible,
+                email,
+                address,
+                phoneNumber,
+                avatar,
+                pets
+            )
         );
     }
 

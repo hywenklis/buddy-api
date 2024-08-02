@@ -4,5 +4,6 @@ import lombok.Builder;
 
 @Builder
 public record PetImageRequest(
-        String imageUrl
-) {}
+    String imageUrl
+) {
+}

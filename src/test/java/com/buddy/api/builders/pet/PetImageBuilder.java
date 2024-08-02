@@ -25,19 +25,19 @@ public class PetImageBuilder {
 
     public static PetImageEntity createPetImageEntityCompleted() {
         return PetImageEntity.builder()
-                .id(UUID.randomUUID())
-                .imageUrl(randomAlphabetic(10))
-                .pet(PetBuilder.createPetEntity())
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
+            .id(UUID.randomUUID())
+            .imageUrl(randomAlphabetic(10))
+            .pet(PetBuilder.createPetEntity())
+            .createDate(LocalDateTime.now())
+            .updateDate(LocalDateTime.now())
+            .build();
     }
 
     public static PetImageEntity createPetImageEntity(String imageUrl, PetEntity petEntity) {
         return PetImageEntity.builder()
-                .id(UUID.randomUUID())
-                .imageUrl(imageUrl)
-                .pet(petEntity)
-                .build();
+            .id(UUID.randomUUID())
+            .imageUrl(imageUrl)
+            .pet(petEntity)
+            .build();
     }
 }

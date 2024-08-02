@@ -29,8 +29,8 @@ public class CreatePetController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-            summary = "Register pet",
-            description = "Register pet with their appropriate information"
+        summary = "Register pet",
+        description = "Register pet with their appropriate information"
     )
     public PetResponse registration(@RequestBody @Valid PetRequest petRequest) {
         service.create(mapperRequest.mapToDto(petRequest));
