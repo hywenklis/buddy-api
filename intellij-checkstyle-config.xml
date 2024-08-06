@@ -1,0 +1,7 @@
+<component name="CheckStyle-IDEA">
+    <option name="configuration">
+        <list>
+            <option name="Local file" value="$PROJECT_DIR$/config/checkstyle/checkstyle.xml" />
+        </list>
+    </option>
+</component>

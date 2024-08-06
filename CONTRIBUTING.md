@@ -16,6 +16,7 @@ Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
      git clone https://github.com/<SEU_USUARIO>/buddy-backend.git
      ```
      *Substitua `<SEU_USUARIO>` pelo seu nome de usuário no GitHub.*
+   - > **Importante** [Configurando CheckStyle no projeto](CHECKSTYLE_SETUP.md)
 
 3. **Tipos de branches:**
    - **main:** *Branch principal do projeto, onde o código estável é armazenado.*
