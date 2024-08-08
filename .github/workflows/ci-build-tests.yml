@@ -6,7 +6,7 @@ on:
       - master
       - main
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [opened, synchronize, reopened, closed]
     branches:
       - master
       - main
@@ -133,8 +133,13 @@ jobs:
           fi
           git push origin --tags
 
+  deploy:
+    name: Deploy to Jenkins
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    if: github.event.pull_request.merged == true && github.base_ref == 'main' && success()
+    steps:
       - name: "Deploy to Jenkins"
-        if: github.ref == 'refs/heads/main'
         run: |
           curl -X POST "${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB }}/buildWithParameters?PROJECT=${{ secrets.JENKINS_PROJECT }}&GIT_BRANCH=main" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
