@@ -67,7 +67,7 @@ jobs:
       - name: Build and test with Gradle wrapper
         run: |
           chmod +x gradlew
-          ./gradlew clean build test jacocoTestReport
+          ./gradlew clean build test jacocoTestReport --no-daemon
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
