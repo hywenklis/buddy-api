@@ -13,26 +13,12 @@ plugins {
     id 'pmd'
 }
 
-bootJar {
-    archiveFileName = 'app.jar'
-}
-
-jar {
-    enabled = false
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
-
-    sourceCompatibility = '21'
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -41,35 +27,47 @@ repositories {
 
 ext {
     set('springCloudVersion', "2023.0.1")
+    set('mapstructVersion', "1.5.5.Final")
+    set('springdocOpenApiVersion', "2.6.0")
+    set('springHateoasVersion', "2.3.0")
+    set('commonsLang3Version', "3.14.0")
+    set('lombokVersion', "1.18.30")
+    set('postgresqlVersion', "42.7.2")
+    set('h2Version', "2.2.224")
 }
 
 dependencies {
-    implementation 'io.micrometer:micrometer-tracing-bridge-brave:1.3.1'
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
     implementation 'org.springframework.cloud:spring-cloud-config-client'
     implementation 'org.springframework.cloud:spring-cloud-starter'
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-    implementation 'org.springframework.hateoas:spring-hateoas:2.3.0'
 
-    compileOnly 'org.projectlombok:lombok'
+    // Outras dependências
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocOpenApiVersion}"
+    implementation "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}"
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave:1.3.1'
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 
-    runtimeOnly 'org.postgresql:postgresql'
-
-    annotationProcessor 'org.projectlombok:lombok'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.projectlombok:lombok'
-    testImplementation 'com.h2database:h2'
-    testImplementation 'org.apache.commons:commons-lang3:3.14.0'
+    testImplementation "org.projectlombok:lombok:${lombokVersion}"
+    testImplementation "com.h2database:h2:${h2Version}"
+    testImplementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
 }
 
 dependencyManagement {
@@ -78,13 +76,21 @@ dependencyManagement {
     }
 }
 
+bootJar {
+    archiveFileName = 'app.jar'
+}
+
+jar {
+    enabled = false
+}
+
 def details = versionDetails()
 
 springBoot {
     buildInfo {
-        group = "com.buddy.api"
-        version = details.lastTag ?: "0.0.0"
         properties {
+            group = "com.buddy.api"
+            version = details.lastTag ?: "0.0.0"
             additional = ['developers': 'hywenklis.']
         }
     }
@@ -97,9 +103,9 @@ tasks.named('test') {
 
 tasks.jacocoTestReport {
     reports {
-        xml.required.set(true)
-        csv.required.set(true)
-        html.required.set(true)
+        xml.required = true
+        csv.required = true
+        html.required = true
     }
 }
 
@@ -119,19 +125,14 @@ tasks.withType(Checkstyle).configureEach {
     }
 }
 
+checkstyleMain.dependsOn compileJava
+checkstyleTest.dependsOn compileTestJava
+
 tasks.withType(SpotBugsTask).configureEach {
     reports {
         xml.required = false
         html.required = true
     }
-}
-
-checkstyleMain {
-    dependsOn compileJava
-}
-
-checkstyleTest {
-    dependsOn compileTestJava
 }
 
 spotbugs {
