@@ -19,7 +19,7 @@ permissions:
 
 env:
   JAVA_VERSION: '21'
-  GRADLE_VERSION: '8.5'
+  GRADLE_VERSION: '8.7'
 
 jobs:
   build_and_test:
@@ -137,7 +137,7 @@ jobs:
     name: Deploy to Jenkins
     runs-on: ubuntu-latest
     needs: build_and_test
-    if: github.event.pull_request.merged == true && github.base_ref == 'main' && success()
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'main')
     steps:
       - name: "Deploy to Jenkins"
         run: |
