@@ -27,7 +27,6 @@ updates:
     pull-request-branch-name:
       separator: "-"
     rebase-strategy: "auto"
-    versioning-strategy: "auto"
 
   # Configuração para GitHub Actions
   - package-ecosystem: "github-actions"
