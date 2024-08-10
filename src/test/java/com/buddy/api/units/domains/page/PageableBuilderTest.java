@@ -64,13 +64,18 @@ class PageableBuilderTest extends UnitTestAbstract {
         assertPageable(result, Sort.Direction.DESC, randomPageNumber, randomPageSize);
     }
 
-    private void arrangePageable(Sort sort, int pageNumber, int pageSize) {
+    private void arrangePageable(final Sort sort,
+                                 final int pageNumber,
+                                 final int pageSize) {
         when(mockPageable.getSort()).thenReturn(sort);
         when(mockPageable.getPageNumber()).thenReturn(pageNumber);
         when(mockPageable.getPageSize()).thenReturn(pageSize);
     }
 
-    private void assertPageable(Pageable result, Sort.Direction direction, int pageNumber, int pageSize) {
+    private void assertPageable(final Pageable result,
+                                final Sort.Direction direction,
+                                final int pageNumber,
+                                int pageSize) {
         assertThat(result.getSort().getOrderFor(PageableBuilder.DEFAULT_SORT_PROPERTY))
             .isNotNull()
             .satisfies(order -> {
