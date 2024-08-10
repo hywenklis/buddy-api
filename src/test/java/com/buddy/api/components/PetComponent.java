@@ -14,7 +14,7 @@ public class PetComponent {
 
     private final PetRepository petRepository;
 
-    public PetComponent(PetRepository petRepository) {
+    public PetComponent(final PetRepository petRepository) {
         this.petRepository = petRepository;
     }
 

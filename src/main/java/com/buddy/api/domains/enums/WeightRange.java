@@ -16,7 +16,7 @@ public enum WeightRange {
     private final double min;
     private final double max;
 
-    public static WeightRange fromDescription(String description) {
+    public static WeightRange fromDescription(final String description) {
         for (WeightRange range : values()) {
             if (range.description.equals(description)) {
                 return range;

@@ -38,9 +38,9 @@ public class FindPetController {
     )
     public PagedModel<EntityModel<PetParamsResponse>> findPetsBySearchParams(
         @Parameter(description = "Search criteria for filtering pets")
-        PetSearchCriteriaRequest petSearchCriteriaRequest,
+        final PetSearchCriteriaRequest petSearchCriteriaRequest,
         @Parameter(description = "Pagination information")
-        Pageable pageable
+        final Pageable pageable
     ) {
         var petPage = findPetService.findPets(petSearchCriteriaRequest, pageable);
         return pagedResourcesAssembler.toModel(petPage.map(mapperResponse::mapToParamsResponse));
@@ -55,7 +55,7 @@ public class FindPetController {
     )
     public List<PetParamsResponse> findAllPetsBySearchParams(
         @Parameter(description = "Search criteria for filtering pets")
-        PetSearchCriteriaRequest petSearchCriteriaRequest
+        final PetSearchCriteriaRequest petSearchCriteriaRequest
     ) {
         return findPetService.findAllPets(petSearchCriteriaRequest)
             .stream()

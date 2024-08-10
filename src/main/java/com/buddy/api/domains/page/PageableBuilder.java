@@ -10,7 +10,7 @@ public final class PageableBuilder {
 
     private PageableBuilder() {}
 
-    public static Pageable buildPageable(Pageable pageable) {
+    public static Pageable buildPageable(final Pageable pageable) {
         if (pageable.getSort().isEmpty()) {
             return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
                 Sort.by(Sort.Direction.DESC, DEFAULT_SORT_PROPERTY));

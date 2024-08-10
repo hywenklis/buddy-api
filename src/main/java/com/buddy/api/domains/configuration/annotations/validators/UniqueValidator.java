@@ -22,7 +22,7 @@ public class UniqueValidator implements ConstraintValidator<Unique, String> {
     private UniqueType type;
 
     @Override
-    public void initialize(Unique constraintAnnotation) {
+    public void initialize(final Unique constraintAnnotation) {
         type = constraintAnnotation.value();
 
         repositoryMap = Map.of(
@@ -32,7 +32,7 @@ public class UniqueValidator implements ConstraintValidator<Unique, String> {
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(final String value, final ConstraintValidatorContext context) {
         if (StringUtils.isEmpty(value)) {
             return true;
         }

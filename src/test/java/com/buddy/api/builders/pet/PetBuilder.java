@@ -21,14 +21,14 @@ import java.util.UUID;
 
 public class PetBuilder {
 
-    public static PetRequest createPetRequest(String name,
-                                              String specie,
-                                              String gender,
-                                              Double weight,
-                                              String description,
-                                              String avatar,
-                                              List<PetImageRequest> images,
-                                              UUID shelterId
+    public static PetRequest createPetRequest(final String name,
+                                              final String specie,
+                                              final String gender,
+                                              final Double weight,
+                                              final String description,
+                                              final String avatar,
+                                              final List<PetImageRequest> images,
+                                              final UUID shelterId
     ) {
         return PetRequest.builder()
             .name(name)
@@ -44,7 +44,7 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetRequest createPetRequest(UUID shelterId) {
+    public static PetRequest createPetRequest(final UUID shelterId) {
         return PetRequest.builder()
             .name(randomAlphabetic(10))
             .specie(randomAlphabetic(10))
@@ -59,16 +59,16 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetDto createPetDto(UUID id,
-                                      UUID shelterId,
-                                      String name,
-                                      String specie,
-                                      String gender,
-                                      Integer age,
-                                      Double weight,
-                                      String description,
-                                      String avatar,
-                                      List<PetImageDto> images) {
+    public static PetDto createPetDto(final UUID id,
+                                      final UUID shelterId,
+                                      final String name,
+                                      final String specie,
+                                      final String gender,
+                                      final Integer age,
+                                      final Double weight,
+                                      final String description,
+                                      final String avatar,
+                                      final List<PetImageDto> images) {
         return PetDto.builder()
             .id(id)
             .shelterId(shelterId)
@@ -84,7 +84,7 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetDto createPetDto(UUID shelterId) {
+    public static PetDto createPetDto(final UUID shelterId) {
         return PetDto.builder()
             .id(randomUUID())
             .shelterId(shelterId)
@@ -100,14 +100,14 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetEntity createPetEntity(String name,
-                                            String specie,
-                                            String gender,
-                                            Double weight,
-                                            String description,
-                                            String avatar,
-                                            List<PetImageEntity> images,
-                                            ShelterEntity shelter) {
+    public static PetEntity createPetEntity(final String name,
+                                            final String specie,
+                                            final String gender,
+                                            final Double weight,
+                                            final String description,
+                                            final String avatar,
+                                            final List<PetImageEntity> images,
+                                            final ShelterEntity shelter) {
         return PetEntity.builder()
             .id(randomUUID())
             .name(name)
@@ -143,9 +143,9 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetEntity createPetEntity(PetDto petDto,
-                                            ShelterEntity shelterEntity,
-                                            PetImageEntity petImageEntity
+    public static PetEntity createPetEntity(final PetDto petDto,
+                                            final ShelterEntity shelterEntity,
+                                            final PetImageEntity petImageEntity
     ) {
         return PetEntity.builder()
             .id(petDto.id())
@@ -162,9 +162,9 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetEntity createPetEntity(PetDto petDto,
-                                            ShelterEntity shelterEntity,
-                                            List<PetImageEntity> petImageEntity
+    public static PetEntity createPetEntity(final PetDto petDto,
+                                            final ShelterEntity shelterEntity,
+                                            final List<PetImageEntity> petImageEntity
     ) {
         return PetEntity.builder()
             .id(petDto.id())
@@ -181,8 +181,8 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetEntity createPetEntityWithoutImages(PetDto petDto,
-                                                         ShelterEntity shelterEntity
+    public static PetEntity createPetEntityWithoutImages(final PetDto petDto,
+                                                         final ShelterEntity shelterEntity
     ) {
         return PetEntity.builder()
             .id(petDto.id())
@@ -198,7 +198,7 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetDto createPetDtoWithImages(UUID shelterId) {
+    public static PetDto createPetDtoWithImages(final UUID shelterId) {
         return PetDto.builder()
             .id(randomUUID())
             .name(randomAlphabetic(10))
@@ -217,7 +217,7 @@ public class PetBuilder {
             .build();
     }
 
-    public static PetDto createPetDtoWithoutImages(UUID shelterId) {
+    public static PetDto createPetDtoWithoutImages(final UUID shelterId) {
         return PetDto.builder()
             .id(randomUUID())
             .name(randomAlphabetic(10))

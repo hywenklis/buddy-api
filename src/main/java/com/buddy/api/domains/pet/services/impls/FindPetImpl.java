@@ -1,12 +1,12 @@
 package com.buddy.api.domains.pet.services.impls;
 
+import com.buddy.api.domains.page.PageableBuilder;
 import com.buddy.api.domains.pet.dtos.PetSearchCriteriaDto;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.pet.mappers.PetDomainMapper;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.pet.services.FindPet;
 import com.buddy.api.domains.specifications.PetSpecifications;
-import com.buddy.api.domains.page.PageableBuilder;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class FindPetImpl implements FindPet {
             .toList();
     }
 
-    private void initializeProxies(PetEntity pet) {
+    private void initializeProxies(final PetEntity pet) {
         if (pet.getImages() != null) {
             Hibernate.initialize(pet.getImages());
         }

@@ -11,7 +11,7 @@ public enum Gender {
 
     private final String description;
 
-    public static Gender valueOfDescription(String description) {
+    public static Gender valueOfDescription(final String description) {
         for (Gender gender : values()) {
             if (gender.description.equals(description)) {
                 return gender;

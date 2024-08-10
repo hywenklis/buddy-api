@@ -17,7 +17,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(
-        NotFoundException ex) {
+        final NotFoundException ex) {
         ErrorDetails error = new ErrorDetails(
             ex.getFieldName(),
             ex.getMessage(),
@@ -28,13 +28,14 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex
+    public ResponseEntity<ErrorResponse> handleValidationErrors(
+        final MethodArgumentNotValidException ex
     ) {
         List<ErrorDetails> errors = mapValidationErrors(ex.getBindingResult());
         return ResponseEntity.badRequest().body(new ErrorResponse(errors));
     }
 
-    private List<ErrorDetails> mapValidationErrors(BindingResult bindingResult) {
+    private List<ErrorDetails> mapValidationErrors(final BindingResult bindingResult) {
         return bindingResult.getFieldErrors()
             .stream()
             .map(fieldError -> new ErrorDetails(

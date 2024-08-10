@@ -11,7 +11,7 @@ public class NotFoundException extends RuntimeException implements Serializable 
 
     private final String fieldName;
 
-    public NotFoundException(String fieldName, String message) {
+    public NotFoundException(final String fieldName, final String message) {
         super(message);
         this.fieldName = fieldName;
     }
