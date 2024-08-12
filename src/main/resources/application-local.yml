@@ -19,16 +19,55 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+  lifecycle:
+    timeout-per-shutdown-phase: 5s
+
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     generate-ddl: true
     ddl-auto: update
     open-in-view: true
+    hibernate:
+      dialect: ${spring.jpa.database-platform}
+      cache:
+        use_second_level_cache: true
+        provider_class: org.hibernate.cache.EhCacheProvider
+      jdbc:
+        batch_size: 20
+      default_batch_fetch_size: 20
 
-springdoc.swagger-ui.path: /swagger-ui.html
+    datasource:
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        pool-name: buddy-local
+        maximum-pool-size: 15
+        minimum-idle: 5
+        connection-timeout: 15000
+        idle-timeout: 300000
+        max-lifetime: 900000
+        connection-test-query: "SELECT 1"
+        validation-timeout: 3000
+        initialization-fail-fast: true
+        isolate-internal-queries: false
+
+springdoc:
+  show-actuator: true
+  swagger-ui:
+    path: /swagger-ui.html
+    docExpansion: none
+    tagsSorter: alpha
+  api-docs:
+    path: /api-docs
 
 management:
   endpoints:
     web:
       exposure:
         include: "*"
+
+logging:
+  pattern:
+    level: "%5p [traceId=%X{traceId}, spanId=%X{spanId}] %c{0} - %m%n"
+  level:
+    com.zaxxer.hikari: WARN

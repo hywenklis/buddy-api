@@ -7,7 +7,6 @@ import com.buddy.api.web.pets.responses.PetParamsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -44,22 +43,5 @@ public class FindPetController {
     ) {
         var petPage = findPetService.findPets(petSearchCriteriaRequest, pageable);
         return pagedResourcesAssembler.toModel(petPage.map(mapperResponse::mapToParamsResponse));
-    }
-
-    @GetMapping("/all")
-    @ResponseStatus(HttpStatus.OK)
-    @Operation(
-        summary = "Get all pets",
-        description = "Get all pets based on search criteria without pagination. "
-            + "You can provide various search parameters to filter the results."
-    )
-    public List<PetParamsResponse> findAllPetsBySearchParams(
-        @Parameter(description = "Search criteria for filtering pets")
-        PetSearchCriteriaRequest petSearchCriteriaRequest
-    ) {
-        return findPetService.findAllPets(petSearchCriteriaRequest)
-            .stream()
-            .map(mapperResponse::mapToParamsResponse)
-            .toList();
     }
 }

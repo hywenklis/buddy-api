@@ -1,6 +1,7 @@
 package com.buddy.api.web.advice.controller;
 
 import com.buddy.api.domains.exceptions.NotFoundException;
+import com.buddy.api.domains.exceptions.PetSearchException;
 import com.buddy.api.web.advice.error.ErrorDetails;
 import com.buddy.api.web.advice.error.ErrorResponse;
 import java.time.LocalDateTime;
@@ -28,10 +29,23 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex
-    ) {
+    public ResponseEntity<ErrorResponse> handleValidationErrors(
+        MethodArgumentNotValidException ex) {
         List<ErrorDetails> errors = mapValidationErrors(ex.getBindingResult());
         return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+    }
+
+    @ExceptionHandler(PetSearchException.class)
+    public ResponseEntity<ErrorResponse> handlePetSearchException(
+        PetSearchException ex) {
+        ErrorDetails error = new ErrorDetails(
+            ex.getFieldName(),
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST,
+            HttpStatus.BAD_REQUEST.value(),
+            LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(List.of(error)));
     }
 
     private List<ErrorDetails> mapValidationErrors(BindingResult bindingResult) {
