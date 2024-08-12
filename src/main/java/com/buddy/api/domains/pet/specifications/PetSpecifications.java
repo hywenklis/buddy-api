@@ -1,9 +1,9 @@
-package com.buddy.api.domains.specifications;
+package com.buddy.api.domains.pet.specifications;
 
-import com.buddy.api.domains.enums.AgeRange;
-import com.buddy.api.domains.enums.Gender;
-import com.buddy.api.domains.enums.Species;
-import com.buddy.api.domains.enums.WeightRange;
+import com.buddy.api.commons.enums.AgeRange;
+import com.buddy.api.commons.enums.Gender;
+import com.buddy.api.commons.enums.Species;
+import com.buddy.api.commons.enums.WeightRange;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
 import jakarta.persistence.criteria.Predicate;

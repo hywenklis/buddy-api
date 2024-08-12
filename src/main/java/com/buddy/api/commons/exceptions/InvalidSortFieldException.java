@@ -1,4 +1,4 @@
-package com.buddy.api.domains.exceptions;
+package com.buddy.api.commons.exceptions;
 
 import lombok.Getter;
 

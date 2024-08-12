@@ -1,6 +1,6 @@
-package com.buddy.api.domains.page;
+package com.buddy.api.commons.page;
 
-import com.buddy.api.domains.exceptions.InvalidSortFieldException;
+import com.buddy.api.commons.exceptions.InvalidSortFieldException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
