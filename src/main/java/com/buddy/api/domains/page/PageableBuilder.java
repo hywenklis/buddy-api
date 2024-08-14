@@ -16,8 +16,8 @@ public final class PageableBuilder {
     }
 
     public static Pageable buildPageable(Pageable pageable) {
-        if (pageable == null || pageable.getSort().isUnsorted()) {
-            return PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE, defaultSort());
+        if (pageable.getSort().isUnsorted()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSort());
         }
         return pageable;
     }
