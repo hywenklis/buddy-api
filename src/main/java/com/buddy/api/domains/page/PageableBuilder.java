@@ -8,8 +8,6 @@ public final class PageableBuilder {
 
     public static final String DEFAULT_SORT_PROPERTY = "createDate";
     public static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
-    public static final int DEFAULT_PAGE_NUMBER = 0;
-    public static final int DEFAULT_PAGE_SIZE = 20;
 
     private PageableBuilder() {
         throw new UnsupportedOperationException("Utility class");

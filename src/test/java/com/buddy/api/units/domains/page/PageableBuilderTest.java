@@ -1,28 +1,22 @@
 package com.buddy.api.units.domains.page;
 
-import static com.buddy.api.domains.page.PageableBuilder.DEFAULT_PAGE_NUMBER;
-import static com.buddy.api.domains.page.PageableBuilder.DEFAULT_PAGE_SIZE;
 import static com.buddy.api.domains.page.PageableBuilder.buildPageable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.buddy.api.domains.page.PageableBuilder;
+import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-class PageableBuilderTest {
+class PageableBuilderTest extends UnitTestAbstract {
 
-    @ParameterizedTest
-    @NullSource
-    @ValueSource(booleans = {true})
-    @DisplayName("Should return default pageable when input is null or unsorted")
-    void should_return_default_Pageable(final Boolean isUnpaged) {
-        Pageable input = isUnpaged == null ? null : Pageable.unpaged();
+    @Test
+    @DisplayName("Should return default pageable when input is unsorted")
+    void should_return_default_Pageable() {
+        Pageable input = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
         Pageable result = PageableBuilder.buildPageable(input);
         assertDefaultPageable(result);
     }
@@ -55,8 +49,8 @@ class PageableBuilderTest {
 
     private void assertDefaultPageable(final Pageable pageable) {
         assertThat(pageable).isNotNull();
-        assertThat(pageable.getPageNumber()).isEqualTo(PageableBuilder.DEFAULT_PAGE_NUMBER);
-        assertThat(pageable.getPageSize()).isEqualTo(PageableBuilder.DEFAULT_PAGE_SIZE);
+        assertThat(pageable.getPageNumber()).isEqualTo(DEFAULT_PAGE_NUMBER);
+        assertThat(pageable.getPageSize()).isEqualTo(DEFAULT_PAGE_SIZE);
         assertThat(pageable.getSort())
             .isNotNull()
             .satisfies(sort -> sort.forEach(order -> assertThat(order.getDirection())

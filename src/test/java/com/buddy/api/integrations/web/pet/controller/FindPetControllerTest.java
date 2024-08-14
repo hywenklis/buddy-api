@@ -17,7 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("GET /v1/pets")
-public class FindPetControllerTest extends IntegrationTestAbstract {
+class FindPetControllerTest extends IntegrationTestAbstract {
 
     @Test
     @DisplayName("Should return last two pets ordered by createDate descending")
