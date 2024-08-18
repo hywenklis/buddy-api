@@ -7,13 +7,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,6 +21,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "ADOPTION_REQUEST")
@@ -36,34 +37,29 @@ public class AdoptionRequestEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "pet_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pet_id", nullable = false)
     private PetEntity pet;
 
-    @ManyToOne
-    @JoinColumn(name = "shelter_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shelter_id", nullable = false)
     private ShelterEntity shelter;
 
+    @Column(name = "user_name", nullable = false)
     private String userName;
+
+    @Column(name = "user_email", nullable = false)
     private String userEmail;
 
     @Enumerated(EnumType.STRING)
-    private AdoptionStatus status = AdoptionStatus.PENDING;
+    @Column(nullable = false)
+    private AdoptionStatus status;
 
-    @Column(name = "REQUEST_CREATE")
+    @Column(name = "request_create_date", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime requestCreateDate;
 
-    @Column(name = "REQUEST_UPDATE")
+    @Column(name = "request_update_date")
+    @UpdateTimestamp
     private LocalDateTime requestUpdateDate;
-
-    @PrePersist
-    public void onPrePersist() {
-        this.requestCreateDate = LocalDateTime.now();
-        this.requestUpdateDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void onPreUpdate() {
-        this.requestUpdateDate = LocalDateTime.now();
-    }
 }

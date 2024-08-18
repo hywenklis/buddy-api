@@ -7,19 +7,20 @@ import org.springframework.data.domain.Sort;
 public final class PageableBuilder {
 
     public static final String DEFAULT_SORT_PROPERTY = "createDate";
+    public static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
 
-    private PageableBuilder() {}
+    private PageableBuilder() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
-    public static Pageable buildPageable(final Pageable pageable) {
-        if (pageable.getSort().isEmpty()) {
-            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-                Sort.by(Sort.Direction.DESC, DEFAULT_SORT_PROPERTY));
+    public static Pageable buildPageable(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSort());
         }
+        return pageable;
+    }
 
-        Sort.Order sortOrder = pageable.getSort().iterator().next();
-        Sort.Direction direction = sortOrder.getDirection();
-
-        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-            Sort.by(direction, DEFAULT_SORT_PROPERTY));
+    private static Sort defaultSort() {
+        return Sort.by(DEFAULT_SORT_DIRECTION, DEFAULT_SORT_PROPERTY);
     }
 }

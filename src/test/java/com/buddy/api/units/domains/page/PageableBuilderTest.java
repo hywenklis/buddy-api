@@ -1,88 +1,60 @@
 package com.buddy.api.units.domains.page;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.when;
+import static com.buddy.api.domains.page.PageableBuilder.buildPageable;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.buddy.api.domains.page.PageableBuilder;
 import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 class PageableBuilderTest extends UnitTestAbstract {
 
-    @Mock
-    private Pageable mockPageable;
-
     @Test
-    @DisplayName("Should return default DESC sort when Pageable has empty sort")
-    void buildPageable_WithEmptySort_ShouldReturnDefaultDescSort() {
-        // Arrange
-        int randomPageNumber = 100;
-        int randomPageSize = 50;
-        arrangePageable(Sort.unsorted(), randomPageNumber, randomPageSize);
-
-        // Act
-        Pageable result = PageableBuilder.buildPageable(mockPageable);
-
-        // Assert
-        assertPageable(result, Sort.Direction.DESC, randomPageNumber, randomPageSize);
+    @DisplayName("Should return default pageable when input is unsorted")
+    void should_return_default_Pageable() {
+        Pageable input = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
+        Pageable result = PageableBuilder.buildPageable(input);
+        assertDefaultPageable(result);
     }
 
     @Test
-    @DisplayName("Should return ASC sort on default property when Pageable has ASC sort")
-    void buildPageable_WithAscSort_ShouldReturnAscSortOnDefaultProperty() {
-        // Arrange
-        int randomPageNumber = 100;
-        int randomPageSize = 50;
-        Sort ascSort = Sort.by(Sort.Direction.ASC, randomAlphabetic(10));
-        arrangePageable(ascSort, randomPageNumber, randomPageSize);
+    @DisplayName("Should return same pageable when input has valid custom sort")
+    void should_return_same_pageable() {
+        Sort customSort = Sort.by("customField").ascending();
+        Pageable customPageable =
+            PageRequest.of(
+                DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE,
+                customSort
+            );
 
-        // Act
-        Pageable result = PageableBuilder.buildPageable(mockPageable);
+        Pageable result = buildPageable(customPageable);
 
-        // Assert
-        assertPageable(result, Sort.Direction.ASC, randomPageNumber, randomPageSize);
-    }
-
-    @Test
-    @DisplayName("Should return DESC sort on default property when Pageable has DESC sort")
-    void buildPageable_WithDescSort_ShouldReturnDescSortOnDefaultProperty() {
-        // Arrange
-        int randomPageNumber = 100;
-        int randomPageSize = 50;
-        Sort descSort = Sort.by(Sort.Direction.DESC, randomAlphabetic(10));
-        arrangePageable(descSort, randomPageNumber, randomPageSize);
-
-        // Act
-        Pageable result = PageableBuilder.buildPageable(mockPageable);
-
-        // Assert
-        assertPageable(result, Sort.Direction.DESC, randomPageNumber, randomPageSize);
-    }
-
-    private void arrangePageable(final Sort sort,
-                                 final int pageNumber,
-                                 final int pageSize) {
-        when(mockPageable.getSort()).thenReturn(sort);
-        when(mockPageable.getPageNumber()).thenReturn(pageNumber);
-        when(mockPageable.getPageSize()).thenReturn(pageSize);
-    }
-
-    private void assertPageable(final Pageable result,
-                                final Sort.Direction direction,
-                                final int pageNumber,
-                                int pageSize) {
-        assertThat(result.getSort().getOrderFor(PageableBuilder.DEFAULT_SORT_PROPERTY))
-            .isNotNull()
-            .satisfies(order -> {
-                assertThat(order.getDirection()).isEqualTo(direction);
-                assertThat(order.getProperty()).isEqualTo(PageableBuilder.DEFAULT_SORT_PROPERTY);
+        assertThat(result)
+            .isEqualTo(customPageable)
+            .satisfies(pageable -> {
+                assertThat(pageable.getPageNumber()).isEqualTo(DEFAULT_PAGE_NUMBER);
+                assertThat(pageable.getPageSize()).isEqualTo(DEFAULT_PAGE_SIZE);
+                assertThat(pageable.getSort().getOrderFor("customField"))
+                    .isNotNull()
+                    .satisfies(order -> {
+                        assertThat(order.getDirection().isAscending()).isTrue();
+                        assertThat(order.getProperty()).isEqualTo("customField");
+                    });
             });
-        assertThat(result.getPageNumber()).isEqualTo(pageNumber);
-        assertThat(result.getPageSize()).isEqualTo(pageSize);
+    }
+
+    private void assertDefaultPageable(final Pageable pageable) {
+        assertThat(pageable).isNotNull();
+        assertThat(pageable.getPageNumber()).isEqualTo(DEFAULT_PAGE_NUMBER);
+        assertThat(pageable.getPageSize()).isEqualTo(DEFAULT_PAGE_SIZE);
+        assertThat(pageable.getSort())
+            .isNotNull()
+            .satisfies(sort -> sort.forEach(order -> assertThat(order.getDirection())
+                .isEqualTo(PageableBuilder.DEFAULT_SORT_DIRECTION)));
     }
 }

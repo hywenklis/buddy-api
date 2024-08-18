@@ -1,6 +1,7 @@
 package com.buddy.api.web.advice.controller;
 
 import com.buddy.api.domains.exceptions.NotFoundException;
+import com.buddy.api.domains.exceptions.PetSearchException;
 import com.buddy.api.web.advice.error.ErrorDetails;
 import com.buddy.api.web.advice.error.ErrorResponse;
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFoundException(
-        final NotFoundException ex) {
+       final NotFoundException ex) {
         ErrorDetails error = new ErrorDetails(
             ex.getFieldName(),
             ex.getMessage(),
@@ -29,13 +30,25 @@ public class ErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
-        final MethodArgumentNotValidException ex
-    ) {
+       final MethodArgumentNotValidException ex) {
         List<ErrorDetails> errors = mapValidationErrors(ex.getBindingResult());
         return ResponseEntity.badRequest().body(new ErrorResponse(errors));
     }
 
-    private List<ErrorDetails> mapValidationErrors(final BindingResult bindingResult) {
+    @ExceptionHandler(PetSearchException.class)
+    public ResponseEntity<ErrorResponse> handlePetSearchException(
+        PetSearchException ex) {
+        ErrorDetails error = new ErrorDetails(
+            ex.getFieldName(),
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST,
+            HttpStatus.BAD_REQUEST.value(),
+            LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(List.of(error)));
+    }
+
+    private List<ErrorDetails> mapValidationErrors(BindingResult bindingResult) {
         return bindingResult.getFieldErrors()
             .stream()
             .map(fieldError -> new ErrorDetails(
