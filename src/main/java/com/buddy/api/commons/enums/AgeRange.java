@@ -17,7 +17,7 @@ public enum AgeRange {
     private final Long min;
     private final Long max;
 
-    public static AgeRange fromDescription(String description) {
+    public static AgeRange fromDescription(final String description) {
         for (AgeRange range : values()) {
             if (range.description.equals(description)) {
                 return range;

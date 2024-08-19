@@ -14,7 +14,7 @@ public class SwaggerApiConfig {
 
     private final BuildProperties buildProperties;
 
-    public SwaggerApiConfig(BuildProperties buildProperties) {
+    public SwaggerApiConfig(final BuildProperties buildProperties) {
         this.buildProperties = buildProperties;
     }
 

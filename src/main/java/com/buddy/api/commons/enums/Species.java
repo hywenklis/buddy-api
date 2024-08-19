@@ -14,7 +14,7 @@ public enum Species {
 
     private final String description;
 
-    public static Species valueOfDescription(String description) {
+    public static Species valueOfDescription(final String description) {
         for (Species species : values()) {
             if (species.description.equals(description)) {
                 return species;
