@@ -8,7 +8,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.5'
     id 'jacoco'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.0.19'
+    id 'com.github.spotbugs' version '6.0.20'
     id 'com.palantir.git-version' version '3.1.0'
     id 'pmd'
 }
