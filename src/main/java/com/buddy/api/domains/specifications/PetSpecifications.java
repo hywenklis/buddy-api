@@ -29,7 +29,7 @@ public final class PetSpecifications {
     private static final String FIELD_DESCRIPTION = "description";
     private static final String FIELD_BIRTH_DATE = "birthDate";
 
-    public static Specification<PetEntity> withParams(PetSearchCriteriaRequest params) {
+    public static Specification<PetEntity> withParams(final PetSearchCriteriaRequest params) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -135,9 +135,9 @@ public final class PetSpecifications {
     }
 
     private static <T> void addPredicateIfNotNull(
-        List<Predicate> predicates,
-        T value,
-        Function<T, Predicate> predicateFunction) {
+        final List<Predicate> predicates,
+        final T value,
+        final Function<T, Predicate> predicateFunction) {
         if (value != null) {
             predicates.add(predicateFunction.apply(value));
         }
