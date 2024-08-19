@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(
-       final NotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleNotFoundException(final NotFoundException ex) {
         ErrorDetails error = new ErrorDetails(
             ex.getFieldName(),
             ex.getMessage(),
@@ -30,14 +29,13 @@ public class ErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
-       final MethodArgumentNotValidException ex) {
+        final MethodArgumentNotValidException ex) {
         List<ErrorDetails> errors = mapValidationErrors(ex.getBindingResult());
         return ResponseEntity.badRequest().body(new ErrorResponse(errors));
     }
 
     @ExceptionHandler(PetSearchException.class)
-    public ResponseEntity<ErrorResponse> handlePetSearchException(
-        PetSearchException ex) {
+    public ResponseEntity<ErrorResponse> handlePetSearchException(final PetSearchException ex) {
         ErrorDetails error = new ErrorDetails(
             ex.getFieldName(),
             ex.getMessage(),
@@ -48,7 +46,7 @@ public class ErrorHandler {
             .body(new ErrorResponse(List.of(error)));
     }
 
-    private List<ErrorDetails> mapValidationErrors(BindingResult bindingResult) {
+    private List<ErrorDetails> mapValidationErrors(final BindingResult bindingResult) {
         return bindingResult.getFieldErrors()
             .stream()
             .map(fieldError -> new ErrorDetails(

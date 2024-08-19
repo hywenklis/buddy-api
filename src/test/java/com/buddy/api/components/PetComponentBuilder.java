@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PetComponentBuilder {
-    public static PetEntity.PetEntityBuilder valid(ShelterEntity shelter) {
+    public static PetEntity.PetEntityBuilder valid(final ShelterEntity shelter) {
         return PetEntity.builder()
             .name(randomAlphabetic(10))
             .specie(randomAlphabetic(10))
@@ -27,7 +27,7 @@ public class PetComponentBuilder {
             .updateDate(LocalDateTime.now());
     }
 
-    public static PetEntity.PetEntityBuilder valid(ShelterEntity shelter, Integer age) {
+    public static PetEntity.PetEntityBuilder valid(final ShelterEntity shelter, final Integer age) {
         return PetComponentBuilder.valid(shelter).birthDate(LocalDate.now().minusYears(age));
     }
 }
