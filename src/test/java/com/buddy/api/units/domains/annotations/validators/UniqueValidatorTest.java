@@ -1,16 +1,16 @@
 package com.buddy.api.units.domains.annotations.validators;
 
-import static com.buddy.api.domains.enums.UniqueType.CPF;
-import static com.buddy.api.domains.enums.UniqueType.EMAIL;
+import static com.buddy.api.commons.enums.UniqueType.CPF;
+import static com.buddy.api.commons.enums.UniqueType.EMAIL;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.domains.configuration.annotations.Unique;
-import com.buddy.api.domains.configuration.annotations.validators.UniqueValidator;
-import com.buddy.api.domains.enums.UniqueType;
+import com.buddy.api.commons.configuration.annotations.Unique;
+import com.buddy.api.commons.configuration.annotations.validators.UniqueValidator;
+import com.buddy.api.commons.enums.UniqueType;
 import com.buddy.api.domains.shelter.dtos.ShelterDto;
 import com.buddy.api.domains.shelter.services.FindShelter;
 import com.buddy.api.units.UnitTestAbstract;

@@ -1,4 +1,4 @@
-package com.buddy.api.domains.page;
+package com.buddy.api.commons.page;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

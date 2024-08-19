@@ -1,7 +1,7 @@
 package com.buddy.api.web.advice.controller;
 
-import com.buddy.api.domains.exceptions.NotFoundException;
-import com.buddy.api.domains.exceptions.PetSearchException;
+import com.buddy.api.commons.exceptions.NotFoundException;
+import com.buddy.api.commons.exceptions.PetSearchException;
 import com.buddy.api.web.advice.error.ErrorDetails;
 import com.buddy.api.web.advice.error.ErrorResponse;
 import java.time.LocalDateTime;

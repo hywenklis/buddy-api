@@ -1,6 +1,6 @@
 package com.buddy.api.domains.pet.services.impls;
 
-import com.buddy.api.domains.exceptions.NotFoundException;
+import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.pet.dtos.PetDto;
 import com.buddy.api.domains.pet.mappers.PetDomainMapper;
 import com.buddy.api.domains.pet.repositories.PetRepository;
