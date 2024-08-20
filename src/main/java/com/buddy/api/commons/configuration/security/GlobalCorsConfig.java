@@ -1,4 +1,4 @@
-package com.buddy.api.domains.configuration.security;
+package com.buddy.api.commons.configuration.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
