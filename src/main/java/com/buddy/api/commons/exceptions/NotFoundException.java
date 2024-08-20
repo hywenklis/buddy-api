@@ -1,4 +1,4 @@
-package com.buddy.api.domains.exceptions;
+package com.buddy.api.commons.exceptions;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -12,7 +12,7 @@ public class NotFoundException extends RuntimeException implements Serializable 
 
     private final String fieldName;
 
-    public NotFoundException(String fieldName, String message) {
+    public NotFoundException(final String fieldName, final String message) {
         super(message);
         this.fieldName = fieldName;
     }

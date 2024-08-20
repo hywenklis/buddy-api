@@ -1,4 +1,4 @@
-package com.buddy.api.domains.enums;
+package com.buddy.api.commons.enums;
 
 public enum UniqueType {
     CPF,

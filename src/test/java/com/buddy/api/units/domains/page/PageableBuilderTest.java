@@ -1,9 +1,9 @@
 package com.buddy.api.units.domains.page;
 
-import static com.buddy.api.domains.page.PageableBuilder.buildPageable;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.buddy.api.commons.page.PageableBuilder.buildPageable;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.buddy.api.domains.page.PageableBuilder;
+import com.buddy.api.commons.page.PageableBuilder;
 import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ class PageableBuilderTest extends UnitTestAbstract {
     @DisplayName("Should return default pageable when input is unsorted")
     void should_return_default_Pageable() {
         Pageable input = PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
-        Pageable result = PageableBuilder.buildPageable(input);
+        Pageable result = buildPageable(input);
         assertDefaultPageable(result);
     }
 
