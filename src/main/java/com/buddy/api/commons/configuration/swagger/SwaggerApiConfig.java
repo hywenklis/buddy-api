@@ -1,4 +1,4 @@
-package com.buddy.api.domains.configuration.swagger;
+package com.buddy.api.commons.configuration.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -14,7 +14,7 @@ public class SwaggerApiConfig {
 
     private final BuildProperties buildProperties;
 
-    public SwaggerApiConfig(BuildProperties buildProperties) {
+    public SwaggerApiConfig(final BuildProperties buildProperties) {
         this.buildProperties = buildProperties;
     }
 

@@ -8,8 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,6 +18,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "SHELTER")
@@ -34,32 +34,32 @@ public class ShelterEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "name_shelter", nullable = false)
     private String nameShelter;
+
+    @Column(name = "name_responsible", nullable = false)
     private String nameResponsible;
+
+    @Column(name = "cpf_responsible", nullable = false, unique = true)
     private String cpfResponsible;
+
     private String address;
     private String phoneNumber;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
     private String avatar;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PetEntity> pets = new ArrayList<>();
 
-    @Column(name = "CREATE_DATE")
+    @Column(name = "create_date", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime createDate;
 
-    @Column(name = "UPDATE_DATE")
+    @Column(name = "update_date")
+    @UpdateTimestamp
     private LocalDateTime updateDate;
-
-    @PrePersist
-    public void onPrePersist() {
-        this.createDate = LocalDateTime.now();
-        this.updateDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void onPreUpdate() {
-        this.updateDate = LocalDateTime.now();
-    }
 }

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class PetImageBuilder {
 
-    public static PetImageRequest createPetRequest(String imageUrl) {
+    public static PetImageRequest createPetRequest(final String imageUrl) {
         return PetImageRequest.builder().imageUrl(imageUrl).build();
     }
 
@@ -19,7 +19,7 @@ public class PetImageBuilder {
         return PetImageRequest.builder().imageUrl(randomAlphabetic(10)).build();
     }
 
-    public static PetImageDto createPetImageDto(String imageUrl) {
+    public static PetImageDto createPetImageDto(final String imageUrl) {
         return PetImageDto.builder().imageUrl(imageUrl).build();
     }
 
@@ -33,7 +33,8 @@ public class PetImageBuilder {
             .build();
     }
 
-    public static PetImageEntity createPetImageEntity(String imageUrl, PetEntity petEntity) {
+    public static PetImageEntity createPetImageEntity(final String imageUrl,
+                                                      final PetEntity petEntity) {
         return PetImageEntity.builder()
             .id(UUID.randomUUID())
             .imageUrl(imageUrl)

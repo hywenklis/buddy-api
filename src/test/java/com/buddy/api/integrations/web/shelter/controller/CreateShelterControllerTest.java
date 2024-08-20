@@ -46,7 +46,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
             request.nameShelter(),
             request.nameResponsible(),
             request.cpfResponsible(),
-            null,
+            generateValidEmail(),
             null,
             null,
             request.avatar(),
@@ -74,7 +74,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
         shelterComponent.createShelter(
             request.nameShelter(),
             request.nameResponsible(),
-            null,
+            generateValidCpf(),
             request.email(),
             null,
             null,

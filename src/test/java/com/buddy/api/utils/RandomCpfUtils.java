@@ -23,7 +23,7 @@ public class RandomCpfUtils {
         return sb.toString();
     }
 
-    private static int calculateCpfDigit(int[] cpf, int position) {
+    private static int calculateCpfDigit(final int[] cpf, final int position) {
         int sum = 0;
         for (int i = 0; i < position; i++) {
             sum += cpf[i] * (position + 1 - i);
