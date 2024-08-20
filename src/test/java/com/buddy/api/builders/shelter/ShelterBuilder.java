@@ -16,11 +16,11 @@ import java.util.UUID;
 
 public class ShelterBuilder {
 
-    public static ShelterRequest createShelterRequest(String nameShelter,
-                                                      String nameResponsible,
-                                                      String cpfResponsible,
-                                                      String email,
-                                                      String avatar
+    public static ShelterRequest createShelterRequest(final String nameShelter,
+                                                      final String nameResponsible,
+                                                      final String cpfResponsible,
+                                                      final String email,
+                                                      final String avatar
     ) {
         return ShelterRequest.builder()
             .nameShelter(nameShelter)
@@ -41,14 +41,14 @@ public class ShelterBuilder {
             .build();
     }
 
-    public static ShelterDto createShelterDto(String nameShelter,
-                                              String nameResponsible,
-                                              String cpfResponsible,
-                                              String email,
-                                              String address,
-                                              String phoneNumber,
-                                              String avatar,
-                                              List<PetDto> pets) {
+    public static ShelterDto createShelterDto(final String nameShelter,
+                                              final String nameResponsible,
+                                              final String cpfResponsible,
+                                              final String email,
+                                              final String address,
+                                              final String phoneNumber,
+                                              final String avatar,
+                                              final List<PetDto> pets) {
         return ShelterDto.builder()
             .nameShelter(nameShelter)
             .nameResponsible(nameResponsible)
@@ -74,14 +74,14 @@ public class ShelterBuilder {
             .build();
     }
 
-    public static ShelterEntity createShelterEntity(String nameShelter,
-                                                    String nameResponsible,
-                                                    String cpfResponsible,
-                                                    String email,
-                                                    String address,
-                                                    String phoneNumber,
-                                                    String avatar,
-                                                    List<PetEntity> pets) {
+    public static ShelterEntity createShelterEntity(final String nameShelter,
+                                                    final String nameResponsible,
+                                                    final String cpfResponsible,
+                                                    final String email,
+                                                    final String address,
+                                                    final String phoneNumber,
+                                                    final String avatar,
+                                                    final List<PetEntity> pets) {
         return ShelterEntity.builder()
             .id(UUID.randomUUID())
             .nameShelter(nameShelter)

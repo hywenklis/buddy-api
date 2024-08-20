@@ -1,4 +1,4 @@
-package com.buddy.api.domains.page;
+package com.buddy.api.commons.page;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +13,7 @@ public final class PageableBuilder {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    public static Pageable buildPageable(Pageable pageable) {
+    public static Pageable buildPageable(final Pageable pageable) {
         if (pageable.getSort().isUnsorted()) {
             return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSort());
         }

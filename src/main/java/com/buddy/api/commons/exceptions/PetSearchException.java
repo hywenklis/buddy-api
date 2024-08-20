@@ -1,4 +1,4 @@
-package com.buddy.api.domains.exceptions;
+package com.buddy.api.commons.exceptions;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -12,12 +12,14 @@ public class PetSearchException extends RuntimeException implements Serializable
 
     private final String fieldName;
 
-    public PetSearchException(String fieldName, String message) {
+    public PetSearchException(final String fieldName, final String message) {
         super(message);
         this.fieldName = fieldName;
     }
 
-    public PetSearchException(String fieldName, String message, Throwable cause) {
+    public PetSearchException(final String fieldName,
+                              final String message,
+                              final Throwable cause) {
         super(message, cause);
         this.fieldName = fieldName;
     }

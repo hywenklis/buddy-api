@@ -32,7 +32,7 @@ public class CreatePetController {
         summary = "Register pet",
         description = "Register pet with their appropriate information"
     )
-    public PetResponse registration(@RequestBody @Valid PetRequest petRequest) {
+    public PetResponse registration(@RequestBody @Valid final PetRequest petRequest) {
         service.create(mapperRequest.mapToDto(petRequest));
         return mapperResponse.mapToResponse();
     }

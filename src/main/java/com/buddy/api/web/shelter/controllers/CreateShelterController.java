@@ -32,7 +32,7 @@ public class CreateShelterController {
         summary = "Register shelter",
         description = "Register shelter with their appropriate information"
     )
-    public ShelterResponse registration(@RequestBody @Valid ShelterRequest shelterRequest) {
+    public ShelterResponse registration(@RequestBody @Valid final ShelterRequest shelterRequest) {
         service.create(mapperRequest.mapToDto(shelterRequest));
         return mapperResponse.mapToResponse();
     }
