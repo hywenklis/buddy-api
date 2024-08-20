@@ -17,7 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.domains.exceptions.NotFoundException;
+import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.pet.mappers.PetDomainMapper;
 import com.buddy.api.domains.pet.repositories.PetRepository;

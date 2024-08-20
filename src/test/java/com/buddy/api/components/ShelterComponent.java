@@ -14,7 +14,7 @@ public class ShelterComponent {
 
     private final ShelterRepository shelterRepository;
 
-    public ShelterComponent(ShelterRepository shelterRepository) {
+    public ShelterComponent(final ShelterRepository shelterRepository) {
         this.shelterRepository = shelterRepository;
     }
 

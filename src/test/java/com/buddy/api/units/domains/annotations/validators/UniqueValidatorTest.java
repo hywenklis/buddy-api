@@ -1,16 +1,16 @@
 package com.buddy.api.units.domains.annotations.validators;
 
-import static com.buddy.api.domains.enums.UniqueType.CPF;
-import static com.buddy.api.domains.enums.UniqueType.EMAIL;
+import static com.buddy.api.commons.enums.UniqueType.CPF;
+import static com.buddy.api.commons.enums.UniqueType.EMAIL;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.domains.configuration.annotations.Unique;
-import com.buddy.api.domains.configuration.annotations.validators.UniqueValidator;
-import com.buddy.api.domains.enums.UniqueType;
+import com.buddy.api.commons.configuration.annotations.Unique;
+import com.buddy.api.commons.configuration.annotations.validators.UniqueValidator;
+import com.buddy.api.commons.enums.UniqueType;
 import com.buddy.api.domains.shelter.dtos.ShelterDto;
 import com.buddy.api.domains.shelter.services.FindShelter;
 import com.buddy.api.units.UnitTestAbstract;
@@ -42,7 +42,7 @@ class UniqueValidatorTest extends UnitTestAbstract {
     @DisplayName("isValid should return true when value is null or empty")
     @ParameterizedTest
     @MethodSource("provideNullOrEmptyValues")
-    void isValid_ShouldReturnTrue_WhenValueIsNullOrEmpty(String value) {
+    void isValid_ShouldReturnTrue_WhenValueIsNullOrEmpty(final String value) {
         // When
         boolean result = uniqueValidator.isValid(value, context);
 
@@ -56,7 +56,8 @@ class UniqueValidatorTest extends UnitTestAbstract {
     @DisplayName("isValid should return true when value is unique in the repository")
     @ParameterizedTest
     @MethodSource("provideUniqueValues")
-    void isValid_ShouldReturnTrue_WhenValueIsUnique(UniqueType type, String uniqueValue) {
+    void isValid_ShouldReturnTrue_WhenValueIsUnique(final UniqueType type,
+                                                    final String uniqueValue) {
         // Given
         when(uniqueAnnotation.value()).thenReturn(type);
 
@@ -74,7 +75,8 @@ class UniqueValidatorTest extends UnitTestAbstract {
     @DisplayName("isValid should return false when value is not unique in the repository")
     @ParameterizedTest
     @MethodSource("provideNonUniqueValues")
-    void isValid_ShouldReturnFalse_WhenValueIsNotUnique(UniqueType type, String nonUniqueValue) {
+    void isValid_ShouldReturnFalse_WhenValueIsNotUnique(final UniqueType type,
+                                                        final String nonUniqueValue) {
         // Given
         var cpf = ShelterDto.builder().cpfResponsible(nonUniqueValue).build();
         var email = ShelterDto.builder().email(nonUniqueValue).build();
@@ -117,10 +119,10 @@ class UniqueValidatorTest extends UnitTestAbstract {
         );
     }
 
-    private void mockRepositoryByType(UniqueType type,
-                                      String nonUniqueValue,
-                                      ShelterDto shelterDtoByCpf,
-                                      ShelterDto shelterDtoByEmail) {
+    private void mockRepositoryByType(final UniqueType type,
+                                      final String nonUniqueValue,
+                                      final ShelterDto shelterDtoByCpf,
+                                      final ShelterDto shelterDtoByEmail) {
         if (type == CPF) {
             when(findShelter.findShelterByCpfResponsible(nonUniqueValue)).thenReturn(
                 Optional.of(shelterDtoByCpf));
@@ -130,7 +132,9 @@ class UniqueValidatorTest extends UnitTestAbstract {
         }
     }
 
-    private void verifyRepositoryMethodInvocation(UniqueType type, String value, int times) {
+    private void verifyRepositoryMethodInvocation(final UniqueType type,
+                                                  final String value,
+                                                  final int times) {
         switch (type) {
             case CPF:
                 verify(findShelter, times(times)).findShelterByCpfResponsible(value);
