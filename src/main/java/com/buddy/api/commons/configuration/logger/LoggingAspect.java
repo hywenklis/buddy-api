@@ -1,5 +1,6 @@
 package com.buddy.api.commons.configuration.logger;
 
+import com.buddy.api.commons.configuration.crypto.SensitiveDataMasker;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,43 +17,29 @@ import java.util.stream.Collectors;
 public class LoggingAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
+    private final SensitiveDataMasker sensitiveDataMasker = new SensitiveDataMasker();
 
     @Before("execution(* com.buddy.api..*(..))")
     public void logBefore(JoinPoint joinPoint) {
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        String methodName = joinPoint.getSignature().getName();
-        String parameters = Arrays.stream(joinPoint.getArgs())
-                .map(this::maskSensitiveData)
-                .collect(Collectors.joining(", "));
+        final String className = joinPoint.getTarget().getClass().getSimpleName();
+        final String methodName = joinPoint.getSignature().getName();
+        final String parameters = formatParameters(joinPoint.getArgs());
 
         logger.info("Class: {}, Method: {}, Parameters: [{}]", className, methodName, parameters);
     }
 
     @AfterReturning(pointcut = "execution(* com.buddy.api..*(..))", returning = "result")
     public void logAfter(JoinPoint joinPoint, Object result) {
-        String className = joinPoint.getTarget().getClass().getSimpleName();
-        String methodName = joinPoint.getSignature().getName();
-        String maskedResult = maskSensitiveData(result);
+        final String className = joinPoint.getTarget().getClass().getSimpleName();
+        final String methodName = joinPoint.getSignature().getName();
+        final String maskedResult = sensitiveDataMasker.mask(result);
 
         logger.info("Class: {}, Method: {}, Result: [{}]", className, methodName, maskedResult);
     }
 
-    private String maskSensitiveData(Object obj) {
-        if (obj == null) {
-            return "null";
-        }
-        String str = obj.toString();
-
-        if (str.matches("\\d{11}")) {
-            return str.replaceAll("(\\d{3})(\\d{3})(\\d{3})(\\d{2})", "$1.***.***-$4");
-        } else if (str.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
-            return str.replaceAll("(\\d{3})\\.\\d{3}\\.\\d{3}-(\\d{2})", "$1.***.***-$2");
-        }
-
-        if (str.matches(".*@.*")) {
-            return str.replaceAll("(^[^@]+)(@.*)", "****$2");
-        }
-
-        return str;
+    private String formatParameters(Object[] args) {
+        return Arrays.stream(args)
+                .map(sensitiveDataMasker::mask)
+                .collect(Collectors.joining(", "));
     }
 }
