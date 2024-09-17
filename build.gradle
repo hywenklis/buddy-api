@@ -48,6 +48,9 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-config-client'
     implementation 'org.springframework.cloud:spring-cloud-starter'
 
+    // Spring Security
+    implementation 'org.springframework.security:spring-security-crypto'
+
     // Outras dependências
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocOpenApiVersion}"
