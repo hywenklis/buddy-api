@@ -14,11 +14,11 @@ public record PetRequest(@Schema(description = "Name of the pet", example = "Bud
                          String name,
 
                          @Schema(description = "Species of the pet",
-                                 example = "Dog, Cat, Bird, Fish, Reptile")
+                                 example = "Cachorro, Gato, Pássaro, Peixe, Réptil")
                          @NotBlank(message = "Pet species is mandatory")
                          String specie,
 
-                         @Schema(description = "Gender of the pet", example = "Male, Female")
+                         @Schema(description = "Gender of the pet", example = "Macho, Fêmea")
                          @NotBlank(message = "Pet gender is mandatory")
                          String gender,
 
