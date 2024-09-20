@@ -3,6 +3,8 @@ package com.buddy.api.web.pets.requests;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +16,7 @@ public record PetRequest(@Schema(description = "Name of the pet", example = "Bud
                          String name,
 
                          @Schema(description = "Species of the pet",
-                                 example = "Cachorro, Gato, Pássaro, Peixe, Réptil")
+                             example = "Cachorro, Gato, Pássaro, Peixe, Réptil")
                          @NotBlank(message = "Pet species is mandatory")
                          String specie,
 
@@ -23,9 +25,14 @@ public record PetRequest(@Schema(description = "Name of the pet", example = "Bud
                          String gender,
 
                          @Schema(description = "Birth date of the pet", example = "2021-01-01")
+                         @PastOrPresent(message = "Birth date must be in the past or present")
                          LocalDate birthDate,
 
                          @Schema(description = "Location of the pet", example = "Maceió, Alagoas")
+                         @Pattern(
+                             regexp = "^[a-zA-Z,\\s]+$",
+                             message = "Location must be a valid city and state"
+                         )
                          String location,
 
                          @NotNull(message = "Pet weight is mandatory")

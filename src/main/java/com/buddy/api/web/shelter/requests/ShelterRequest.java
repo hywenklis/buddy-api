@@ -16,12 +16,12 @@ public record ShelterRequest(@NotBlank(message = "Shelter name is mandatory")
                              @NotBlank(message = "Responsible person's name is mandatory")
                              String nameResponsible,
 
-                             @CPF
+                             @CPF(message = "Invalid CPF format")
                              @Unique(value = CPF, message = "CPF must be unique")
                              @NotBlank(message = "Responsible person's CPF is mandatory")
                              String cpfResponsible,
 
-                             @Email
+                             @Email(message = "Invalid email format")
                              @Unique(value = EMAIL, message = "Email must be unique")
                              @NotBlank(message = "Email is mandatory")
                              String email,
