@@ -1,5 +1,6 @@
 package com.buddy.api.web.pets.controllers;
 
+import com.buddy.api.domains.pet.dtos.PetDto;
 import com.buddy.api.domains.pet.services.CreatePet;
 import com.buddy.api.web.pets.mappers.PetMapperRequest;
 import com.buddy.api.web.pets.mappers.PetMapperResponse;
@@ -33,7 +34,8 @@ public class CreatePetController {
         description = "Register pet with their appropriate information"
     )
     public PetResponse registration(@RequestBody @Valid final PetRequest petRequest) {
-        service.create(mapperRequest.mapToDto(petRequest));
+        PetDto petDto = mapperRequest.mapToDto(petRequest);
+        service.create(petDto);
         return mapperResponse.mapToResponse();
     }
 }
