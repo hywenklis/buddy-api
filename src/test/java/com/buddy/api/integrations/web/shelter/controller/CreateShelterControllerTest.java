@@ -166,6 +166,29 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
+    @DisplayName("Should return bad request if cpfResponsible is invalid format")
+    void should_return_bad_request_cpf_responsible_is_invalid_format() throws Exception {
+        var request = createShelterRequest(
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            generateValidEmail(),
+            randomAlphabetic(10)
+        );
+
+        mockMvc
+            .perform(post(SHELTER_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("cpfResponsible"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Invalid CPF format"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+    }
+
+    @Test
     @DisplayName("Should return bad request if email is not filled in")
     void should_return_bad_request_email_not_filled() throws Exception {
         var request = createShelterRequest(
@@ -183,6 +206,29 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("email"))
             .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Email is mandatory"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return bad request if email is invalid format")
+    void should_return_bad_request_email_is_invalid_format() throws Exception {
+        var request = createShelterRequest(
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            generateValidCpf(),
+            randomAlphabetic(10),
+            randomAlphabetic(10)
+        );
+
+        mockMvc
+            .perform(post(SHELTER_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("email"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Invalid email format"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
