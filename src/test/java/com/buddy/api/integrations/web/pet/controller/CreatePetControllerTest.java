@@ -79,7 +79,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("name"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Name of mandatory pet"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Pet name is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -107,7 +107,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("specie"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Specie of mandatory pet"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Pet species is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -135,7 +135,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("gender"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Gender of mandatory pet"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Pet gender is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -163,7 +163,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("weight"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Weight of mandatory pet"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Pet weight is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -191,7 +191,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("description"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Description of mandatory pet"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Pet description is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -217,7 +217,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("shelterId"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("ShelterId of mandatory pet"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Shelter ID is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());

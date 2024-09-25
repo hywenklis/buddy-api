@@ -88,7 +88,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("email"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("EMAIL must be unique"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Email must be unique"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -111,7 +111,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("nameShelter"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Name of mandatory shelter"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Shelter name is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -136,7 +136,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
             .andExpect(jsonPath(ERROR_FIELD_PATH)
                 .value("nameResponsible"))
             .andExpect(jsonPath(ERROR_MESSAGE_PATH)
-                .value("Responsible for the mandatory shelter"))
+                .value("Responsible person's name is mandatory"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -159,7 +159,30 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("cpfResponsible"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Mandatory responsible person's CPF"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Responsible person's CPF is mandatory"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return bad request if cpfResponsible is invalid format")
+    void should_return_bad_request_cpf_responsible_is_invalid_format() throws Exception {
+        var request = createShelterRequest(
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            generateValidEmail(),
+            randomAlphabetic(10)
+        );
+
+        mockMvc
+            .perform(post(SHELTER_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("cpfResponsible"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Invalid CPF format"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
@@ -182,7 +205,30 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath(ERROR_FIELD_PATH).value("email"))
-            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Mandatory EMAIL"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Email is mandatory"))
+            .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
+            .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
+            .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return bad request if email is invalid format")
+    void should_return_bad_request_email_is_invalid_format() throws Exception {
+        var request = createShelterRequest(
+            randomAlphabetic(10),
+            randomAlphabetic(10),
+            generateValidCpf(),
+            randomAlphabetic(10),
+            randomAlphabetic(10)
+        );
+
+        mockMvc
+            .perform(post(SHELTER_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath(ERROR_FIELD_PATH).value("email"))
+            .andExpect(jsonPath(ERROR_MESSAGE_PATH).value("Invalid email format"))
             .andExpect(jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()))
             .andExpect(jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()))
             .andExpect(jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty());

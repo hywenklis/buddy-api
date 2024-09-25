@@ -10,22 +10,23 @@ import lombok.Builder;
 import org.hibernate.validator.constraints.br.CPF;
 
 @Builder
-public record ShelterRequest(@NotBlank(message = "Name of mandatory shelter")
+public record ShelterRequest(@NotBlank(message = "Shelter name is mandatory")
                              String nameShelter,
 
-                             @NotBlank(message = "Responsible for the mandatory shelter")
+                             @NotBlank(message = "Responsible person's name is mandatory")
                              String nameResponsible,
 
-                             @CPF
+                             @CPF(message = "Invalid CPF format")
                              @Unique(value = CPF, message = "CPF must be unique")
-                             @NotBlank(message = "Mandatory responsible person's CPF")
+                             @NotBlank(message = "Responsible person's CPF is mandatory")
                              String cpfResponsible,
 
-                             @Email
-                             @Unique(value = EMAIL, message = "EMAIL must be unique")
-                             @NotBlank(message = "Mandatory EMAIL")
+                             @Email(message = "Invalid email format")
+                             @Unique(value = EMAIL, message = "Email must be unique")
+                             @NotBlank(message = "Email is mandatory")
                              String email,
 
-                             @NotBlank(message = "Avatar for the mandatory shelter")
-                             String avatar) {
+                             @NotBlank(message = "Shelter avatar is mandatory")
+                             String avatar
+) {
 }
