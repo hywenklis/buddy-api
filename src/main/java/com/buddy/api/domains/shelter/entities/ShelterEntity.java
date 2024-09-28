@@ -4,6 +4,7 @@ import com.buddy.api.domains.pet.entities.PetEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,7 +52,12 @@ public class ShelterEntity {
 
     private String avatar;
 
-    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+        mappedBy = "shelter",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.EAGER
+    )
     @Builder.Default
     private List<PetEntity> pets = new ArrayList<>();
 

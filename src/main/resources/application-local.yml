@@ -23,12 +23,11 @@ spring:
     timeout-per-shutdown-phase: 5s
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-    generate-ddl: true
-    ddl-auto: update
+    generate-ddl: false
     open-in-view: true
     hibernate:
+      ddl-auto: none
       dialect: ${spring.jpa.database-platform}
       cache:
         use_second_level_cache: true
@@ -37,19 +36,29 @@ spring:
         batch_size: 20
       default_batch_fetch_size: 20
 
-    datasource:
-      driver-class-name: org.postgresql.Driver
-      hikari:
-        pool-name: buddy-local
-        maximum-pool-size: 15
-        minimum-idle: 5
-        connection-timeout: 15000
-        idle-timeout: 300000
-        max-lifetime: 900000
-        connection-test-query: "SELECT 1"
-        validation-timeout: 3000
-        initialization-fail-fast: true
-        isolate-internal-queries: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/buddydb
+    username: buddyuser
+    password: buddypassword
+    hikari:
+      pool-name: buddy-local
+      maximum-pool-size: 15
+      minimum-idle: 5
+      connection-timeout: 15000
+      idle-timeout: 300000
+      max-lifetime: 900000
+      connection-test-query: "SELECT 1"
+      validation-timeout: 3000
+      initialization-fail-fast: true
+      isolate-internal-queries: false
+
+  flyway:
+    enabled: true
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+    baseline-on-migrate: true
 
 springdoc:
   show-actuator: true
