@@ -1,4 +1,4 @@
-package com.buddy.api.domains.person.enums;
+package com.buddy.api.domains.profile.enums;
 
 public enum ProfileTypeEnum {
     ADOPTER,

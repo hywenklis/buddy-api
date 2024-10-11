@@ -1,8 +1,11 @@
-package com.buddy.api.domains.address.entities;
+package com.buddy.api.domains.profile.entities;
 
-import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,37 +30,23 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "address")
-public class AddressEntity {
+@Table(name = "profile")
+public class ProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "address_id", nullable = false)
-    private UUID addressId;
+    @Column(name = "profile_id", nullable = false, unique = true)
+    private UUID profileId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "profile_id", referencedColumnName = "profile_id", nullable = false)
+    @JoinColumn(name = "account_id", referencedColumnName = "account_id", nullable = false)
     @ToString.Exclude
-    private ProfileEntity profile;
+    private AccountEntity account;
 
-    @Column(name = "street", nullable = false)
-    private String street;
-
-    @Column(name = "city", nullable = false)
-    private String city;
-
-    @Column(name = "federative_unit", nullable = false)
-    private String federativeUnit;
-
-    @Column(name = "postal_code", nullable = false)
-    private String postalCode;
-
-    @Column(name = "district")
-    private String district;
-
-    @Column(name = "is_primary", nullable = false)
-    private Boolean isPrimary;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "profile_type", nullable = false, length = 50)
+    private ProfileTypeEnum profileType;
 
     @Column(name = "creation_date", updatable = false)
     @CreationTimestamp

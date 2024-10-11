@@ -1,17 +1,10 @@
-package com.buddy.api.domains.person.entities;
+package com.buddy.api.domains.account.entities;
 
-import com.buddy.api.domains.address.entities.AddressEntity;
-import com.buddy.api.domains.person.enums.ProfileTypeEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,7 +13,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -31,12 +23,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "person")
-public class PersonEntity {
+public class AccountEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "person_id", nullable = false)
+    @Column(name = "account_id", nullable = false, unique = true)
     private UUID personId;
 
     @Column(name = "first_name", nullable = false)
@@ -56,15 +48,6 @@ public class PersonEntity {
 
     @Column(name = "terms_of_user_consent", nullable = false)
     private Boolean termsOfUserConsent;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "address_id", referencedColumnName = "address_id", nullable = false)
-    @ToString.Exclude
-    private AddressEntity address;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "profile_type", nullable = false)
-    private ProfileTypeEnum profileType;
 
     @Column(name = "creation_date", updatable = false)
     @CreationTimestamp

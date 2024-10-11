@@ -1,4 +1,4 @@
-package com.buddy.api.domains.address.entities;
+package com.buddy.api.domains.shelter.entities;
 
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import jakarta.persistence.Column;
@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -27,37 +28,29 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "address")
-public class AddressEntity {
+@Table(name = "shelter_v2", uniqueConstraints = {
+    @UniqueConstraint(name = "uq_shelter_v2_name", columnNames = "shelter_name")
+})
+public class ShelterV2Entity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "address_id", nullable = false)
-    private UUID addressId;
+    @Column(name = "shelter_id", nullable = false, unique = true)
+    private UUID shelterId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "profile_id", referencedColumnName = "profile_id", nullable = false)
+    @JoinColumn(
+        name = "profile_id",
+        referencedColumnName = "profile_id",
+        nullable = false,
+        updatable = false
+    )
     @ToString.Exclude
     private ProfileEntity profile;
 
-    @Column(name = "street", nullable = false)
-    private String street;
-
-    @Column(name = "city", nullable = false)
-    private String city;
-
-    @Column(name = "federative_unit", nullable = false)
-    private String federativeUnit;
-
-    @Column(name = "postal_code", nullable = false)
-    private String postalCode;
-
-    @Column(name = "district")
-    private String district;
-
-    @Column(name = "is_primary", nullable = false)
-    private Boolean isPrimary;
+    @Column(name = "shelter_name", nullable = false, unique = true)
+    private String shelterName;
 
     @Column(name = "creation_date", updatable = false)
     @CreationTimestamp
@@ -67,3 +60,4 @@ public class AddressEntity {
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }
+
