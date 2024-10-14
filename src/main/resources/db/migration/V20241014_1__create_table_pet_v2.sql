@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS pet_v2 (
+    pet_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shelter_id UUID NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    species VARCHAR(50) NOT NULL,
+    gender VARCHAR(20) NOT NULL,
+    birth_date TIMESTAMP WITHOUT TIME ZONE,
+    weight DECIMAL(10, 2),
+    description TEXT,
+    creation_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pet_v2_shelter FOREIGN KEY (shelter_id) REFERENCES shelter_v2(shelter_id)
+);
+
+COMMENT ON TABLE pet_v2 IS 'Table that stores information about pets (version 2)';
+COMMENT ON COLUMN pet_v2.pet_id IS 'Unique identifier for each pet';
+COMMENT ON COLUMN pet_v2.shelter_id IS 'Foreign key linking to the shelter';
+COMMENT ON COLUMN pet_v2.name IS 'Pets name';
+COMMENT ON COLUMN pet_v2.species IS 'Pets species (e.g., dog, cat, etc.)';
+COMMENT ON COLUMN pet_v2.gender IS 'Pets gender (male, female, etc.)';
+COMMENT ON COLUMN pet_v2.birth_date IS 'Pets birth date';
+COMMENT ON COLUMN pet_v2.weight IS 'Pets weight in kilograms';
+COMMENT ON COLUMN pet_v2.description IS 'Description of the pet';
+COMMENT ON COLUMN pet_v2.creation_date IS 'The date when the pet record was created';
+COMMENT ON COLUMN pet_v2.updated_date IS 'The date when the pet record was last updated';
+
+CREATE INDEX IF NOT EXISTS idx_pet_v2_shelter_id ON pet_v2(shelter_id);
+CREATE INDEX IF NOT EXISTS idx_pet_v2_name ON pet_v2(name);
