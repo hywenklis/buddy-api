@@ -52,13 +52,10 @@ public class ShelterMemberEntity {
         nullable = false,
         updatable = false
     )
+    @ToString.Exclude
     private ShelterV2Entity shelter;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "member_type", nullable = false)
     private MemberTypeEnum memberType;
-
-    @Column(name = "is_owner", nullable = false)
-    private Boolean isOwner;
 }
-
