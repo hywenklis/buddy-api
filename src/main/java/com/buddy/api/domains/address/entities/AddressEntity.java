@@ -56,10 +56,13 @@ public class AddressEntity {
     @Column(name = "district")
     private String district;
 
+    @Column(name = "number")
+    private Long number;
+
     @Column(name = "is_primary", nullable = false)
     private Boolean isPrimary;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

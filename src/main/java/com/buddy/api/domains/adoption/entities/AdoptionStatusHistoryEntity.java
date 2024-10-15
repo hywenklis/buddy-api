@@ -56,7 +56,7 @@ public class AdoptionStatusHistoryEntity {
     @Column(name = "status_date", nullable = false)
     private LocalDateTime statusDate;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

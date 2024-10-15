@@ -43,18 +43,18 @@ public class AdoptionPostFollowUpEntity {
     private AdoptionRequestV2Entity adoptionRequest;
 
     @Column(name = "visit_date")
-    private LocalDate visitDate;
+    private LocalDateTime visitDate;
 
     @Column(name = "report")
     private String report;
 
-    @Column(name = "adaptation_status")
+    @Column(name = "adaptation_status", nullable = false)
     private AdaptationStatusEnum adaptationStatus;
 
     @Column(name = "recommendations", columnDefinition = "TEXT")
     private String recommendations;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

@@ -71,7 +71,7 @@ public class ImageEntity {
     @Column(name = "image_status")
     private String imageStatus;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

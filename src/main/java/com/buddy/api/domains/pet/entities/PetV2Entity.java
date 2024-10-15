@@ -65,7 +65,7 @@ public class PetV2Entity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

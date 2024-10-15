@@ -52,7 +52,7 @@ public class ShelterV2Entity {
     @Column(name = "shelter_name", nullable = false, unique = true)
     private String shelterName;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

@@ -22,14 +22,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "person")
+@Table(name = "account")
 public class AccountEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
     @Column(name = "account_id", nullable = false, unique = true)
-    private UUID personId;
+    private UUID accountId;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -49,7 +49,7 @@ public class AccountEntity {
     @Column(name = "terms_of_user_consent", nullable = false)
     private Boolean termsOfUserConsent;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

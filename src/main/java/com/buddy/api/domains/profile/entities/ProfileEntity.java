@@ -48,7 +48,7 @@ public class ProfileEntity {
     @Column(name = "profile_type", nullable = false, length = 50)
     private ProfileTypeEnum profileType;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 

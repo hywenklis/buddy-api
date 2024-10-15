@@ -54,7 +54,7 @@ public class AdoptionRequestV2Entity {
     @ToString.Exclude
     private ShelterV2Entity shelterEntity;
 
-    @Column(name = "creation_date", updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
