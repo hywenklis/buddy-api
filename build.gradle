@@ -52,7 +52,7 @@ dependencies {
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocOpenApiVersion}"
     implementation "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}"
-    implementation 'io.micrometer:micrometer-tracing-bridge-brave:1.3.4'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave:1.3.5'
     implementation 'org.flywaydb:flyway-core'
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
