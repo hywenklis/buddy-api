@@ -44,9 +44,21 @@ public class ProfileEntity {
     @ToString.Exclude
     private AccountEntity account;
 
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "bio")
+    private String bio;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "profile_type", nullable = false, length = 50)
     private ProfileTypeEnum profileType;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
