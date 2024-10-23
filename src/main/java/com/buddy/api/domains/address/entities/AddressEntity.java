@@ -44,20 +44,26 @@ public class AddressEntity {
     @Column(name = "street", nullable = false)
     private String street;
 
+    @Column(name = "number")
+    private String number;
+
+    @Column(name = "complement")
+    private String complement;
+
     @Column(name = "city", nullable = false)
     private String city;
 
     @Column(name = "federative_unit", nullable = false)
     private String federativeUnit;
 
+    @Column(name = "country", nullable = false)
+    private String country;
+
     @Column(name = "postal_code", nullable = false)
     private String postalCode;
 
-    @Column(name = "district")
-    private String district;
-
-    @Column(name = "number")
-    private Long number;
+    @Column(name = "neighbourhood")
+    private String neighbourhood;
 
     @Column(name = "is_primary", nullable = false)
     private Boolean isPrimary;
@@ -66,7 +72,7 @@ public class AddressEntity {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }
