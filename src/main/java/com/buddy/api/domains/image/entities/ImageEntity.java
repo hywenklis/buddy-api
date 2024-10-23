@@ -71,11 +71,14 @@ public class ImageEntity {
     @Column(name = "image_status")
     private String imageStatus;
 
+    @Column(name = "display_order")
+    private Integer displayOrder;
+
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }
