@@ -35,15 +35,10 @@ public class AdoptionQuestionnaireEntity {
     @Column(name = "questionnaire_id", nullable = false, unique = true)
     private UUID questionnaireId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "request_id", referencedColumnName = "request_id", nullable = false)
-    @ToString.Exclude
-    private AdoptionRequestV2Entity adoptionRequest;
-
     @Column(name = "housing_type")
     private String housingType;
 
-    @Column(name = "has_other_pets")
+    @Column(name = "has_other_pets", nullable = false)
     private Boolean hasOtherPets;
 
     @Column(name = "family_routine")
@@ -55,17 +50,17 @@ public class AdoptionQuestionnaireEntity {
     @Column(name = "motivation")
     private String motivation;
 
-    @Column(name = "home_visit_agreement")
+    @Column(name = "home_visit_agreement", nullable = false)
     private Boolean homeVisitAgreement;
 
-    @Column(name = "follow_up_agreement")
+    @Column(name = "follow_up_agreement", nullable = false)
     private Boolean followUpAgreement;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }

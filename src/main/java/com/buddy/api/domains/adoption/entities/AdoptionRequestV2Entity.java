@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -40,25 +41,50 @@ public class AdoptionRequestV2Entity {
     private UUID requestId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pet_id", referencedColumnName = "pet_id", nullable = false)
+    @JoinColumn(
+            name = "pet_id",
+            referencedColumnName = "pet_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
     private PetV2Entity pet;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "profile_id", referencedColumnName = "profile_id", nullable = false)
+    @JoinColumn(
+            name = "adopter_profile_id",
+            referencedColumnName = "profile_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
-    private ProfileEntity profile;
+    private ProfileEntity adopterProfile;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "shelter_id", referencedColumnName = "shelter_id", nullable = false)
+    @JoinColumn(
+            name = "pet_owner_profile_id",
+            referencedColumnName = "profile_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
-    private ShelterV2Entity shelterEntity;
+    private ProfileEntity petOwnerProfile;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "questionnaire_id",
+            referencedColumnName = "questionnaire_id",
+            nullable = false,
+            updatable = false
+    )
+    @ToString.Exclude
+    private AdoptionQuestionnaireEntity questionnaire;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }
