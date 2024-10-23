@@ -1,5 +1,6 @@
 package com.buddy.api.domains.pet.entities;
 
+import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.shelter.entities.ShelterV2Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -39,13 +41,12 @@ public class PetV2Entity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-        name = "shelter_id",
-        referencedColumnName = "shelter_id",
-        nullable = false,
-        updatable = false
+        name = "profile_id",
+        referencedColumnName = "profile_id",
+        nullable = false
     )
     @ToString.Exclude
-    private ShelterV2Entity shelter;
+    private ProfileEntity ownerProfile;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -56,8 +57,14 @@ public class PetV2Entity {
     @Column(name = "gender", nullable = false)
     private String gender;
 
-    @Column(name = "birth_date")
-    private LocalDateTime birthDate;
+    @Column(name = "approximate_age")
+    private Integer approximateAge;
+
+    @Column(name = "age_report_date")
+    private LocalDate ageReportDate;
+
+    @Column(name = "size", precision = 10, scale = 2)
+    private BigDecimal size;
 
     @Column(name = "weight", precision = 10, scale = 2)
     private BigDecimal weight;
@@ -65,11 +72,17 @@ public class PetV2Entity {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "is_neutered")
+    private Boolean isNeutered;
+
+    @Column(name = "is_for_adoption", nullable = false)
+    private Boolean isForAdoption;
+
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }
