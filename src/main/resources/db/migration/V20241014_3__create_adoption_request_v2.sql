@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS adoption_request_v2 (
-    request_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    request_id UUID PRIMARY KEY,
     pet_id UUID NOT NULL,
     profile_id UUID NOT NULL,
     shelter_id UUID NOT NULL,

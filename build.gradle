@@ -34,6 +34,7 @@ ext {
     set('lombokVersion', "1.18.30")
     set('postgresqlVersion', "42.7.2")
     set('h2Version', "2.2.224")
+    set('spotbugsVersion', '4.7.3')
 }
 
 dependencies {
@@ -56,7 +57,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugs.toolVersion.get()}"
+    compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugsVersion}"
 
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"

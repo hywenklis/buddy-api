@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS adoption_questionnaire (
-    questionnaire_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    questionnaire_id UUID PRIMARY KEY,
     request_id UUID NOT NULL,
     housing_type VARCHAR(100),
     has_other_pets BOOLEAN,

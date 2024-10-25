@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS image (
-    image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    image_id UUID PRIMARY KEY,
     profile_id UUID,
     pet_id UUID,
     is_avatar BOOLEAN NOT NULL DEFAULT FALSE,

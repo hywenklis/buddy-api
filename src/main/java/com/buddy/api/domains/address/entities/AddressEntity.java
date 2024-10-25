@@ -57,7 +57,7 @@ public class AddressEntity {
     private String district;
 
     @Column(name = "number")
-    private Long number;
+    private Integer number;
 
     @Column(name = "is_primary", nullable = false)
     private Boolean isPrimary;

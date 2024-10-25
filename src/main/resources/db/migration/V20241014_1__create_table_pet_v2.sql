@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS pet_v2 (
-    pet_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    pet_id UUID PRIMARY KEY,
     shelter_id UUID NOT NULL,
     name VARCHAR(100) NOT NULL,
     species VARCHAR(50) NOT NULL,

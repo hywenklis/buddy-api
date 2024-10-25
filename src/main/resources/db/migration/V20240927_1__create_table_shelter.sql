@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS shelter (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     name_shelter VARCHAR(255) NOT NULL,
     name_responsible VARCHAR(255) NOT NULL,
     cpf_responsible VARCHAR(14) NOT NULL UNIQUE,

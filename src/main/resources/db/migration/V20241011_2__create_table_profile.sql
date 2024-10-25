@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS profile (
-    profile_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    profile_id UUID PRIMARY KEY,
     account_id UUID NOT NULL,
     profile_type VARCHAR(50) NOT NULL,
     creation_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS shelter_member (
-    member_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    member_id UUID PRIMARY KEY,
     profile_id UUID NOT NULL,
     shelter_id UUID NOT NULL,
     member_type VARCHAR(50) NOT NULL,

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS adoption_post_follow_up (
-    follow_up_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    follow_up_id UUID PRIMARY KEY,
     request_id UUID NOT NULL,
     visit_date DATE,
     report VARCHAR(255),
