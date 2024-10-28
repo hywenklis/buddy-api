@@ -63,7 +63,7 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 
-    runtimeOnly 'org.flywaydb:flyway-database-postgresql:10.20.0'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql:10.20.1'
     runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
