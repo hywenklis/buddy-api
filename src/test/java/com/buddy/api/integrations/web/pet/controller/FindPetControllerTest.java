@@ -15,6 +15,7 @@ import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return last two pets ordered by createDate descending")
     void return_last_two_pets_ordered_createDate_desc() throws Exception {
         savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity lolo = savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity kiki = savePetWithName(randomAlphabetic(4));
 
         performGetRequestAndExpectTwoPets(
@@ -47,6 +50,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_pets_ordered_createDate_desc_default() throws Exception {
         clearRepositories();
         PetEntity lolo = savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity kiki = savePetWithName(randomAlphabetic(4));
 
         performGetRequestAndExpectTwoPets(PET_BASE_URL, kiki, lolo);
@@ -57,8 +61,10 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_first_two_pets_ordered_createDate_asc() throws Exception {
         clearRepositories();
 
-        PetEntity tata = savePetWithName(randomAlphabetic(4));
+        final PetEntity tata = savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity lolo = savePetWithName(randomAlphabetic(4));
+        addDelay();
         savePetWithName(randomAlphabetic(4));
 
         performGetRequestAndExpectTwoPets(
@@ -73,7 +79,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_all_pets_when_no_order_defined() throws Exception {
         savePetWithName(randomAlphabetic(4));
         savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity kiki = savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity zeze = savePetWithName(randomAlphabetic(4));
 
         performGetRequestAndExpectTwoPets(PET_BASE_URL + "?page=0&size=2", zeze, kiki);
@@ -122,6 +130,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
         String petName = randomAlphabetic(4);
         PetEntity firstTata = savePetWithName(petName);
         savePetWithName(randomAlphabetic(4));
+        addDelay();
         PetEntity secondTata = savePetWithName(petName);
 
         performGetRequestAndExpectTwoPets(
@@ -135,6 +144,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return pets with age between 0 and 1 years including")
     void return_pet_by_ageRange_0_to_1_years() throws Exception {
         PetEntity zeroYearsPet = savePetWithBirthDate(LocalDate.now().minusMonths(3));
+        addDelay();
         PetEntity almostOneYearPet =
             savePetWithBirthDate(LocalDate.now().minusYears(1).plusDays(1));
         savePetWithBirthDate(LocalDate.now().minusYears(1).minusDays(1));
@@ -153,6 +163,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_pet_by_ageRange_1_to_2_years() throws Exception {
         savePetWithBirthDate(LocalDate.now().minusMonths(3));
         PetEntity oneYearPet = savePetWithAge(1);
+        addDelay();
         PetEntity almostTwoYearsPet =
             savePetWithBirthDate(LocalDate.now().minusYears(2).plusDays(1));
         savePetWithAge(2);
@@ -169,6 +180,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_pet_by_ageRange_2_to_3_years() throws Exception {
         savePetWithBirthDate(LocalDate.now().minusYears(2).plusDays(1));
         PetEntity twoYearsPet = savePetWithAge(2);
+        addDelay();
         PetEntity almostThreeYearsPet =
             savePetWithBirthDate(LocalDate.now().minusYears(3).plusDays(1));
         savePetWithAge(3);
@@ -182,6 +194,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_pet_by_ageRange_3_to_5_years() throws Exception {
         savePetWithBirthDate(LocalDate.now().minusYears(3).plusDays(1));
         PetEntity threeYearsPet = savePetWithAge(3);
+        addDelay();
         PetEntity almostFiveYearsPet =
             savePetWithBirthDate(LocalDate.now().minusYears(5).plusDays(1));
         savePetWithAge(5);
@@ -195,6 +208,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_pet_by_ageRange_5_to_10_years() throws Exception {
         savePetWithBirthDate(LocalDate.now().minusYears(5).plusDays(1));
         PetEntity fiveYearsPet = savePetWithAge(5);
+        addDelay();
         PetEntity almostTenYearsPet =
             savePetWithBirthDate(LocalDate.now().minusYears(10).plusDays(1));
         savePetWithAge(10);
@@ -208,6 +222,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_pet_by_ageRange_10_plus_years() throws Exception {
         savePetWithBirthDate(LocalDate.now().minusYears(10).plusDays(1));
         PetEntity tenYearsPet = savePetWithAge(10);
+        addDelay();
         PetEntity twelveYearsPet = savePetWithAge(12);
 
         performGetRequestAndExpectTwoPetsInOrder(
@@ -223,6 +238,10 @@ class FindPetControllerTest extends IntegrationTestAbstract {
 
     private PetEntity savePetWithAge(final int age) {
         return petRepository.save(PetComponentBuilder.valid(shelter, age).build());
+    }
+    
+    private void addDelay() throws InterruptedException {
+        TimeUnit.MICROSECONDS.sleep(1);
     }
 
     private PetEntity savePetWithBirthDate(final LocalDate birthDate) {
