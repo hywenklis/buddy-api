@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.buddy.api.components.PetComponentBuilder;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import java.time.LocalDate;
@@ -31,9 +30,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return last two pets ordered by createDate descending")
     void return_last_two_pets_ordered_createDate_desc() throws Exception {
-        savePetWithName(randomAlphabetic(4));
-        PetEntity lolo = savePetWithName(randomAlphabetic(4));
-        PetEntity kiki = savePetWithName(randomAlphabetic(4));
+        petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity lolo = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity kiki = petComponent.savePetWithName(randomAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(
             PET_BASE_URL + "?page=0&size=2&sort=createDate,desc",
@@ -46,8 +45,8 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return pets ordered by createDate descending by default")
     void return_pets_ordered_createDate_desc_default() throws Exception {
         clearRepositories();
-        PetEntity lolo = savePetWithName(randomAlphabetic(4));
-        PetEntity kiki = savePetWithName(randomAlphabetic(4));
+        PetEntity lolo = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity kiki = petComponent.savePetWithName(randomAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(PET_BASE_URL, kiki, lolo);
     }
@@ -57,9 +56,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_first_two_pets_ordered_createDate_asc() throws Exception {
         clearRepositories();
 
-        PetEntity tata = savePetWithName(randomAlphabetic(4));
-        PetEntity lolo = savePetWithName(randomAlphabetic(4));
-        savePetWithName(randomAlphabetic(4));
+        PetEntity tata = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity lolo = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        petComponent.savePetWithName(randomAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(
             PET_BASE_URL + "?page=0&size=2&sort=createDate,asc",
@@ -71,10 +70,10 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should correctly paginate when only page and size are provided")
     void return_all_pets_when_no_order_defined() throws Exception {
-        savePetWithName(randomAlphabetic(4));
-        savePetWithName(randomAlphabetic(4));
-        PetEntity kiki = savePetWithName(randomAlphabetic(4));
-        PetEntity zeze = savePetWithName(randomAlphabetic(4));
+        petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity kiki = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity zeze = petComponent.savePetWithName(randomAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(PET_BASE_URL + "?page=0&size=2", zeze, kiki);
     }
@@ -82,7 +81,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pet by id")
     void return_pet_by_id() throws Exception {
-        PetEntity pet = savePetWithName(randomAlphabetic(4));
+        PetEntity pet = petComponent.savePetWithName(randomAlphabetic(4), shelter);
 
         mockMvc.perform(get(PET_BASE_URL + "?id=" + pet.getId()))
             .andExpect(status().isOk())
@@ -120,9 +119,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return pets with given name")
     void return_pet_by_name() throws Exception {
         String petName = randomAlphabetic(4);
-        PetEntity firstTata = savePetWithName(petName);
-        savePetWithName(randomAlphabetic(4));
-        PetEntity secondTata = savePetWithName(petName);
+        PetEntity firstTata = petComponent.savePetWithName(petName, shelter);
+        petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity secondTata = petComponent.savePetWithName(petName, shelter);
 
         performGetRequestAndExpectTwoPets(
             PET_BASE_URL + "?name=" + firstTata.getName() + "&page=0&size=2",
@@ -134,10 +133,15 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with age between 0 and 1 years including")
     void return_pet_by_ageRange_0_to_1_years() throws Exception {
-        PetEntity zeroYearsPet = savePetWithBirthDate(LocalDate.now().minusMonths(3));
-        PetEntity almostOneYearPet =
-            savePetWithBirthDate(LocalDate.now().minusYears(1).plusDays(1));
-        savePetWithBirthDate(LocalDate.now().minusYears(1).minusDays(1));
+        PetEntity zeroYearsPet = petComponent.savePetWithBirthDate(
+            LocalDate.now().minusMonths(3), shelter
+        );
+        PetEntity almostOneYearPet = petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(1).plusDays(1), shelter
+        );
+        petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(1).minusDays(1), shelter
+        );
 
         assertThat(almostOneYearPet.getCreateDate()).isAfter(zeroYearsPet.getCreateDate());
 
@@ -151,11 +155,12 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with 1 <= age < 2")
     void return_pet_by_ageRange_1_to_2_years() throws Exception {
-        savePetWithBirthDate(LocalDate.now().minusMonths(3));
-        PetEntity oneYearPet = savePetWithAge(1);
-        PetEntity almostTwoYearsPet =
-            savePetWithBirthDate(LocalDate.now().minusYears(2).plusDays(1));
-        savePetWithAge(2);
+        petComponent.savePetWithBirthDate(LocalDate.now().minusMonths(3), shelter);
+        PetEntity oneYearPet = petComponent.savePetWithAge(1, shelter);
+        PetEntity almostTwoYearsPet = petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(2).plusDays(1), shelter
+        );
+        petComponent.savePetWithAge(2, shelter);
 
         performGetRequestAndExpectTwoPetsInOrder(
             PET_BASE_URL + "?ageRange=1-2 anos",
@@ -167,11 +172,14 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with 2 <= age < 3")
     void return_pet_by_ageRange_2_to_3_years() throws Exception {
-        savePetWithBirthDate(LocalDate.now().minusYears(2).plusDays(1));
-        PetEntity twoYearsPet = savePetWithAge(2);
-        PetEntity almostThreeYearsPet =
-            savePetWithBirthDate(LocalDate.now().minusYears(3).plusDays(1));
-        savePetWithAge(3);
+        petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(2).plusDays(1), shelter
+        );
+        PetEntity twoYearsPet = petComponent.savePetWithAge(2, shelter);
+        PetEntity almostThreeYearsPet = petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(3).plusDays(1), shelter
+        );
+        petComponent.savePetWithAge(3, shelter);
 
         performGetRequestAndExpectTwoPetsInOrder(PET_BASE_URL + "?ageRange=2-3 anos",
             almostThreeYearsPet, twoYearsPet);
@@ -180,11 +188,14 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with 3 <= age < 5")
     void return_pet_by_ageRange_3_to_5_years() throws Exception {
-        savePetWithBirthDate(LocalDate.now().minusYears(3).plusDays(1));
-        PetEntity threeYearsPet = savePetWithAge(3);
-        PetEntity almostFiveYearsPet =
-            savePetWithBirthDate(LocalDate.now().minusYears(5).plusDays(1));
-        savePetWithAge(5);
+        petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(3).plusDays(1), shelter
+        );
+        PetEntity threeYearsPet = petComponent.savePetWithAge(3, shelter);
+        PetEntity almostFiveYearsPet = petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(5).plusDays(1), shelter
+        );
+        petComponent.savePetWithAge(5, shelter);
 
         performGetRequestAndExpectTwoPetsInOrder(PET_BASE_URL + "?ageRange=3-5 anos",
             almostFiveYearsPet, threeYearsPet);
@@ -193,11 +204,14 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with 5 <= age 10")
     void return_pet_by_ageRange_5_to_10_years() throws Exception {
-        savePetWithBirthDate(LocalDate.now().minusYears(5).plusDays(1));
-        PetEntity fiveYearsPet = savePetWithAge(5);
-        PetEntity almostTenYearsPet =
-            savePetWithBirthDate(LocalDate.now().minusYears(10).plusDays(1));
-        savePetWithAge(10);
+        petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(5).plusDays(1), shelter
+        );
+        PetEntity fiveYearsPet = petComponent.savePetWithAge(5, shelter);
+        PetEntity almostTenYearsPet = petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(10).plusDays(1), shelter
+        );
+        petComponent.savePetWithAge(10, shelter);
 
         performGetRequestAndExpectTwoPetsInOrder(PET_BASE_URL + "?ageRange=5-10 anos",
             almostTenYearsPet, fiveYearsPet);
@@ -206,27 +220,17 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with 10 <= age")
     void return_pet_by_ageRange_10_plus_years() throws Exception {
-        savePetWithBirthDate(LocalDate.now().minusYears(10).plusDays(1));
-        PetEntity tenYearsPet = savePetWithAge(10);
-        PetEntity twelveYearsPet = savePetWithAge(12);
+        petComponent.savePetWithBirthDate(
+            LocalDate.now().minusYears(10).plusDays(1), shelter
+        );
+        PetEntity tenYearsPet = petComponent.savePetWithAge(10, shelter);
+        PetEntity twelveYearsPet = petComponent.savePetWithAge(12, shelter);
 
         performGetRequestAndExpectTwoPetsInOrder(
             PET_BASE_URL + "?ageRange=10+ anos",
             twelveYearsPet,
             tenYearsPet
         );
-    }
-
-    private PetEntity savePetWithName(final String name) {
-        return petRepository.save(PetComponentBuilder.valid(shelter).name(name).build());
-    }
-
-    private PetEntity savePetWithAge(final int age) {
-        return petRepository.save(PetComponentBuilder.valid(shelter, age).build());
-    }
-
-    private PetEntity savePetWithBirthDate(final LocalDate birthDate) {
-        return petRepository.save(PetComponentBuilder.valid(shelter).birthDate(birthDate).build());
     }
 
     private void performGetRequestAndExpectTwoPets(final String url,
