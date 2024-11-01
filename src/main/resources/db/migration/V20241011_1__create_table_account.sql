@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS account (
-    account_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(20),
     password VARCHAR(255) NOT NULL,

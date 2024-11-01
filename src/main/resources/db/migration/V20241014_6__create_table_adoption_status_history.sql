@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS adoption_status_history (
-    status_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    status_id UUID PRIMARY KEY,
     request_id UUID NOT NULL,
     status_name VARCHAR(100) NOT NULL,
     member_id UUID NOT NULL,

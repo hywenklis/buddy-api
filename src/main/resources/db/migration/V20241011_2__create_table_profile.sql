@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS profile (
-    profile_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    profile_id UUID PRIMARY KEY,
     account_id UUID NOT NULL,
     name VARCHAR(100) NOT NULL,
     description VARCHAR(255),
