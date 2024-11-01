@@ -21,6 +21,7 @@ COMMENT ON COLUMN account.terms_of_user_consent IS 'User consent to the terms of
 COMMENT ON COLUMN account.is_verified IS 'Indicates if the account is verified';
 COMMENT ON COLUMN account.is_blocked IS 'Indicates if the account is blocked';
 COMMENT ON COLUMN account.is_deleted IS 'Indicates if the account is deleted';
+COMMENT ON COLUMN account.last_login IS 'Last date when the account was authenticated';
 COMMENT ON COLUMN account.creation_date IS 'Record creation date';
 COMMENT ON COLUMN account.updated_date IS 'Record last update date';
 
