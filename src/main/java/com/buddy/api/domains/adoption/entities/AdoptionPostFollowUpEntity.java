@@ -1,8 +1,11 @@
 package com.buddy.api.domains.adoption.entities;
 
 import com.buddy.api.domains.adoption.enums.AdaptationStatusEnum;
+import com.buddy.api.domains.profile.entities.ProfileEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,9 +41,24 @@ public class AdoptionPostFollowUpEntity {
     private UUID followUpId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "request_id", referencedColumnName = "request_id", nullable = false)
+    @JoinColumn(
+            name = "adoption_request_v2_id",
+            referencedColumnName = "adoption_request_v2_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
-    private AdoptionRequestV2Entity adoptionRequest;
+    private AdoptionRequestV2Entity adoptionRequestV2;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "profile_id",
+            referencedColumnName = "profile_id",
+            nullable = false,
+            updatable = false
+    )
+    @ToString.Exclude
+    private ProfileEntity followUpCreatorProfile;
 
     @Column(name = "visit_date")
     private LocalDateTime visitDate;
@@ -48,6 +66,7 @@ public class AdoptionPostFollowUpEntity {
     @Column(name = "report")
     private String report;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "adaptation_status", nullable = false)
     private AdaptationStatusEnum adaptationStatus;
 
@@ -58,7 +77,7 @@ public class AdoptionPostFollowUpEntity {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }

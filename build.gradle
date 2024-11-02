@@ -35,6 +35,8 @@ ext {
     set('postgresqlVersion', "42.7.2")
     set('h2Version', "2.2.224")
     set('spotbugsVersion', '4.7.3')
+    set('micrometerVersion', '1.3.5')
+    set('flywayPostgresVersion', '10.20.1')
 }
 
 dependencies {
@@ -53,7 +55,7 @@ dependencies {
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocOpenApiVersion}"
     implementation "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}"
-    implementation 'io.micrometer:micrometer-tracing-bridge-brave:1.3.5'
+    implementation "io.micrometer:micrometer-tracing-bridge-brave:${micrometerVersion}"
     implementation 'org.flywaydb:flyway-core'
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -64,7 +66,7 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 
-    runtimeOnly 'org.flywaydb:flyway-database-postgresql:10.20.1'
+    runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayPostgresVersion}"
     runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

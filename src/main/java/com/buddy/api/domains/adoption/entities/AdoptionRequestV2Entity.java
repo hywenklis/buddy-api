@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -36,29 +37,54 @@ public class AdoptionRequestV2Entity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "request_id", nullable = false, unique = true)
-    private UUID requestId;
+    @Column(name = "adoption_request_v2_id", nullable = false, unique = true)
+    private UUID adoptionRequestV2Id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pet_id", referencedColumnName = "pet_id", nullable = false)
+    @JoinColumn(
+            name = "pet_v2_id",
+            referencedColumnName = "pet_v2_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
-    private PetV2Entity pet;
+    private PetV2Entity petV2;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "profile_id", referencedColumnName = "profile_id", nullable = false)
+    @JoinColumn(
+            name = "adopter_profile_id",
+            referencedColumnName = "profile_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
-    private ProfileEntity profile;
+    private ProfileEntity adopterProfile;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "shelter_id", referencedColumnName = "shelter_id", nullable = false)
+    @JoinColumn(
+            name = "pet_guardian_profile_id",
+            referencedColumnName = "profile_id",
+            nullable = false,
+            updatable = false
+    )
     @ToString.Exclude
-    private ShelterV2Entity shelterEntity;
+    private ProfileEntity petGuardianProfile;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "adoption_questionnaire_id",
+            referencedColumnName = "adoption_questionnaire_id",
+            nullable = false,
+            updatable = false
+    )
+    @ToString.Exclude
+    private AdoptionQuestionnaireEntity adoptionQuestionnaire;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }

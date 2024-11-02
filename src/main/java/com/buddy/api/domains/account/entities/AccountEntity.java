@@ -31,12 +31,6 @@ public class AccountEntity {
     @Column(name = "account_id", nullable = false, unique = true)
     private UUID accountId;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
-
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -49,11 +43,23 @@ public class AccountEntity {
     @Column(name = "terms_of_user_consent", nullable = false)
     private Boolean termsOfUserConsent;
 
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified;
+
+    @Column(name = "is_blocked", nullable = false)
+    private Boolean isBlocked;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }

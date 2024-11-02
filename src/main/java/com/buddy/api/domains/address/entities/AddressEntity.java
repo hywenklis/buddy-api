@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -44,20 +45,32 @@ public class AddressEntity {
     @Column(name = "street", nullable = false)
     private String street;
 
+    @Column(name = "number")
+    private String number;
+
+    @Column(name = "complement")
+    private String complement;
+
     @Column(name = "city", nullable = false)
     private String city;
 
     @Column(name = "federative_unit", nullable = false)
     private String federativeUnit;
 
+    @Column(name = "country", nullable = false)
+    private String country;
+
     @Column(name = "postal_code", nullable = false)
     private String postalCode;
 
-    @Column(name = "district")
-    private String district;
+    @Column(name = "neighbourhood")
+    private String neighbourhood;
 
-    @Column(name = "number")
-    private Integer number;
+    @Column(name = "latitude", nullable = false)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", nullable = false)
+    private BigDecimal longitude;
 
     @Column(name = "is_primary", nullable = false)
     private Boolean isPrimary;
@@ -66,7 +79,7 @@ public class AddressEntity {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "updated_date")
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 }
