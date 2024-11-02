@@ -40,13 +40,13 @@ public class AdoptionPostFollowUpEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "request_id",
+            name = "adoption_request_v2_id",
             referencedColumnName = "request_id",
             nullable = false,
             updatable = false
     )
     @ToString.Exclude
-    private AdoptionRequestV2Entity adoptionRequest;
+    private AdoptionRequestV2Entity adoptionRequestV2;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
