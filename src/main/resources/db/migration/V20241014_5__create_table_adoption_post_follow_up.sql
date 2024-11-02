@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS adoption_post_follow_up (
     recommendations TEXT,
     creation_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_follow_up_request FOREIGN KEY (adoption_request_v2_id) REFERENCES adoption_request_v2(request_id),
+    CONSTRAINT fk_follow_up_request FOREIGN KEY (adoption_request_v2_id)
+        REFERENCES adoption_request_v2(adoption_request_v2_id),
     CONSTRAINT fk_follow_up_profile FOREIGN KEY (profile_id) REFERENCES profile(profile_id)
 );
 

@@ -42,7 +42,7 @@ public class AdoptionStatusHistoryEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "adoption_request_v2_id",
-            referencedColumnName = "request_id",
+            referencedColumnName = "adoption_request_v2_id",
             nullable = false
     )
     @ToString.Exclude

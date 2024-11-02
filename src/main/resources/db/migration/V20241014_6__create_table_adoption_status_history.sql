@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS adoption_status_history (
     creation_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_adoption_status_history_request FOREIGN KEY (adoption_request_v2_id)
-        REFERENCES adoption_request_v2(request_id),
+        REFERENCES adoption_request_v2(adoption_request_v2_id),
     CONSTRAINT fk_adoption_status_history_member FOREIGN KEY (member_id) REFERENCES shelter_member(member_id)
 );
 

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS adoption_request_v2 (
-    request_id UUID PRIMARY KEY,
+    adoption_request_v2_id UUID PRIMARY KEY,
     pet_id UUID NOT NULL,
     adopter_profile_id UUID NOT NULL,
     pet_owner_profile_id UUID NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS adoption_request_v2 (
 );
 
 COMMENT ON TABLE adoption_request_v2 IS 'Table that stores information about adoption requests v2';
-COMMENT ON COLUMN adoption_request_v2.request_id IS 'Unique identifier for each request';
+COMMENT ON COLUMN adoption_request_v2.adoption_request_v2_id IS 'Unique identifier for each request';
 COMMENT ON COLUMN adoption_request_v2.pet_id IS 'Foreign key linking to the pet table';
 COMMENT ON COLUMN adoption_request_v2.adopter_profile_id IS 'Foreign key linking to the adopter profile';
 COMMENT ON COLUMN adoption_request_v2.pet_owner_profile_id

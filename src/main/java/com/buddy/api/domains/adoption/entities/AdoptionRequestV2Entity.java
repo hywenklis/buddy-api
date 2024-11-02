@@ -37,8 +37,8 @@ public class AdoptionRequestV2Entity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "request_id", nullable = false, unique = true)
-    private UUID requestId;
+    @Column(name = "adoption_request_v2_id", nullable = false, unique = true)
+    private UUID adoptionRequestV2Id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
