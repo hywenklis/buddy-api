@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -64,6 +66,12 @@ public class AddressEntity {
 
     @Column(name = "neighbourhood")
     private String neighbourhood;
+
+    @Column(name = "latitude", nullable = false)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", nullable = false)
+    private BigDecimal longitude;
 
     @Column(name = "is_primary", nullable = false)
     private Boolean isPrimary;
