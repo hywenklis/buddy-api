@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS adoption_post_follow_up (
 COMMENT ON TABLE adoption_post_follow_up IS 'Table that stores post-adoption follow-up records';
 COMMENT ON COLUMN adoption_post_follow_up.follow_up_id IS 'Unique identifier for each follow-up';
 COMMENT ON COLUMN adoption_post_follow_up.request_id IS 'Foreign key linking to adoption request';
-COMMENT ON COLUMN adoption_post_follow_up.request_id
+COMMENT ON COLUMN adoption_post_follow_up.profile_id
     IS 'Foreign key linking to profile that made the follow-up';
 COMMENT ON COLUMN adoption_post_follow_up.visit_date IS 'Date of the follow-up visit';
 COMMENT ON COLUMN adoption_post_follow_up.report IS 'Follow-up visit report';
