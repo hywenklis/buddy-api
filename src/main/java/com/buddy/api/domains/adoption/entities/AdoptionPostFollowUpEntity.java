@@ -4,6 +4,8 @@ import com.buddy.api.domains.adoption.enums.AdaptationStatusEnum;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -64,6 +66,7 @@ public class AdoptionPostFollowUpEntity {
     @Column(name = "report")
     private String report;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "adaptation_status", nullable = false)
     private AdaptationStatusEnum adaptationStatus;
 
