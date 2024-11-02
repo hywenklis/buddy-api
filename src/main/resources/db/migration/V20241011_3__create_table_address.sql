@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS address (
     address_id UUID PRIMARY KEY,
     profile_id UUID NOT NULL,
     street VARCHAR(255) NOT NULL,
-    number INTEGER,
+    number VARCHAR(10),
     complement VARCHAR(255),
     city VARCHAR(100) NOT NULL,
     federative_unit VARCHAR(50) NOT NULL,
