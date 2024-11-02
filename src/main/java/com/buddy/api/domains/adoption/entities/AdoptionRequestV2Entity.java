@@ -62,13 +62,13 @@ public class AdoptionRequestV2Entity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "pet_owner_profile_id",
+            name = "pet_guardian_profile_id",
             referencedColumnName = "profile_id",
             nullable = false,
             updatable = false
     )
     @ToString.Exclude
-    private ProfileEntity petOwnerProfile;
+    private ProfileEntity petGuardianProfile;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
