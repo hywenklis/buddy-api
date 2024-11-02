@@ -1,9 +1,12 @@
 package com.buddy.api.domains.pet.entities;
 
+import com.buddy.api.domains.pet.enums.PetGender;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.shelter.entities.ShelterV2Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -54,8 +57,9 @@ public class PetV2Entity {
     @Column(name = "species", nullable = false)
     private String species;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false)
-    private String gender;
+    private PetGender gender;
 
     @Column(name = "approximate_age")
     private Integer approximateAge;
