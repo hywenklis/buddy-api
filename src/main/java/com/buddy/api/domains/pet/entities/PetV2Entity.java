@@ -46,7 +46,7 @@ public class PetV2Entity {
         nullable = false
     )
     @ToString.Exclude
-    private ProfileEntity ownerProfile;
+    private ProfileEntity guardianProfile;
 
     @Column(name = "name", nullable = false)
     private String name;
