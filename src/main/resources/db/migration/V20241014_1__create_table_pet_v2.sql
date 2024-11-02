@@ -14,14 +14,15 @@ CREATE TABLE IF NOT EXISTS pet_v2 (
     creation_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pet_v2_profile FOREIGN KEY (profile_id) REFERENCES profile(profile_id),
-    CONSTRAINT ck_pet_v2_gender CHECK (gender IN ('MALE', 'FEMALE', 'UNKNOWN'))
+    CONSTRAINT ck_pet_v2_gender CHECK (gender IN ('MALE', 'FEMALE', 'UNKNOWN')),
+    CONSTRAINT ck_pet_v2_species CHECK (species IN ('CAT', 'DOG', 'BIRD', 'REPTILE', 'FISH'))
 );
 
 COMMENT ON TABLE pet_v2 IS 'Table that stores information about pets (version 2)';
 COMMENT ON COLUMN pet_v2.pet_v2_id IS 'Unique identifier for each pet';
 COMMENT ON COLUMN pet_v2.profile_id IS 'Foreign key linking to the pet owner profile';
 COMMENT ON COLUMN pet_v2.name IS 'Pets name';
-COMMENT ON COLUMN pet_v2.species IS 'Pets species (e.g., dog, cat, etc.)';
+COMMENT ON COLUMN pet_v2.species IS 'CAT | DOG | BIRD | REPTILE | FISH';
 COMMENT ON COLUMN pet_v2.gender IS 'MALE | FEMALE | UNKNOWN';
 COMMENT ON COLUMN pet_v2.approximate_age IS 'Pets approximate age';
 COMMENT ON COLUMN pet_v2.age_report_date IS 'Date when the age was estimated';
