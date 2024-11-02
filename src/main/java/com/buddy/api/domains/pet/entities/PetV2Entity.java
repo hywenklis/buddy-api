@@ -36,8 +36,8 @@ public class PetV2Entity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "pet_id", nullable = false, unique = true)
-    private UUID petId;
+    @Column(name = "pet_v2_id", nullable = false, unique = true)
+    private UUID petV2Id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(

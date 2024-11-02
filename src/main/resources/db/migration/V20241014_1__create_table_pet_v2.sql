@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS pet_v2 (
-    pet_id UUID PRIMARY KEY,
+    pet_v2_id UUID PRIMARY KEY,
     profile_id UUID NOT NULL,
     name VARCHAR(100) NOT NULL,
     species VARCHAR(50) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS pet_v2 (
 );
 
 COMMENT ON TABLE pet_v2 IS 'Table that stores information about pets (version 2)';
-COMMENT ON COLUMN pet_v2.pet_id IS 'Unique identifier for each pet';
+COMMENT ON COLUMN pet_v2.pet_v2_id IS 'Unique identifier for each pet';
 COMMENT ON COLUMN pet_v2.profile_id IS 'Foreign key linking to the pet owner profile';
 COMMENT ON COLUMN pet_v2.name IS 'Pets name';
 COMMENT ON COLUMN pet_v2.species IS 'Pets species (e.g., dog, cat, etc.)';

@@ -50,8 +50,8 @@ public class ImageEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-        name = "pet_id",
-        referencedColumnName = "pet_id",
+        name = "pet_v2_id",
+        referencedColumnName = "pet_v2_id",
         nullable = false,
         updatable = false
     )
