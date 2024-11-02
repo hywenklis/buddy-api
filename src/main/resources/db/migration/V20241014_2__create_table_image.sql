@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS image (
         (profile_id is not null and pet_v2_id is null) or
         (pet_v2_id is not null and profile_id is null)
     ),
+    CONSTRAINT ck_image_status CHECK (image_status IN ('APPROVED', 'PENDING', 'REJECTED')),
     CONSTRAINT uk_image_display_order UNIQUE (profile_id, pet_v2_id, display_order)
 );
 
@@ -25,7 +26,7 @@ COMMENT ON COLUMN image.pet_v2_id IS 'Foreign key linking to pet if it is a pet 
 COMMENT ON COLUMN image.is_avatar IS 'Indicates if the image is a profile avatar';
 COMMENT ON COLUMN image.file_path IS 'File path of the image';
 COMMENT ON COLUMN image.image_data IS 'Binary data of the image file';
-COMMENT ON COLUMN image.image_status IS 'Status of the image (active, inactive, etc.)';
+COMMENT ON COLUMN image.image_status IS 'PENDING | APPROVED | REJECTED';
 COMMENT ON COLUMN image.display_order IS 'Display order of the image';
 COMMENT ON COLUMN image.creation_date IS 'Record creation date';
 COMMENT ON COLUMN image.updated_date IS 'Record last update date';
