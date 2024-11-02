@@ -32,8 +32,8 @@ public class AdoptionQuestionnaireEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    @Column(name = "questionnaire_id", nullable = false, unique = true)
-    private UUID questionnaireId;
+    @Column(name = "adoption_questionnaire_id", nullable = false, unique = true)
+    private UUID adoptionQuestionnaireId;
 
     @Column(name = "housing_type")
     private String housingType;

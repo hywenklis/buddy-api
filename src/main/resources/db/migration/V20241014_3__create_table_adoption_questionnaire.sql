@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS adoption_questionnaire (
-    questionnaire_id UUID PRIMARY KEY,
+    adoption_questionnaire_id UUID PRIMARY KEY,
     housing_type VARCHAR(100),
     has_other_pets BOOLEAN NOT NULL,
     family_routine VARCHAR(1000),
@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS adoption_questionnaire (
 );
 
 COMMENT ON TABLE adoption_questionnaire IS 'Table that stores questionnaires filled out by adopters';
-COMMENT ON COLUMN adoption_questionnaire.questionnaire_id IS 'Unique identifier for each questionnaire';
+COMMENT ON COLUMN adoption_questionnaire.adoption_questionnaire_id
+    IS 'Unique identifier for each adoption questionnaire';
 COMMENT ON COLUMN adoption_questionnaire.housing_type IS 'Type of housing of the adopter';
 COMMENT ON COLUMN adoption_questionnaire.has_other_pets IS 'Indicates if the adopter has other pets';
 COMMENT ON COLUMN adoption_questionnaire.family_routine IS 'Description of the family routine';

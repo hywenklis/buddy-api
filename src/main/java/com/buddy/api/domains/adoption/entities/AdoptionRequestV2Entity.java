@@ -72,13 +72,13 @@ public class AdoptionRequestV2Entity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "questionnaire_id",
-            referencedColumnName = "questionnaire_id",
+            name = "adoption_questionnaire_id",
+            referencedColumnName = "adoption_questionnaire_id",
             nullable = false,
             updatable = false
     )
     @ToString.Exclude
-    private AdoptionQuestionnaireEntity questionnaire;
+    private AdoptionQuestionnaireEntity adoptionQuestionnaire;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
