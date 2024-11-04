@@ -44,7 +44,8 @@ public class ShelterV2Entity {
         name = "profile_id",
         referencedColumnName = "profile_id",
         nullable = false,
-        updatable = false
+        updatable = false,
+        unique = true
     )
     @ToString.Exclude
     private ProfileEntity profile;

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS account (
     email VARCHAR(255) NOT NULL UNIQUE,
     phone_number VARCHAR(20),
     password VARCHAR(255) NOT NULL,
-    terms_of_user_consent BOOLEAN DEFAULT FALSE,
+    terms_of_user_consent BOOLEAN NOT NULL DEFAULT FALSE,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,

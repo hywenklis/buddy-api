@@ -7,9 +7,6 @@ CREATE TABLE IF NOT EXISTS shelter_v2 (
     CONSTRAINT fk_shelter_v2_profile FOREIGN KEY (profile_id) REFERENCES profile(profile_id)
 );
 
-ALTER TABLE shelter_v2
-    ADD CONSTRAINT uq_shelter_v2_name UNIQUE (shelter_name);
-
 CREATE INDEX IF NOT EXISTS idx_shelter_v2_profile_id ON shelter_v2(profile_id);
 
 COMMENT ON TABLE shelter_v2 IS 'Table that stores information about shelters (v2)';
