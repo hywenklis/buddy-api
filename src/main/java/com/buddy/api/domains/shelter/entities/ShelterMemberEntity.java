@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -28,12 +27,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "shelter_member", uniqueConstraints = {
-    @UniqueConstraint(
-        name = "uq_shelter_member_profile_shelter",
-        columnNames = {"profile_id", "shelter_id"}
-    )
-})
+@Table(name = "shelter_member")
 public class ShelterMemberEntity {
 
     @Id
@@ -54,10 +48,10 @@ public class ShelterMemberEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
-            name = "shelter_profile_id",
-            referencedColumnName = "profile_id",
-            nullable = false,
-            updatable = false
+        name = "shelter_profile_id",
+        referencedColumnName = "profile_id",
+        nullable = false,
+        updatable = false
     )
     @ToString.Exclude
     private ProfileEntity shelterProfile;

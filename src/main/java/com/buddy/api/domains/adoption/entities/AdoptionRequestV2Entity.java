@@ -1,9 +1,7 @@
 package com.buddy.api.domains.adoption.entities;
 
-import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
-import com.buddy.api.domains.shelter.entities.ShelterV2Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
