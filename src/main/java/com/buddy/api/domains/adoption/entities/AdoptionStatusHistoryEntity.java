@@ -1,6 +1,7 @@
 package com.buddy.api.domains.adoption.entities;
 
 import com.buddy.api.domains.adoption.enums.AdoptionStatus;
+import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.shelter.entities.ShelterMemberEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,13 +50,13 @@ public class AdoptionStatusHistoryEntity {
     private AdoptionRequestV2Entity adoptionRequestV2;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_id", referencedColumnName = "member_id", nullable = false)
+    @JoinColumn(name = "profile_id", referencedColumnName = "profile_id", nullable = false)
     @ToString.Exclude
-    private ShelterMemberEntity shelterMember;
+    private ProfileEntity profile;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status_name", nullable = false)
-    private AdoptionStatus statusName;
+    @Column(name = "adoption_status", nullable = false)
+    private AdoptionStatus adoptionStatus;
 
     @Column(name = "status_date", nullable = false)
     private LocalDateTime statusDate;
