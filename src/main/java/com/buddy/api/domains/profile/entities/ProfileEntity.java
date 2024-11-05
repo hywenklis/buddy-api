@@ -50,7 +50,7 @@ public class ProfileEntity {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "bio")
+    @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
     @Enumerated(EnumType.STRING)
