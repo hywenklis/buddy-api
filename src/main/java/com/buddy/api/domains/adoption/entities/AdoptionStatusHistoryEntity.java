@@ -2,7 +2,6 @@ package com.buddy.api.domains.adoption.entities;
 
 import com.buddy.api.domains.adoption.enums.AdoptionStatus;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
-import com.buddy.api.domains.shelter.entities.ShelterMemberEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
