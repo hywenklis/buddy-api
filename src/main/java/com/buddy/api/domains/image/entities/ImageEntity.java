@@ -59,7 +59,7 @@ public class ImageEntity {
         updatable = false
     )
     @ToString.Exclude
-    private PetV2Entity pet;
+    private PetV2Entity petV2;
 
     @Column(name = "is_avatar", nullable = false)
     private Boolean isAvatar;
