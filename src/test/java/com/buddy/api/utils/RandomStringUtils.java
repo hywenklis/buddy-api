@@ -21,11 +21,15 @@ public class RandomStringUtils {
         return generateRandomString(length, ALPHABET);
     }
 
+    public static String generateRandomNumeric(final Integer length) {
+        return generateRandomString(length, DIGITS);
+    }
+
     public static String generateRandomPassword() {
         return generateRandomString(10);
     }
 
     public static String generateRandomPhoneNumber() {
-        return generateRandomString(9, DIGITS);
+        return generateRandomNumeric(9);
     }
 }

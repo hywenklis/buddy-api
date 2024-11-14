@@ -2,6 +2,7 @@ package com.buddy.api.integrations.web.account.controller;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountRequest;
 import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
+import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -114,6 +115,48 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
                 jsonPath(ERROR_FIELD_PATH).value("termsOfUserConsent"),
                 jsonPath(ERROR_MESSAGE_PATH).value(
                     "Account terms of user consent information is mandatory"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if phone number is not a numeric string")
+    void should_not_register_account_if_phone_number_is_not_numeric_string() throws Exception {
+        var request = validAccountRequest().phoneNumber("99.123467").build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("phoneNumber"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account phone number must contain only digits"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if phone number is too small")
+    void should_not_register_account_if_phone_number_is_too_small() throws Exception {
+        var request = validAccountRequest().phoneNumber(generateRandomNumeric(3)).build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("phoneNumber"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account phone number must have between 4 and 20 digits"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if phone number is too big")
+    void should_not_register_account_if_phone_number_is_too_big() throws Exception {
+        var request = validAccountRequest().phoneNumber(generateRandomNumeric(21)).build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("phoneNumber"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account phone number must have between 4 and 20 digits"
                 )
             );
     }
