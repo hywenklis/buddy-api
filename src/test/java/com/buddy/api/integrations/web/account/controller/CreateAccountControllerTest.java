@@ -24,8 +24,6 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     private static final String ERROR_CODE_PATH = "$.errors[0].errorCode";
     private static final String ERROR_TIMESTAMP_PATH = "$.errors[0].timestamp";
 
-    private final Boolean termsOfUserConsent = true;
-
     @Test
     @DisplayName("Should register a new account successfully")
     void register_new_account_success() throws Exception {
@@ -102,6 +100,20 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
                 jsonPath(ERROR_FIELD_PATH).value("password"),
                 jsonPath(ERROR_MESSAGE_PATH).value(
                     "Account password must have between 6 and 16 characters"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account without terms of user consent information")
+    void should_not_register_account_without_terms_of_user_consent_information() throws Exception {
+        var request = validAccountRequest().termsOfUserConsent(null).build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("termsOfUserConsent"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account terms of user consent information is mandatory"
                 )
             );
     }

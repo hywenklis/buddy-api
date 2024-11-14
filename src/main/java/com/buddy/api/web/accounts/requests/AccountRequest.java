@@ -2,6 +2,7 @@ package com.buddy.api.web.accounts.requests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
@@ -18,6 +19,7 @@ public record AccountRequest(
         max = 16
     )
     String password,
+    @NotNull(message = "Account terms of user consent information is mandatory")
     Boolean termsOfUserConsent
 ) {
 }
