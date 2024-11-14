@@ -2,6 +2,7 @@ package com.buddy.api.web.accounts.controllers;
 
 import com.buddy.api.web.accounts.requests.AccountRequest;
 import com.buddy.api.web.accounts.responses.AccountResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CreateAccountController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AccountResponse registration(@RequestBody final AccountRequest accountRequest) {
+    public AccountResponse registration(@Valid @RequestBody final AccountRequest accountRequest) {
         return new AccountResponse("successfully created");
     }
 }
