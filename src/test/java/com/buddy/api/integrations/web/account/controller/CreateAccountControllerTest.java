@@ -78,6 +78,34 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
             );
     }
 
+    @Test
+    @DisplayName("Should not register account if password is too small")
+    void should_not_register_account_with_small_password() throws Exception {
+        var request = validAccountRequest().password(generateRandomString(5)).build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("password"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account password must have between 6 and 16 characters"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if password is too big")
+    void should_not_register_account_with_too_big_password() throws Exception {
+        var request = validAccountRequest().password(generateRandomString(17)).build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("password"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account password must have between 6 and 16 characters"
+                )
+            );
+    }
+
     private ResultActions expectBadRequestFrom(final ResultActions result) throws Exception {
         return result.andExpectAll(
             status().isBadRequest(),

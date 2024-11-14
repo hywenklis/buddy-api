@@ -17,8 +17,12 @@ public class RandomStringUtils {
         return sb.toString();
     }
 
+    public static String generateRandomString(final Integer length) {
+        return generateRandomString(length, ALPHABET);
+    }
+
     public static String generateRandomPassword() {
-        return generateRandomString(10, ALPHABET);
+        return generateRandomString(10);
     }
 
     public static String generateRandomPhoneNumber() {
