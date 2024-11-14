@@ -1,9 +1,7 @@
 package com.buddy.api.integrations.web.account.controller;
 
-import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
+import static com.buddy.api.builders.account.AccountBuilder.validAccountRequest;
 import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomPhoneNumber;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,12 +29,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should register a new account successfully")
     void register_new_account_success() throws Exception {
-        var request = new AccountRequest(
-            generateValidEmail(),
-            generateRandomPhoneNumber(),
-            generateRandomPassword(),
-            termsOfUserConsent
-        );
+        var request = validAccountRequest().build();
 
         performCreateAccountRequest(request)
             .andExpect(status().isCreated())
@@ -46,12 +39,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if email is not filled in")
     void should_not_register_account_without_email() throws Exception {
-        var request = new AccountRequest(
-            null,
-            generateRandomPhoneNumber(),
-            generateRandomPassword(),
-            termsOfUserConsent
-        );
+        var request = validAccountRequest().email(null).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .andExpectAll(
@@ -63,18 +51,29 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if email is invalid")
     void should_not_register_account_with_invalid_email() throws Exception {
-        var request = new AccountRequest(
-            generateRandomString(10, ALPHABET),
-            generateRandomPhoneNumber(),
-            generateRandomPassword(),
-            termsOfUserConsent
-        );
+        var request = validAccountRequest()
+            .email(generateRandomString(10, ALPHABET))
+            .build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .andExpectAll(
                 jsonPath(ERROR_FIELD_PATH).value("email"),
                 jsonPath(ERROR_MESSAGE_PATH).value(
                     "Account email must be a valid email address"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if password is not filled in")
+    void should_not_register_account_without_password() throws Exception {
+        var request = validAccountRequest().password(null).build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("password"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account password is mandatory"
                 )
             );
     }
