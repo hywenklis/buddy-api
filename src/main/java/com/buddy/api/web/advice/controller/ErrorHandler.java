@@ -1,7 +1,6 @@
 package com.buddy.api.web.advice.controller;
 
 import com.buddy.api.commons.exceptions.DomainException;
-import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.PetSearchException;
 import com.buddy.api.web.advice.error.ErrorDetails;
 import com.buddy.api.web.advice.error.ErrorResponse;
@@ -16,17 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ErrorHandler {
-
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(final NotFoundException ex) {
-        ErrorDetails error = new ErrorDetails(
-            ex.getFieldName(),
-            ex.getMessage(),
-            HttpStatus.NOT_FOUND,
-            HttpStatus.NOT_FOUND.value(),
-            LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(List.of(error)));
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
@@ -54,11 +42,11 @@ public class ErrorHandler {
         ErrorDetails error = new ErrorDetails(
             ex.getFieldName(),
             ex.getMessage(),
-            HttpStatus.BAD_REQUEST,
-            HttpStatus.BAD_REQUEST.value(),
+            ex.getHttpStatus(),
+            ex.getHttpStatus().value(),
             LocalDateTime.now());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(ex.getHttpStatus())
             .body(new ErrorResponse(List.of(error)));
     }
 
