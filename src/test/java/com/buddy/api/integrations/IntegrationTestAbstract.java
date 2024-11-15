@@ -2,6 +2,7 @@ package com.buddy.api.integrations;
 
 import com.buddy.api.components.PetComponent;
 import com.buddy.api.components.ShelterComponent;
+import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.adoption.repositories.AdoptionRequestRepository;
 import com.buddy.api.domains.pet.repositories.PetImageRepository;
 import com.buddy.api.domains.pet.repositories.PetRepository;
@@ -27,6 +28,9 @@ public abstract class IntegrationTestAbstract {
 
     @Autowired
     protected PetComponent petComponent;
+
+    @Autowired
+    protected AccountRepository accountRepository;
 
     @Autowired
     protected PetRepository petRepository;

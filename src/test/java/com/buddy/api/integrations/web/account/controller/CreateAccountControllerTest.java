@@ -1,6 +1,8 @@
 package com.buddy.api.integrations.web.account.controller;
 
+import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountRequest;
+import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
@@ -59,6 +61,26 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
                 jsonPath(ERROR_FIELD_PATH).value("email"),
                 jsonPath(ERROR_MESSAGE_PATH).value(
                     "Account email must be a valid email address"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if email already belong to other account")
+    void should_not_register_account_with_existing_account_email() throws Exception {
+        var repeatedEmail = generateValidEmail();
+
+        accountRepository.save(validAccountEntity().email(repeatedEmail).build());
+
+        var request = validAccountRequest()
+            .email(repeatedEmail)
+            .build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value("email"),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account email already registered"
                 )
             );
     }

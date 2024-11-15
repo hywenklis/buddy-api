@@ -1,5 +1,6 @@
 package com.buddy.api.web.advice.controller;
 
+import com.buddy.api.commons.exceptions.DomainException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.PetSearchException;
 import com.buddy.api.web.advice.error.ErrorDetails;
@@ -42,6 +43,21 @@ public class ErrorHandler {
             HttpStatus.BAD_REQUEST,
             HttpStatus.BAD_REQUEST.value(),
             LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(List.of(error)));
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ErrorResponse> handleDomainException(
+        final DomainException ex
+    ) {
+        ErrorDetails error = new ErrorDetails(
+            ex.getFieldName(),
+            ex.getMessage(),
+            HttpStatus.BAD_REQUEST,
+            HttpStatus.BAD_REQUEST.value(),
+            LocalDateTime.now());
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(new ErrorResponse(List.of(error)));
     }
