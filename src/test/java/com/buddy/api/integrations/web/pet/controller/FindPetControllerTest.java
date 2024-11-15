@@ -17,10 +17,16 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("GET /v1/pets")
 class FindPetControllerTest extends IntegrationTestAbstract {
+    private static final String ERROR_FIELD_PATH = "$.errors[0].field";
+    private static final String ERROR_MESSAGE_PATH = "$.errors[0].message";
+    private static final String ERROR_HTTP_STATUS_PATH = "$.errors[0].httpStatus";
+    private static final String ERROR_CODE_PATH = "$.errors[0].errorCode";
+    private static final String ERROR_TIMESTAMP_PATH = "$.errors[0].timestamp";
 
     @BeforeEach
     void setUp() {
@@ -233,6 +239,34 @@ class FindPetControllerTest extends IntegrationTestAbstract {
         );
     }
 
+    @Test
+    @DisplayName("Should inform error when an unknown filter is used in search")
+    void return_inform_error_when_an_unknown_filter_is_used() throws Exception {
+        expectBadRequestFrom(
+            mockMvc.perform(get(PET_BASE_URL + "?someUnknownProperty=unknownValue"))
+        ).andExpectAll(
+            jsonPath(ERROR_FIELD_PATH).value("someUnknownProperty"),
+            jsonPath(ERROR_MESSAGE_PATH).value(
+                "An error occurred while searching for pets due to "
+                + "an invalid property reference"
+            )
+        );
+    }
+
+    @Test
+    @DisplayName("Should inform error when an unknown ageRange is used in search")
+    void return_inform_error_when_an_unknown_age_range_is_used() throws Exception {
+        expectBadRequestFrom(
+            mockMvc.perform(get(PET_BASE_URL + "?ageRange=unknownValue"))
+        ).andExpectAll(
+            jsonPath(ERROR_FIELD_PATH).value("someUnknownProperty"),
+            jsonPath(ERROR_MESSAGE_PATH).value(
+                "An error occurred while searching for pets due to "
+                    + "an invalid property reference"
+            )
+        );
+    }
+
     private void performGetRequestAndExpectTwoPets(final String url,
                                                    final PetEntity firstExpected,
                                                    final PetEntity secondExpected
@@ -261,6 +295,15 @@ class FindPetControllerTest extends IntegrationTestAbstract {
             containsInRelativeOrder(
                 firstExpected.getId().toString(),
                 secondExpected.getId().toString()))
+        );
+    }
+
+    private ResultActions expectBadRequestFrom(final ResultActions result) throws Exception {
+        return result.andExpectAll(
+            status().isBadRequest(),
+            jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()),
+            jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()),
+            jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty()
         );
     }
 }
