@@ -1,7 +1,7 @@
 package com.buddy.api.web.profiles.controllers;
 
+import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
-import com.buddy.api.web.profiles.responses.ProfileResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,7 +16,7 @@ public class CreateProfileController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProfileResponse registration(@Valid @RequestBody final ProfileRequest request) {
-        return new ProfileResponse("successfully created");
+    public CreatedSuccessResponse registration(@Valid @RequestBody final ProfileRequest request) {
+        return new CreatedSuccessResponse();
     }
 }

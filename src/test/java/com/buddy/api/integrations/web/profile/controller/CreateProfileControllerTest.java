@@ -1,12 +1,11 @@
 package com.buddy.api.integrations.web.profile.controller;
 
 import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
+import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
@@ -24,11 +23,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_register_new_profile() throws Exception {
         final var request = profileComponent.validProfileRequest().build();
 
-        performCreateProfileRequest(request)
-            .andExpectAll(
-                status().isCreated(),
-                jsonPath("$.message").value("successfully created")
-            );
+        expectCreatedFrom(performCreateProfileRequest(request));
     }
 
     @Test

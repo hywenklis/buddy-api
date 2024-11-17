@@ -2,6 +2,7 @@ package com.buddy.api.integrations.web.account.controller;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountRequest;
+import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
@@ -10,8 +11,6 @@ import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.IntegrationTestAbstract;
@@ -30,9 +29,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     void register_new_account_success() throws Exception {
         var request = validAccountRequest().build();
 
-        performCreateAccountRequest(request)
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.message").value("successfully created"));
+        expectCreatedFrom(performCreateAccountRequest(request));
     }
 
     @Test

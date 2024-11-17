@@ -1,14 +1,13 @@
 package com.buddy.api.integrations.web.pet.controller;
 
 import static com.buddy.api.builders.pet.PetBuilder.createPetRequest;
+import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.builders.pet.PetBuilder;
 import com.buddy.api.integrations.IntegrationTestAbstract;
@@ -28,12 +27,10 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
         var request = createPetRequest(shelter.getId());
 
-        mockMvc
+        expectCreatedFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
                 .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.message").value("successfully created"));
+                .content(objectMapper.writeValueAsString(request))));
     }
 
     @Test

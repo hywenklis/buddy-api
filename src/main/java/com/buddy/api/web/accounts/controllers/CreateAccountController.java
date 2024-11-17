@@ -2,7 +2,7 @@ package com.buddy.api.web.accounts.controllers;
 
 import com.buddy.api.domains.account.services.CreateAccountService;
 import com.buddy.api.web.accounts.requests.AccountRequest;
-import com.buddy.api.web.accounts.responses.AccountResponse;
+import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,8 +27,9 @@ public class CreateAccountController {
         summary = "Register account",
         description = "Register account with their appropriate information"
     )
-    public AccountResponse registration(@Valid @RequestBody final AccountRequest accountRequest) {
+    public CreatedSuccessResponse registration(
+        @Valid @RequestBody final AccountRequest accountRequest) {
         createAccountService.create(accountRequest.toAccountDto());
-        return new AccountResponse("successfully created");
+        return new CreatedSuccessResponse();
     }
 }

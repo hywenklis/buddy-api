@@ -1,14 +1,13 @@
 package com.buddy.api.integrations.web.shelter.controller;
 
 import static com.buddy.api.builders.shelter.ShelterBuilder.createShelterRequest;
+import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomCpfUtils.generateValidCpf;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import org.junit.jupiter.api.DisplayName;
@@ -24,12 +23,10 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     void register_new_shelter_success() throws Exception {
         var request = createShelterRequest();
 
-        mockMvc
+        expectCreatedFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
                 .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.message").value("successfully created"));
+                .content(objectMapper.writeValueAsString(request))));
     }
 
     @Test
