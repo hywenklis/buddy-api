@@ -2,6 +2,7 @@ package com.buddy.api.integrations.web.account.controller;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountRequest;
+import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
 import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
@@ -18,18 +19,11 @@ import com.buddy.api.web.accounts.requests.AccountRequest;
 import java.util.Locale;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("POST /v1/accounts/register")
 public class CreateAccountControllerTest extends IntegrationTestAbstract {
     private static final String ACCOUNT_REGISTER_URL = "/v1/accounts/register";
-    private static final String ERROR_FIELD_PATH = "$.errors[0].field";
-    private static final String ERROR_MESSAGE_PATH = "$.errors[0].message";
-    private static final String ERROR_HTTP_STATUS_PATH = "$.errors[0].httpStatus";
-    private static final String ERROR_CODE_PATH = "$.errors[0].errorCode";
-    private static final String ERROR_TIMESTAMP_PATH = "$.errors[0].timestamp";
-    private static final String EMAIL_FIELD = "email";
 
     @Test
     @DisplayName("Should register a new account successfully")
@@ -46,11 +40,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     void should_not_register_account_without_email() throws Exception {
         var request = validAccountRequest().email(null).build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
-                jsonPath(ERROR_MESSAGE_PATH).value("Account email is mandatory")
-            );
+        expectEmailErrorReported(request, "Account email is mandatory");
     }
 
     @Test
@@ -60,13 +50,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
             .email(generateRandomString(10, ALPHABET))
             .build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account email must be a valid email address"
-                )
-            );
+        expectEmailErrorReported(request, "Account email must be a valid email address");
     }
 
     @Test
@@ -80,13 +64,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
             .email(repeatedEmail.value())
             .build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account email already registered"
-                )
-            );
+        expectEmailErrorReported(request, "Account email already registered");
     }
 
     @Test
@@ -102,13 +80,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
             .email(repeatedEmail.toUpperCase(Locale.ENGLISH))
             .build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account email already registered"
-                )
-            );
+        expectEmailErrorReported(request, "Account email already registered");
     }
 
     @Test
@@ -117,12 +89,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().password(null).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("password"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account password is mandatory"
-                )
-            );
+            .forField("password", "Account password is mandatory");
     }
 
     @Test
@@ -131,11 +98,9 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().password(generateRandomString(5)).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("password"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account password must have between 6 and 16 characters"
-                )
+            .forField(
+                "password",
+                "Account password must have between 6 and 16 characters"
             );
     }
 
@@ -145,11 +110,9 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().password(generateRandomString(17)).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("password"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account password must have between 6 and 16 characters"
-                )
+            .forField(
+                "password",
+                "Account password must have between 6 and 16 characters"
             );
     }
 
@@ -159,11 +122,9 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().termsOfUserConsent(null).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("termsOfUserConsent"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account terms of user consent information is mandatory"
-                )
+            .forField(
+                "termsOfUserConsent",
+                "Account terms of user consent information is mandatory"
             );
     }
 
@@ -173,11 +134,9 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().phoneNumber("99.123467").build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("phoneNumber"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account phone number must contain only digits"
-                )
+            .forField(
+                "phoneNumber",
+                "Account phone number must contain only digits"
             );
     }
 
@@ -187,11 +146,9 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().phoneNumber(generateRandomNumeric(3)).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("phoneNumber"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account phone number must have between 4 and 20 digits"
-                )
+            .forField(
+                "phoneNumber",
+                "Account phone number must have between 4 and 20 digits"
             );
     }
 
@@ -201,21 +158,10 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().phoneNumber(generateRandomNumeric(21)).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
-            .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("phoneNumber"),
-                jsonPath(ERROR_MESSAGE_PATH).value(
-                    "Account phone number must have between 4 and 20 digits"
-                )
+            .forField(
+                "phoneNumber",
+                "Account phone number must have between 4 and 20 digits"
             );
-    }
-
-    private ResultActions expectBadRequestFrom(final ResultActions result) throws Exception {
-        return result.andExpectAll(
-            status().isBadRequest(),
-            jsonPath(ERROR_HTTP_STATUS_PATH).value(HttpStatus.BAD_REQUEST.name()),
-            jsonPath(ERROR_CODE_PATH).value(HttpStatus.BAD_REQUEST.value()),
-            jsonPath(ERROR_TIMESTAMP_PATH).isNotEmpty()
-        );
     }
 
     private ResultActions performCreateAccountRequest(final AccountRequest request)
@@ -224,5 +170,11 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
             .perform(post(ACCOUNT_REGISTER_URL)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
+    }
+
+    private void expectEmailErrorReported(final AccountRequest request, final String errorMessage)
+        throws Exception {
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .forField("email", errorMessage);
     }
 }
