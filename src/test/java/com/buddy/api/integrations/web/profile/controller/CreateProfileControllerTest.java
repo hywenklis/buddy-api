@@ -3,6 +3,7 @@ package com.buddy.api.integrations.web.profile.controller;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
+import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,6 +42,61 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(performCreateProfileRequest(request))
             .forField("accountId", "Profile account ID is mandatory");
+    }
+
+    @Test
+    @DisplayName("Should not create profile without name")
+    void should_not_create_profile_without_name() throws Exception {
+        final var account = accountRepository.save(validAccountEntity().build());
+        final var request = profileRequest()
+            .accountId(account.getAccountId())
+            .name(null)
+            .build();
+
+        expectBadRequestFrom(performCreateProfileRequest(request))
+            .forField("name", "Profile name is mandatory");
+    }
+
+    @Test
+    @DisplayName("Should not create profile when name is too small")
+    void should_not_create_profile_when_name_is_too_small() throws Exception {
+        final var account = accountRepository.save(validAccountEntity().build());
+        final var request = profileRequest()
+            .accountId(account.getAccountId())
+            .name(generateRandomString(2))
+            .build();
+
+        expectBadRequestFrom(performCreateProfileRequest(request))
+            .forField("name", "Profile name must have between 3 and 100 characters");
+    }
+
+    @Test
+    @DisplayName("Should not create profile when name is too big")
+    void should_not_create_profile_when_name_is_too_big() throws Exception {
+        final var account = accountRepository.save(validAccountEntity().build());
+        final var request = profileRequest()
+            .accountId(account.getAccountId())
+            .name(generateRandomString(101))
+            .build();
+
+        expectBadRequestFrom(performCreateProfileRequest(request))
+            .forField("name", "Profile name must have between 3 and 100 characters");
+    }
+
+    @Test
+    @DisplayName("Should not create profile when description is too big")
+    void should_not_create_profile_when_description_too_big() throws Exception {
+        final var account = accountRepository.save(validAccountEntity().build());
+        final var request = profileRequest()
+            .accountId(account.getAccountId())
+            .description(generateRandomString(256))
+            .build();
+
+        expectBadRequestFrom(performCreateProfileRequest(request))
+            .forField(
+                "description",
+                "Profile description must have at most 255 characters"
+            );
     }
 
     private ResultActions performCreateProfileRequest(final ProfileRequest request)
