@@ -27,7 +27,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
         performCreateProfileRequest(request)
             .andExpectAll(
                 status().isCreated(),
-                jsonPath("$.message").value("Successfully created")
+                jsonPath("$.message").value("successfully created")
             );
     }
 

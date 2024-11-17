@@ -17,6 +17,6 @@ public class CreateProfileController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProfileResponse registration(@Valid @RequestBody final ProfileRequest request) {
-        return new ProfileResponse("Successfully created");
+        return new ProfileResponse("successfully created");
     }
 }
