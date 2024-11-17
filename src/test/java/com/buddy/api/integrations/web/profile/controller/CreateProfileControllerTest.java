@@ -27,7 +27,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .accountId(account.getAccountId())
             .build();
 
-        perfomCreateProfileRequest(request)
+        performCreateProfileRequest(request)
             .andExpectAll(
                 status().isCreated(),
                 jsonPath("$.message").value("Successfully created")
@@ -39,11 +39,11 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_without_account_id() throws Exception {
         final var request = profileRequest().accountId(null).build();
 
-        expectBadRequestFrom(perfomCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request))
             .forField("accountId", "Profile account ID is mandatory");
     }
 
-    private ResultActions perfomCreateProfileRequest(final ProfileRequest request)
+    private ResultActions performCreateProfileRequest(final ProfileRequest request)
         throws Exception {
         return mockMvc
             .perform(post(PROFILE_REGISTER_URL)
