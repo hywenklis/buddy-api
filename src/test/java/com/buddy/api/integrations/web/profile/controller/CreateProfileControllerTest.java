@@ -1,6 +1,5 @@
 package com.buddy.api.integrations.web.profile.controller;
 
-import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
@@ -23,10 +22,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should register a new profile successfuly")
     void should_register_new_profile() throws Exception {
-        final var account = accountRepository.save(validAccountEntity().build());
-        final var request = profileRequest()
-            .accountId(account.getAccountId())
-            .build();
+        final var request = profileComponent.validProfileRequest().build();
 
         performCreateProfileRequest(request)
             .andExpectAll(
@@ -47,9 +43,8 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create profile without name")
     void should_not_create_profile_without_name() throws Exception {
-        final var account = accountRepository.save(validAccountEntity().build());
-        final var request = profileRequest()
-            .accountId(account.getAccountId())
+        final var request = profileComponent
+            .validProfileRequest()
             .name(null)
             .build();
 
@@ -60,9 +55,8 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create profile when name is too small")
     void should_not_create_profile_when_name_is_too_small() throws Exception {
-        final var account = accountRepository.save(validAccountEntity().build());
-        final var request = profileRequest()
-            .accountId(account.getAccountId())
+        final var request = profileComponent
+            .validProfileRequest()
             .name(generateRandomString(2))
             .build();
 
@@ -73,9 +67,8 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create profile when name is too big")
     void should_not_create_profile_when_name_is_too_big() throws Exception {
-        final var account = accountRepository.save(validAccountEntity().build());
-        final var request = profileRequest()
-            .accountId(account.getAccountId())
+        final var request = profileComponent
+            .validProfileRequest()
             .name(generateRandomString(101))
             .build();
 
@@ -86,9 +79,8 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create profile when description is too big")
     void should_not_create_profile_when_description_too_big() throws Exception {
-        final var account = accountRepository.save(validAccountEntity().build());
-        final var request = profileRequest()
-            .accountId(account.getAccountId())
+        final var request = profileComponent
+            .validProfileRequest()
             .description(generateRandomString(256))
             .build();
 
@@ -102,9 +94,8 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create profile without profile type")
     void should_not_create_profile_without_profile_type() throws Exception {
-        final var account = accountRepository.save(validAccountEntity().build());
-        final var request = profileRequest()
-            .accountId(account.getAccountId())
+        final var request = profileComponent
+            .validProfileRequest()
             .profileType(null)
             .build();
 

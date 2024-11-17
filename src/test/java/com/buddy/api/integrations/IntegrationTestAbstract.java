@@ -1,6 +1,7 @@
 package com.buddy.api.integrations;
 
 import com.buddy.api.components.PetComponent;
+import com.buddy.api.components.ProfileComponent;
 import com.buddy.api.components.ShelterComponent;
 import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.adoption.repositories.AdoptionRequestRepository;
@@ -28,6 +29,9 @@ public abstract class IntegrationTestAbstract {
 
     @Autowired
     protected PetComponent petComponent;
+
+    @Autowired
+    protected ProfileComponent profileComponent;
 
     @Autowired
     protected AccountRepository accountRepository;
