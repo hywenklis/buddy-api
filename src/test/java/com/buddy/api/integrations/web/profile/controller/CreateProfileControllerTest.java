@@ -99,6 +99,19 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             );
     }
 
+    @Test
+    @DisplayName("Should not create profile without profile type")
+    void should_not_create_profile_without_profile_type() throws Exception {
+        final var account = accountRepository.save(validAccountEntity().build());
+        final var request = profileRequest()
+            .accountId(account.getAccountId())
+            .profileType(null)
+            .build();
+
+        expectBadRequestFrom(performCreateProfileRequest(request))
+            .forField("profileType", "Profile type is mandatory");
+    }
+
     private ResultActions performCreateProfileRequest(final ProfileRequest request)
         throws Exception {
         return mockMvc
