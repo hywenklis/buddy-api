@@ -3,12 +3,14 @@ package com.buddy.api.integrations.web.profile.controller;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
+import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
@@ -33,6 +35,15 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(performCreateProfileRequest(request))
             .forField("accountId", "Profile account ID is mandatory");
+    }
+
+    @Test
+    @DisplayName("Should not create profile when account id is not from an account in database")
+    void should_not_create_profile_when_account_is_not_from_database_account() throws Exception {
+        final var request = profileRequest().accountId(UUID.randomUUID()).build();
+
+        expectNotFoundFrom(performCreateProfileRequest(request))
+            .forField("accountId", "Account not found");
     }
 
     @Test

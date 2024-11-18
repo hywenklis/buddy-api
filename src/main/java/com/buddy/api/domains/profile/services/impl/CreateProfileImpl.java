@@ -7,7 +7,9 @@ import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.CreateProfile;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class CreateProfileImpl implements CreateProfile {
     private final AccountRepository accountRepository;
