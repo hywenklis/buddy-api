@@ -21,7 +21,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     private static final String PROFILE_REGISTER_URL = "/v1/profiles/register";
 
     @Test
-    @DisplayName("Should register a new profile successfuly")
+    @DisplayName("Should register a new profile successfully")
     void should_register_new_profile() throws Exception {
         final var request = profileComponent.validProfileRequest().build();
 
