@@ -13,7 +13,7 @@ public class ProfileBuilder {
             .name(generateRandomString(6))
             .description(generateRandomString(10))
             .bio(generateRandomString(10))
-            .profileType(ProfileTypeEnum.ADOPTER);
+            .profileType(ProfileTypeEnum.USER);
     }
 
     public static ProfileDto.ProfileDtoBuilder profileDto() {
@@ -22,6 +22,6 @@ public class ProfileBuilder {
             .name(generateRandomString(6))
             .description(generateRandomString(10))
             .bio(generateRandomString(10))
-            .profileType(ProfileTypeEnum.ADOPTER);
+            .profileType(ProfileTypeEnum.USER);
     }
 }

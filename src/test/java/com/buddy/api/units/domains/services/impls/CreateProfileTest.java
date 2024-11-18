@@ -43,7 +43,7 @@ public class CreateProfileTest extends UnitTestAbstract {
         final var name = generateRandomString(6);
         final var description = generateRandomString(10);
         final var bio = generateRandomString(10);
-        final var profileType = ProfileTypeEnum.ADOPTER;
+        final var profileType = ProfileTypeEnum.USER;
 
         final var validProfileDto = new ProfileDto(
             accountId,
