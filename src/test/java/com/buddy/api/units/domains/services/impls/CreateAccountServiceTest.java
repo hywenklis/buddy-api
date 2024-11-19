@@ -98,10 +98,9 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
 
         assertThatThrownBy(() -> createAccountService.create(accountDto))
             .isInstanceOf(EmailAlreadyRegisteredException.class)
-            .usingRecursiveComparison()
-            .isEqualTo(
-                new EmailAlreadyRegisteredException("Account email already registered", "email")
-            );
+            .hasMessage("Account email already registered")
+            .extracting("fieldName")
+            .isEqualTo("email");
 
         verify(accountRepository, times(0)).save(any());
     }
