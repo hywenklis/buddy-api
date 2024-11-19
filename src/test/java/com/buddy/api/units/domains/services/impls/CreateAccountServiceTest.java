@@ -35,8 +35,6 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
     @InjectMocks
     CreateAccountServiceImpl createAccountService;
 
-    private final Boolean termsOfUserConsent = true;
-
     @Test
     @DisplayName("Should create account")
     void should_create_account() {
@@ -44,6 +42,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
         final var phoneNumber = generateRandomPhoneNumber();
         final var password = generateRandomPassword();
         final var encryptedPassword = generateRandomPassword();
+        final var termsOfUserConsent = true;
 
         final AccountDto accountDto = new AccountDto(
             email,
@@ -80,6 +79,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
     @DisplayName("Should not create account when email is already in database")
     void should_not_create_account_when_email_is_already_in_database() {
         final var email = generateValidEmail();
+        final var termsOfUserConsent = true;
 
         final AccountEntity accountEntity = validAccountEntity()
             .accountId(UUID.randomUUID())
