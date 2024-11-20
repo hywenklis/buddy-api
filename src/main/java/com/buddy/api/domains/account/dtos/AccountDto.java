@@ -6,6 +6,8 @@ public record AccountDto(String email,
                          String phoneNumber,
                          String password,
                          Boolean termsOfUserConsent) {
+    // Caso o mapeamento cresça ou fique mais complexo
+    // Refatorar para utilizar um mapper próprio através do MapStruct
     public AccountEntity toAccountEntity() {
         return new AccountEntity(
             null,
