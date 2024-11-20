@@ -25,8 +25,8 @@ public class CreateAccountServiceImpl implements CreateAccountService {
     }
 
     private void validateEmailIsNotRegistered(final String email) {
-        accountRepository.findByEmail(email).ifPresent((entity) -> {
+        if (accountRepository.existsByEmail(email)) {
             throw new EmailAlreadyRegisteredException("Account email already registered", "email");
-        });
+        }
     }
 }

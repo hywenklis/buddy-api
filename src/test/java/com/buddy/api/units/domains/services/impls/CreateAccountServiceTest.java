@@ -1,6 +1,5 @@
 package com.buddy.api.units.domains.services.impls;
 
-import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPhoneNumber;
@@ -16,9 +15,6 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.account.services.impl.CreateAccountServiceImpl;
 import com.buddy.api.units.UnitTestAbstract;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -65,7 +61,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
             null
         );
 
-        when(accountRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(accountRepository.existsByEmail(email)).thenReturn(false);
         when(passwordEncoder.encode(password)).thenReturn(encryptedPassword);
         when(accountRepository.save(accountEntity)).thenReturn(accountEntity);
 
@@ -81,12 +77,6 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
         final var email = generateValidEmail();
         final var termsOfUserConsent = true;
 
-        final AccountEntity accountEntity = validAccountEntity()
-            .accountId(UUID.randomUUID())
-            .creationDate(LocalDateTime.now())
-            .updatedDate(LocalDateTime.now())
-            .build();
-
         final AccountDto accountDto = new AccountDto(
             email,
             generateRandomPhoneNumber(),
@@ -94,7 +84,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
             termsOfUserConsent
         );
 
-        when(accountRepository.findByEmail(email)).thenReturn(Optional.of(accountEntity));
+        when(accountRepository.existsByEmail(email)).thenReturn(true);
 
         assertThatThrownBy(() -> createAccountService.create(accountDto))
             .isInstanceOf(EmailAlreadyRegisteredException.class)
