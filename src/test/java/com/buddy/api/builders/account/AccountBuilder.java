@@ -1,6 +1,7 @@
 package com.buddy.api.builders.account;
 
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
+import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPhoneNumber;
 
@@ -20,7 +21,7 @@ public class AccountBuilder {
     public static AccountEntity.AccountEntityBuilder validAccountEntity() {
         return AccountEntity
             .builder()
-            .email(generateValidEmail())
+            .email(generateValidEmailAddress())
             .phoneNumber(generateRandomPhoneNumber())
             .password(generateRandomPassword())
             .termsOfUserConsent(true)

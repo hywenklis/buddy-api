@@ -4,6 +4,7 @@ import com.buddy.api.commons.exceptions.EmailAlreadyRegisteredException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.account.services.CreateAccountService;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +27,7 @@ public class CreateAccountServiceImpl implements CreateAccountService {
         accountRepository.save(accountEntity);
     }
 
-    private void validateEmailIsNotRegistered(final String email) {
+    private void validateEmailIsNotRegistered(final EmailAddress email) {
         if (accountRepository.existsByEmail(email)) {
             throw new EmailAlreadyRegisteredException("Account email already registered", "email");
         }

@@ -1,6 +1,8 @@
 package com.buddy.api.domains.account.entities;
 
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,8 +33,9 @@ public class AccountEntity {
     @Column(name = "account_id", nullable = false, unique = true)
     private UUID accountId;
 
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
+    @Column
+    @Embedded
+    private EmailAddress email;
 
     @Column(name = "phone_number")
     private String phoneNumber;

@@ -1,6 +1,6 @@
 package com.buddy.api.units.domains.services.impls;
 
-import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
+import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPhoneNumber;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,7 +34,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should create account")
     void should_create_account() {
-        final var email = generateValidEmail();
+        final var email = generateValidEmailAddress();
         final var phoneNumber = generateRandomPhoneNumber();
         final var password = generateRandomPassword();
         final var encryptedPassword = generateRandomPassword();
@@ -74,7 +74,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should not create account when email is already in database")
     void should_not_create_account_when_email_is_already_in_database() {
-        final var email = generateValidEmail();
+        final var email = generateValidEmailAddress();
         final var termsOfUserConsent = true;
 
         final AccountDto accountDto = new AccountDto(
