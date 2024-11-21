@@ -11,6 +11,14 @@ import org.junit.jupiter.api.Test;
 
 public class EmailAddressTest extends UnitTestAbstract {
     @Test
+    @DisplayName("Should initialize empty email addresses")
+    void should_initialize_empty_email_adddress() {
+        var email = new EmailAddress();
+
+        assertThat(email.value()).isEqualTo("");
+    }
+
+    @Test
     @DisplayName("Should recognize equal email addresses")
     void should_recognize_equal_email_adresses() {
         var emailString = generateValidEmail();
