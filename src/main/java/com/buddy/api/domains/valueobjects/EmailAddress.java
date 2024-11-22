@@ -15,9 +15,9 @@ public record EmailAddress(
     }
 
     public EmailAddress {
-        if (value == null || value.isEmpty()) {
-            throw new InvalidEmailAddressException("Email address value cannot be null or empty");
+        if (value == null || value.isBlank()) {
+            throw new InvalidEmailAddressException("Email address value cannot be null or blank");
         }
-        value = value.toLowerCase(Locale.ENGLISH);
+        value = value.trim().toLowerCase(Locale.ENGLISH);
     }
 }

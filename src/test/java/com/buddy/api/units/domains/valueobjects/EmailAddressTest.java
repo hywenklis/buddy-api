@@ -46,11 +46,20 @@ public class EmailAddressTest extends UnitTestAbstract {
     }
 
     @Test
+    @DisplayName("Should ignore leading and trailing white spaces")
+    void should_ignore_leading_and_trailing_white_spaces() {
+        var email = generateValidEmail();
+
+        assertThat(new EmailAddress(email))
+            .isEqualTo(new EmailAddress(" " + email + " "));
+    }
+
+    @Test
     @DisplayName("Should not instantiate with null email value")
     void should_not_instantiate_with_null_email_value() {
         assertThatThrownBy(() -> new EmailAddress(null))
             .isInstanceOf(InvalidEmailAddressException.class)
-            .hasMessage("Email address value cannot be null or empty")
+            .hasMessage("Email address value cannot be null or blank")
             .extracting("fieldName")
             .isEqualTo("email");
     }
@@ -60,7 +69,17 @@ public class EmailAddressTest extends UnitTestAbstract {
     void should_not_instantiate_with_empty_email_value() {
         assertThatThrownBy(() -> new EmailAddress(""))
             .isInstanceOf(InvalidEmailAddressException.class)
-            .hasMessage("Email address value cannot be null or empty")
+            .hasMessage("Email address value cannot be null or blank")
+            .extracting("fieldName")
+            .isEqualTo("email");
+    }
+
+    @Test
+    @DisplayName("Should not instantiate with blank email value")
+    void should_not_instantiate_with_blank_email_value() {
+        assertThatThrownBy(() -> new EmailAddress(" "))
+            .isInstanceOf(InvalidEmailAddressException.class)
+            .hasMessage("Email address value cannot be null or blank")
             .extracting("fieldName")
             .isEqualTo("email");
     }
