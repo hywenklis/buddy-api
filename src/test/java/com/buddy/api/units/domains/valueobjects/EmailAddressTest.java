@@ -2,7 +2,9 @@ package com.buddy.api.units.domains.valueobjects;
 
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.buddy.api.commons.exceptions.InvalidEmailAddressException;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.Locale;
@@ -10,13 +12,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class EmailAddressTest extends UnitTestAbstract {
-    @Test
-    @DisplayName("Should initialize empty email addresses")
-    void should_initialize_empty_email_adddress() {
-        var email = new EmailAddress();
-
-        assertThat(email.value()).isEqualTo("");
-    }
 
     @Test
     @DisplayName("Should recognize equal email addresses")
@@ -51,9 +46,22 @@ public class EmailAddressTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should resolve null emails to empty string emails")
-    void should_resolve_null_emails_to_empty_string() {
-        assertThat(new EmailAddress(null))
-            .isEqualTo(new EmailAddress(""));
+    @DisplayName("Should not instantiate with null email value")
+    void should_not_instantiate_with_null_email_value() {
+        assertThatThrownBy(() -> new EmailAddress(null))
+            .isInstanceOf(InvalidEmailAddressException.class)
+            .hasMessage("Email address value cannot be null or empty")
+            .extracting("fieldName")
+            .isEqualTo("email");
+    }
+
+    @Test
+    @DisplayName("Should not instantiate with empty email value")
+    void should_not_instantiate_with_empty_email_value() {
+        assertThatThrownBy(() -> new EmailAddress(""))
+            .isInstanceOf(InvalidEmailAddressException.class)
+            .hasMessage("Email address value cannot be null or empty")
+            .extracting("fieldName")
+            .isEqualTo("email");
     }
 }

@@ -1,5 +1,6 @@
 package com.buddy.api.domains.valueobjects;
 
+import com.buddy.api.commons.exceptions.InvalidEmailAddressException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.util.Locale;
@@ -9,11 +10,14 @@ public record EmailAddress(
     @Column(name = "email", nullable = false, unique = true)
     String value
 ) {
-    public EmailAddress() {
+    private EmailAddress() {
         this("");
     }
 
     public EmailAddress {
-        value = (value == null) ? "" : value.toLowerCase(Locale.ENGLISH);
+        if (value == null || value.isEmpty()) {
+            throw new InvalidEmailAddressException("Email address value cannot be null or empty");
+        }
+        value = value.toLowerCase(Locale.ENGLISH);
     }
 }
