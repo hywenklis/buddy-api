@@ -1,8 +1,8 @@
 package com.buddy.api.units.domains.services.impls;
 
-import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
+import static com.buddy.api.builders.account.AccountBuilder.validAccountDto;
+import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomPhoneNumber;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -34,57 +34,33 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should create account")
     void should_create_account() {
-        final var email = generateValidEmailAddress();
-        final var phoneNumber = generateRandomPhoneNumber();
-        final var password = generateRandomPassword();
         final var encryptedPassword = generateRandomPassword();
-        final var termsOfUserConsent = true;
 
-        final AccountDto accountDto = new AccountDto(
-            email,
-            phoneNumber,
-            password,
-            termsOfUserConsent
-        );
+        final AccountDto accountDto = validAccountDto().build();
 
-        final AccountEntity accountEntity = new AccountEntity(
-            null,
-            email,
-            phoneNumber,
-            encryptedPassword,
-            termsOfUserConsent,
-            false,
-            false,
-            false,
-            null,
-            null,
-            null
-        );
+        final AccountEntity accountEntity = validAccountEntity()
+            .email(accountDto.email())
+            .password(encryptedPassword)
+            .phoneNumber(accountDto.phoneNumber())
+            .termsOfUserConsent(accountDto.termsOfUserConsent())
+            .build();
 
-        when(accountRepository.existsByEmail(email)).thenReturn(false);
-        when(passwordEncoder.encode(password)).thenReturn(encryptedPassword);
+        when(accountRepository.existsByEmail(accountDto.email())).thenReturn(false);
+        when(passwordEncoder.encode(accountDto.password())).thenReturn(encryptedPassword);
         when(accountRepository.save(accountEntity)).thenReturn(accountEntity);
 
         createAccountService.create(accountDto);
 
-        verify(passwordEncoder, times(1)).encode(password);
+        verify(passwordEncoder, times(1)).encode(accountDto.password());
         verify(accountRepository, times(1)).save(accountEntity);
     }
 
     @Test
     @DisplayName("Should not create account when email is already in database")
     void should_not_create_account_when_email_is_already_in_database() {
-        final var email = generateValidEmailAddress();
-        final var termsOfUserConsent = true;
+        final AccountDto accountDto = validAccountDto().build();
 
-        final AccountDto accountDto = new AccountDto(
-            email,
-            generateRandomPhoneNumber(),
-            generateRandomPassword(),
-            termsOfUserConsent
-        );
-
-        when(accountRepository.existsByEmail(email)).thenReturn(true);
+        when(accountRepository.existsByEmail(accountDto.email())).thenReturn(true);
 
         assertThatThrownBy(() -> createAccountService.create(accountDto))
             .isInstanceOf(EmailAlreadyRegisteredException.class)
