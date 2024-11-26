@@ -81,8 +81,9 @@ public class CreateProfileTest extends UnitTestAbstract {
 
         assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
             .isInstanceOf(NotFoundException.class)
-            .usingRecursiveComparison()
-            .isEqualTo(new NotFoundException("accountId", "Account not found"));
+            .hasMessage("Account not found")
+            .extracting("fieldName")
+            .isEqualTo("accountId");
 
         verify(accountRepository, times(1)).findById(accountId);
         verify(profileRepository, never()).save(any());
