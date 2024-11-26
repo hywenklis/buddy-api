@@ -1,6 +1,7 @@
 package com.buddy.api.web.accounts.requests;
 
 import com.buddy.api.domains.account.dtos.AccountDto;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +40,6 @@ public record AccountRequest(
     Boolean termsOfUserConsent
 ) {
     public AccountDto toAccountDto() {
-        return new AccountDto(email, phoneNumber, password, termsOfUserConsent);
+        return new AccountDto(new EmailAddress(email), phoneNumber, password, termsOfUserConsent);
     }
 }

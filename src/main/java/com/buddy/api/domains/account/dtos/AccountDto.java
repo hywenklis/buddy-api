@@ -1,8 +1,11 @@
 package com.buddy.api.domains.account.dtos;
 
 import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.valueobjects.EmailAddress;
+import lombok.Builder;
 
-public record AccountDto(String email,
+@Builder
+public record AccountDto(EmailAddress email,
                          String phoneNumber,
                          String password,
                          Boolean termsOfUserConsent) {

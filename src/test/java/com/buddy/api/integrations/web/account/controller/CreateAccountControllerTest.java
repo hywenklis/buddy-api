@@ -3,6 +3,7 @@ package com.buddy.api.integrations.web.account.controller;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountRequest;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
+import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
 import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
@@ -11,8 +12,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.AccountRequest;
+import java.util.Locale;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     private static final String ERROR_HTTP_STATUS_PATH = "$.errors[0].httpStatus";
     private static final String ERROR_CODE_PATH = "$.errors[0].errorCode";
     private static final String ERROR_TIMESTAMP_PATH = "$.errors[0].timestamp";
+    private static final String EMAIL_FIELD = "email";
 
     @Test
     @DisplayName("Should register a new account successfully")
@@ -44,7 +48,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("email"),
+                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
                 jsonPath(ERROR_MESSAGE_PATH).value("Account email is mandatory")
             );
     }
@@ -58,7 +62,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("email"),
+                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
                 jsonPath(ERROR_MESSAGE_PATH).value(
                     "Account email must be a valid email address"
                 )
@@ -68,17 +72,39 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if email already belong to other account")
     void should_not_register_account_with_existing_account_email() throws Exception {
-        var repeatedEmail = generateValidEmail();
+        var repeatedEmail = generateValidEmailAddress();
 
         accountRepository.save(validAccountEntity().email(repeatedEmail).build());
 
         var request = validAccountRequest()
-            .email(repeatedEmail)
+            .email(repeatedEmail.value())
             .build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .andExpectAll(
-                jsonPath(ERROR_FIELD_PATH).value("email"),
+                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
+                jsonPath(ERROR_MESSAGE_PATH).value(
+                    "Account email already registered"
+                )
+            );
+    }
+
+    @Test
+    @DisplayName("Should not register account if equivalent email is in the database")
+    void should_not_register_account_with_equivalent_existing_account_email() throws Exception {
+        var repeatedEmail = generateValidEmail().toLowerCase(Locale.ENGLISH);
+
+        accountRepository.save(validAccountEntity().email(
+            new EmailAddress(repeatedEmail)
+        ).build());
+
+        var request = validAccountRequest()
+            .email(repeatedEmail.toUpperCase(Locale.ENGLISH))
+            .build();
+
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .andExpectAll(
+                jsonPath(ERROR_FIELD_PATH).value(EMAIL_FIELD),
                 jsonPath(ERROR_MESSAGE_PATH).value(
                     "Account email already registered"
                 )
