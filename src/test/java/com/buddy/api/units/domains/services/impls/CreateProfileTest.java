@@ -3,6 +3,7 @@ package com.buddy.api.units.domains.services.impls;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileDto;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -67,12 +69,19 @@ public class CreateProfileTest extends UnitTestAbstract {
             null
         );
 
+        final var profileEntityCaptor = ArgumentCaptor.forClass(ProfileEntity.class);
+
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(accountEntity));
         when(profileRepository.save(profileEntity)).thenReturn(profileEntity);
 
         createProfile.create(validProfileDto);
 
-        verify(profileRepository, times(1)).save(profileEntity);
+        verify(profileRepository, times(1))
+            .save(profileEntityCaptor.capture());
+
+        assertThat(profileEntity)
+            .usingRecursiveComparison()
+            .isEqualTo(profileEntityCaptor.getValue());
     }
 
     @Test
