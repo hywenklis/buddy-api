@@ -3,6 +3,7 @@ package com.buddy.api.units.domains.services.impls;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountDto;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -17,6 +18,7 @@ import com.buddy.api.domains.account.services.impl.CreateAccountServiceImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,8 +53,15 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
 
         createAccountService.create(accountDto);
 
+        var accountEntityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
+
         verify(passwordEncoder, times(1)).encode(accountDto.password());
-        verify(accountRepository, times(1)).save(accountEntity);
+        verify(accountRepository, times(1))
+            .save(accountEntityCaptor.capture());
+
+        assertThat(accountEntity)
+            .usingRecursiveComparison()
+            .isEqualTo(accountEntityCaptor.getValue());
     }
 
     @Test
