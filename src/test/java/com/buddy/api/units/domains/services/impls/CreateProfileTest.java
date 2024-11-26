@@ -2,7 +2,6 @@ package com.buddy.api.units.domains.services.impls;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileDto;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,11 +10,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.repository.AccountRepository;
-import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
-import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.impl.CreateProfileImpl;
 import com.buddy.api.units.UnitTestAbstract;
@@ -42,32 +40,18 @@ public class CreateProfileTest extends UnitTestAbstract {
     @DisplayName("Should create a new profile")
     void should_create_new_profile() {
         final var accountId = UUID.randomUUID();
-        final var name = generateRandomString(6);
-        final var description = generateRandomString(10);
-        final var bio = generateRandomString(10);
-        final var profileType = ProfileTypeEnum.USER;
 
-        final var validProfileDto = new ProfileDto(
-            accountId,
-            name,
-            description,
-            bio,
-            profileType
-        );
+        final var validProfileDto = profileDto().accountId(accountId).build();
 
         final var accountEntity = validAccountEntity().accountId(accountId).build();
 
-        final var profileEntity = new ProfileEntity(
-            null,
-            accountEntity,
-            name,
-            description,
-            bio,
-            profileType,
-            false,
-            null,
-            null
-        );
+        final var profileEntity = ProfileBuilder.profileEntity()
+            .account(accountEntity)
+            .name(validProfileDto.name())
+            .description(validProfileDto.description())
+            .bio(validProfileDto.bio())
+            .profileType(validProfileDto.profileType())
+            .build();
 
         final var profileEntityCaptor = ArgumentCaptor.forClass(ProfileEntity.class);
 
