@@ -6,6 +6,7 @@ import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.CreateProfile;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ public class CreateProfileImpl implements CreateProfile {
     private final ProfileRepository profileRepository;
 
     @Override
+    @Transactional
     public void create(final ProfileDto profileDto) {
         final var account = accountRepository
             .findById(profileDto.accountId())
