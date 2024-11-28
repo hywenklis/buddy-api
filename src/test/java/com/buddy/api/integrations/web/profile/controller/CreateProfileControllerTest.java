@@ -1,5 +1,6 @@
 package com.buddy.api.integrations.web.profile.controller;
 
+import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
@@ -41,6 +42,19 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should not create profile when account id is not from an account in database")
     void should_not_create_profile_when_account_is_not_from_database_account() throws Exception {
         final var request = profileRequest().accountId(UUID.randomUUID()).build();
+
+        expectNotFoundFrom(performCreateProfileRequest(request))
+            .forField("accountId", "Account not found");
+    }
+
+    @Test
+    @DisplayName("Should not create profile when account is marked for deletion")
+    void should_not_create_profile_when_account_is_marked_for_deletion() throws Exception {
+
+        var accountEntity = accountRepository.save(validAccountEntity().isDeleted(true).build());
+        var accountId = accountEntity.getAccountId();
+
+        final var request = profileRequest().accountId(accountId).build();
 
         expectNotFoundFrom(performCreateProfileRequest(request))
             .forField("accountId", "Account not found");
