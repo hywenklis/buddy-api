@@ -12,12 +12,12 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.exceptions.NotFoundException;
-import com.buddy.api.domains.account.repository.AccountRepository;
+import com.buddy.api.domains.account.mappers.AccountMapper;
+import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.impl.CreateProfileImpl;
 import com.buddy.api.units.UnitTestAbstract;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,10 @@ import org.mockito.Mock;
 public class CreateProfileTest extends UnitTestAbstract {
 
     @Mock
-    private AccountRepository accountRepository;
+    private FindAccount findAccount;
+
+    @Mock
+    private AccountMapper accountMapper;
 
     @Mock
     private ProfileRepository profileRepository;
@@ -55,13 +58,17 @@ public class CreateProfileTest extends UnitTestAbstract {
 
         final var profileEntityCaptor = ArgumentCaptor.forClass(ProfileEntity.class);
 
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(accountEntity));
+        when(findAccount.existsById(accountId)).thenReturn(true);
+        when(accountMapper.toAccountEntity(accountId)).thenReturn(accountEntity);
         when(profileRepository.save(profileEntity)).thenReturn(profileEntity);
 
         createProfile.create(validProfileDto);
 
         verify(profileRepository, times(1))
             .save(profileEntityCaptor.capture());
+
+        verify(accountMapper, times(1))
+            .toAccountEntity(accountId);
 
         assertThat(profileEntity)
             .usingRecursiveComparison()
@@ -77,7 +84,7 @@ public class CreateProfileTest extends UnitTestAbstract {
             .accountId(accountId)
             .build();
 
-        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+        when(findAccount.existsById(accountId)).thenReturn(false);
 
         assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
             .isInstanceOf(NotFoundException.class)
@@ -85,7 +92,6 @@ public class CreateProfileTest extends UnitTestAbstract {
             .extracting("fieldName")
             .isEqualTo("accountId");
 
-        verify(accountRepository, times(1)).findById(accountId);
         verify(profileRepository, never()).save(any());
     }
 }

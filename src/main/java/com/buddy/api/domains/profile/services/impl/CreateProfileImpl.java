@@ -1,7 +1,8 @@
 package com.buddy.api.domains.profile.services.impl;
 
 import com.buddy.api.commons.exceptions.NotFoundException;
-import com.buddy.api.domains.account.repository.AccountRepository;
+import com.buddy.api.domains.account.mappers.AccountMapper;
+import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
@@ -13,15 +14,20 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CreateProfileImpl implements CreateProfile {
-    private final AccountRepository accountRepository;
+    private final FindAccount findAccount;
+    private final AccountMapper accountMapper;
     private final ProfileRepository profileRepository;
 
     @Override
     @Transactional
     public void create(final ProfileDto profileDto) {
-        final var account = accountRepository
-            .findById(profileDto.accountId())
-            .orElseThrow(() -> new NotFoundException("accountId", "Account not found"));
+        final var accountId = profileDto.accountId();
+
+        if (!findAccount.existsById(accountId)) {
+            throw new NotFoundException("accountId", "Account not found");
+        }
+
+        final var account = accountMapper.toAccountEntity(accountId);
 
         final var profileEntity = new ProfileEntity(
             null,
