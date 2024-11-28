@@ -7,7 +7,7 @@ import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper
 public interface AccountMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "accountId", expression = "java(accountId)")

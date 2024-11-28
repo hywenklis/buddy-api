@@ -10,19 +10,22 @@ import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.AccountRequest;
 import java.util.Locale;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("POST /v1/accounts/register")
-public class CreateAccountControllerTest extends IntegrationTestAbstract {
+class CreateAccountControllerTest extends IntegrationTestAbstract {
     private static final String ACCOUNT_REGISTER_URL = "/v1/accounts/register";
 
     @Test
@@ -31,7 +34,46 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().build();
 
         expectCreatedFrom(performCreateAccountRequest(request));
+
+        Optional<AccountEntity> accountEntitySaved =
+            accountRepository.findByEmail(new EmailAddress(request.email()));
+
+        assertAll(
+            "Validating AccountEntity existence",
+            () -> assertThat(accountEntitySaved)
+                .as("Account should exist after creation")
+                .isPresent()
+        );
+
+        var account = accountEntitySaved.get();
+
+        assertAll(
+            "Validating AccountEntity details",
+            () -> assertThat(account.getAccountId()).isNotNull(),
+            () -> assertThat(account.getEmail()).isEqualTo(new EmailAddress(request.email())),
+            () -> assertThat(account.getPhoneNumber()).isEqualTo(request.phoneNumber()),
+            () -> assertThat(passwordEncoder.matches(
+                request.password(), account.getPassword())
+            ).isTrue(),
+            () -> assertThat(account.getTermsOfUserConsent()).isEqualTo(
+                request.termsOfUserConsent())
+        );
+
+        assertAll(
+            "Validating AccountEntity state",
+            () -> assertThat(account.getIsVerified()).isFalse(),
+            () -> assertThat(account.getIsBlocked()).isFalse(),
+            () -> assertThat(account.getIsDeleted()).isFalse()
+        );
+
+        assertAll(
+            "Validating AccountEntity timestamps",
+            () -> assertThat(account.getLastLogin()).isNull(),
+            () -> assertThat(account.getCreationDate()).isNotNull(),
+            () -> assertThat(account.getUpdatedDate()).isNotNull()
+        );
     }
+
 
     @Test
     @DisplayName("Should match request fields for new account on save")
