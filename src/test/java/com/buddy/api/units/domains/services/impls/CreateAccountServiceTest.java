@@ -59,14 +59,21 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
         createAccountService.create(accountDto);
 
         var accountEntityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
+        var accountDtoCaptor = ArgumentCaptor.forClass(AccountDto.class);
 
         verify(passwordEncoder, times(1)).encode(accountDto.password());
         verify(accountRepository, times(1))
             .save(accountEntityCaptor.capture());
+        verify(accountMapper, times(1))
+            .toAccountEntity(accountDtoCaptor.capture());
 
         assertThat(accountEntity)
             .usingRecursiveComparison()
             .isEqualTo(accountEntityCaptor.getValue());
+
+        assertThat(accountDto)
+            .usingRecursiveComparison()
+            .isEqualTo(accountDtoCaptor.getValue());
     }
 
     @Test

@@ -34,6 +34,30 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
+    @DisplayName("Should match request fields for new account on save")
+    void should_match_request_fields_for_new_account_on_save() throws Exception {
+        var request = validAccountRequest().build();
+
+        performCreateAccountRequest(request);
+
+        final var createdAccount = accountRepository
+            .findByEmail(new EmailAddress(request.email()))
+            .orElseThrow();
+
+        assertThat(request)
+            .usingRecursiveComparison()
+            .withEqualsForFields(
+                (x, y) -> passwordEncoder.matches(x.toString(), y.toString()),
+                "password", "password"
+            )
+            .withEqualsForFields(
+                (x, y) -> new EmailAddress(x.toString()).equals(y),
+                "email", "email"
+            )
+            .isEqualTo(createdAccount);
+    }
+
+    @Test
     @DisplayName("Should set default fields correctly for a new account")
     void should_set_default_fields_correctly_for_new_account() throws Exception {
         var request = validAccountRequest().build();
@@ -106,8 +130,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     void should_not_register_account_without_password() throws Exception {
         var request = validAccountRequest().password(null).build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .forField("password", "Account password is mandatory");
+        expectPasswordErrorReported(request, "Account password is mandatory");
     }
 
     @Test
@@ -115,11 +138,10 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     void should_not_register_account_with_small_password() throws Exception {
         var request = validAccountRequest().password(generateRandomString(5)).build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .forField(
-                "password",
-                "Account password must have between 6 and 16 characters"
-            );
+        expectPasswordErrorReported(
+            request,
+            "Account password must have between 6 and 16 characters"
+        );
     }
 
     @Test
@@ -127,11 +149,10 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
     void should_not_register_account_with_too_big_password() throws Exception {
         var request = validAccountRequest().password(generateRandomString(17)).build();
 
-        expectBadRequestFrom(performCreateAccountRequest(request))
-            .forField(
-                "password",
-                "Account password must have between 6 and 16 characters"
-            );
+        expectPasswordErrorReported(
+            request,
+            "Account password must have between 6 and 16 characters"
+        );
     }
 
     @Test
@@ -195,4 +216,12 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         expectBadRequestFrom(performCreateAccountRequest(request))
             .forField("email", errorMessage);
     }
+
+    private void expectPasswordErrorReported(final AccountRequest request,
+                                             final String errorMessage)
+        throws Exception {
+        expectBadRequestFrom(performCreateAccountRequest(request))
+            .forField("password", errorMessage);
+    }
+
 }
