@@ -9,6 +9,7 @@ import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
 import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -30,6 +31,26 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().build();
 
         expectCreatedFrom(performCreateAccountRequest(request));
+    }
+
+    @Test
+    @DisplayName("Should set default fields correctly for a new account")
+    void should_set_default_fields_correctly_for_new_account() throws Exception {
+        var request = validAccountRequest().build();
+
+        performCreateAccountRequest(request);
+
+        final var createdAccount = accountRepository
+            .findByEmail(new EmailAddress(request.email()))
+            .orElseThrow();
+
+        assertThat(createdAccount.getAccountId()).isNotNull();
+        assertThat(createdAccount.getIsVerified()).isFalse();
+        assertThat(createdAccount.getIsBlocked()).isFalse();
+        assertThat(createdAccount.getIsDeleted()).isFalse();
+        assertThat(createdAccount.getLastLogin()).isNull();
+        assertThat(createdAccount.getCreationDate()).isNotNull();
+        assertThat(createdAccount.getUpdatedDate()).isNotNull();
     }
 
     @Test

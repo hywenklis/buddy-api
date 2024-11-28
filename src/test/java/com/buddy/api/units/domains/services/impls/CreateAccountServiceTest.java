@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.buddy.api.commons.exceptions.EmailAlreadyRegisteredException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.account.services.impl.CreateAccountServiceImpl;
 import com.buddy.api.units.UnitTestAbstract;
@@ -29,6 +30,9 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private AccountMapper accountMapper;
 
     @InjectMocks
     CreateAccountServiceImpl createAccountService;
@@ -47,6 +51,7 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
             .termsOfUserConsent(accountDto.termsOfUserConsent())
             .build();
 
+        when(accountMapper.toAccountEntity(accountDto)).thenReturn(accountEntity);
         when(accountRepository.existsByEmail(accountDto.email())).thenReturn(false);
         when(passwordEncoder.encode(accountDto.password())).thenReturn(encryptedPassword);
         when(accountRepository.save(accountEntity)).thenReturn(accountEntity);
