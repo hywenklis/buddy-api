@@ -14,9 +14,6 @@ public class FindAccountImpl implements FindAccount {
 
     @Override
     public Boolean existsById(final UUID accountId) {
-        return accountRepository
-            .findById(accountId)
-            .filter(accountEntity -> !accountEntity.getIsDeleted())
-            .isPresent();
+        return accountRepository.existsByAccountIdAndIsDeleted(accountId, false);
     }
 }
