@@ -7,6 +7,7 @@ import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.adoption.repositories.AdoptionRequestRepository;
 import com.buddy.api.domains.pet.repositories.PetImageRepository;
 import com.buddy.api.domains.pet.repositories.PetRepository;
+import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.shelter.entities.ShelterEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public abstract class IntegrationTestAbstract {
 
     @Autowired
     protected ProfileComponent profileComponent;
+
+    @Autowired
+    protected ProfileRepository profileRepository;
 
     @Autowired
     protected AccountRepository accountRepository;

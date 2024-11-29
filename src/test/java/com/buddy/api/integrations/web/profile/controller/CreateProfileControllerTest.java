@@ -6,20 +6,33 @@ import static com.buddy.api.customverifications.CustomCreatedVerifications.expec
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("POST /v1/profiles/register")
-public class CreateProfileControllerTest extends IntegrationTestAbstract {
+class CreateProfileControllerTest extends IntegrationTestAbstract {
 
     private static final String PROFILE_REGISTER_URL = "/v1/profiles/register";
+    private static final String ERROR_ACCOUNT_ID_REQUIRED = "Profile account ID is mandatory";
+    private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
+    private static final String ERROR_NAME_REQUIRED = "Profile name is mandatory";
+    private static final String ERROR_NAME_SIZE =
+        "Profile name must have between 3 and 100 characters";
+    private static final String ERROR_DESCRIPTION_SIZE =
+        "Profile description must have at most 255 characters";
+    private static final String ERROR_PROFILE_TYPE_REQUIRED = "Profile type is mandatory";
 
     @Test
     @DisplayName("Should register a new profile successfully")
@@ -27,6 +40,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
         final var request = profileComponent.validProfileRequest().build();
 
         expectCreatedFrom(performCreateProfileRequest(request));
+        assertProfileExists(request);
     }
 
     @Test
@@ -35,7 +49,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
         final var request = profileRequest().accountId(null).build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("accountId", "Profile account ID is mandatory");
+            .forField("accountId", ERROR_ACCOUNT_ID_REQUIRED);
     }
 
     @Test
@@ -44,7 +58,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
         final var request = profileRequest().accountId(UUID.randomUUID()).build();
 
         expectNotFoundFrom(performCreateProfileRequest(request))
-            .forField("accountId", "Account not found");
+            .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
     }
 
     @Test
@@ -57,7 +71,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
         final var request = profileRequest().accountId(accountId).build();
 
         expectNotFoundFrom(performCreateProfileRequest(request))
-            .forField("accountId", "Account not found");
+            .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
     }
 
     @Test
@@ -69,7 +83,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("name", "Profile name is mandatory");
+            .forField("name", ERROR_NAME_REQUIRED);
     }
 
     @Test
@@ -81,7 +95,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("name", "Profile name must have between 3 and 100 characters");
+            .forField("name", ERROR_NAME_SIZE);
     }
 
     @Test
@@ -93,7 +107,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("name", "Profile name must have between 3 and 100 characters");
+            .forField("name", ERROR_NAME_SIZE);
     }
 
     @Test
@@ -105,10 +119,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField(
-                "description",
-                "Profile description must have at most 255 characters"
-            );
+            .forField("description", ERROR_DESCRIPTION_SIZE);
     }
 
     @Test
@@ -120,7 +131,7 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("profileType", "Profile type is mandatory");
+            .forField("profileType", ERROR_PROFILE_TYPE_REQUIRED);
     }
 
     private ResultActions performCreateProfileRequest(final ProfileRequest request)
@@ -129,5 +140,34 @@ public class CreateProfileControllerTest extends IntegrationTestAbstract {
             .perform(post(PROFILE_REGISTER_URL)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
+    }
+
+    private void assertProfileExists(final ProfileRequest request) {
+        Optional<AccountEntity> accountEntitySaved =
+            accountRepository.findById(request.accountId());
+        Optional<ProfileEntity> profileEntitySaved =
+            profileRepository.findByAccount(accountEntitySaved.get());
+
+        assertAll(
+            "Validating ProfileEntity existence",
+            () -> assertThat(profileEntitySaved)
+                .as("Profile should exist after creation")
+                .isPresent()
+        );
+
+        var profile = profileEntitySaved.get();
+
+        assertAll(
+            "Validating ProfileEntity details",
+            () -> assertThat(profile.getProfileId()).isNotNull(),
+            () -> assertThat(profile.getAccount().getAccountId()).isEqualTo(request.accountId()),
+            () -> assertThat(profile.getName()).isEqualTo(request.name()),
+            () -> assertThat(profile.getDescription()).isEqualTo(request.description()),
+            () -> assertThat(profile.getBio()).isEqualTo(request.bio()),
+            () -> assertThat(profile.getProfileType()).isEqualTo(request.profileType()),
+            () -> assertThat(profile.getIsDeleted()).isFalse(),
+            () -> assertThat(profile.getCreationDate()).isNotNull(),
+            () -> assertThat(profile.getUpdatedDate()).isNotNull()
+        );
     }
 }
