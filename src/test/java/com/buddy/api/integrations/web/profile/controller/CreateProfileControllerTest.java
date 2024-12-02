@@ -15,6 +15,7 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -145,17 +146,17 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     private void assertProfileExists(final ProfileRequest request) {
         Optional<AccountEntity> accountEntitySaved =
             accountRepository.findById(request.accountId());
-        Optional<ProfileEntity> profileEntitySaved =
+        List<ProfileEntity> profileEntitySaved =
             profileRepository.findByAccount(accountEntitySaved.get());
 
         assertAll(
             "Validating ProfileEntity existence",
-            () -> assertThat(profileEntitySaved)
+            () -> assertThat(profileEntitySaved.getFirst())
                 .as("Profile should exist after creation")
-                .isPresent()
+                .isNotNull()
         );
 
-        var profile = profileEntitySaved.get();
+        var profile = profileEntitySaved.getFirst();
 
         assertAll(
             "Validating ProfileEntity details",
