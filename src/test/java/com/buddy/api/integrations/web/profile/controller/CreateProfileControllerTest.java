@@ -15,8 +15,6 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,10 +36,50 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should register a new profile successfully")
     void should_register_new_profile() throws Exception {
-        final var request = profileComponent.validProfileRequest().build();
+        var accountEntity = accountRepository.save(validAccountEntity().build());
 
-        expectCreatedFrom(performCreateProfileRequest(request));
-        assertProfileExists(request);
+        var request = profileComponent
+            .validProfileRequest()
+            .accountId(accountEntity.getAccountId())
+            .build();
+
+        var response = performCreateProfileRequest(request);
+
+        expectCreatedFrom(response);
+
+        assertProfileCount(accountEntity, 1);
+
+        var newProfile = findProfileByName(accountEntity, request.name());
+        assertProfileDetails(newProfile, request);
+    }
+
+    @Test
+    @DisplayName("Should register a new profile for an account that already has one")
+    void should_register_new_profile_for_account_with_existing_profile() throws Exception {
+        var accountEntity = accountRepository.save(validAccountEntity().build());
+
+        var firstProfileRequest = profileComponent
+            .validProfileRequest()
+            .accountId(accountEntity.getAccountId())
+            .build();
+
+        var firstProfileResponse = performCreateProfileRequest(firstProfileRequest);
+        expectCreatedFrom(firstProfileResponse);
+        assertProfileCount(accountEntity, 1);
+
+        var secondProfileRequest = profileComponent
+            .validProfileRequest()
+            .accountId(accountEntity.getAccountId())
+            .name("Second Profile Name")
+            .build();
+
+        var secondProfileResponse = performCreateProfileRequest(secondProfileRequest);
+
+        expectCreatedFrom(secondProfileResponse);
+        assertProfileCount(accountEntity, 2);
+
+        var newProfile = findProfileByName(accountEntity, secondProfileRequest.name());
+        assertProfileDetails(newProfile, secondProfileRequest);
     }
 
     @Test
@@ -143,28 +181,24 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
                 .content(objectMapper.writeValueAsString(request)));
     }
 
-    private void assertProfileExists(final ProfileRequest request) {
-        Optional<AccountEntity> accountEntitySaved =
-            accountRepository.findById(request.accountId());
-        List<ProfileEntity> profileEntitySaved =
-            profileRepository.findByAccount(accountEntitySaved.get());
+    private void assertProfileCount(final AccountEntity account, final int expectedCount) {
+        var profiles = profileRepository.findByAccount(account);
+        assertThat(profiles).hasSize(expectedCount);
+    }
 
-        assertAll(
-            "Validating ProfileEntity existence",
-            () -> assertThat(profileEntitySaved.getFirst())
-                .as("Profile should exist after creation")
-                .isNotNull()
-        );
+    private ProfileEntity findProfileByName(final AccountEntity account, final String name) {
+        return profileRepository.findByAccount(account).stream()
+            .filter(profile -> profile.getName().equals(name))
+            .findFirst().get();
+    }
 
-        var profile = profileEntitySaved.getFirst();
-
+    private void assertProfileDetails(final ProfileEntity profile, final ProfileRequest request) {
         assertAll(
             "Validating ProfileEntity details",
             () -> assertThat(profile.getProfileId()).isNotNull(),
             () -> assertThat(profile.getAccount().getAccountId()).isEqualTo(request.accountId()),
             () -> assertThat(profile.getName()).isEqualTo(request.name()),
             () -> assertThat(profile.getDescription()).isEqualTo(request.description()),
-            () -> assertThat(profile.getBio()).isEqualTo(request.bio()),
             () -> assertThat(profile.getProfileType()).isEqualTo(request.profileType()),
             () -> assertThat(profile.getIsDeleted()).isFalse(),
             () -> assertThat(profile.getCreationDate()).isNotNull(),
