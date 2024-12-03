@@ -4,7 +4,7 @@ import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
-import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.profile.mappers.ProfileMapper;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.CreateProfile;
 import jakarta.transaction.Transactional;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class CreateProfileImpl implements CreateProfile {
     private final FindAccount findAccount;
     private final AccountMapper accountMapper;
+    private final ProfileMapper profileMapper;
     private final ProfileRepository profileRepository;
 
     @Override
@@ -28,18 +29,7 @@ public class CreateProfileImpl implements CreateProfile {
         }
 
         final var account = accountMapper.toAccountEntity(accountId);
-
-        final var profileEntity = new ProfileEntity(
-            null,
-            account,
-            profileDto.name(),
-            profileDto.description(),
-            profileDto.bio(),
-            profileDto.profileType(),
-            false,
-            null,
-            null
-        );
+        final var profileEntity = profileMapper.toProfileEntity(profileDto, account);
 
         profileRepository.save(profileEntity);
     }

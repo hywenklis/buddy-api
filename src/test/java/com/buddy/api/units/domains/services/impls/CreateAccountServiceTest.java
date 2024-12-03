@@ -19,20 +19,22 @@ import com.buddy.api.domains.account.services.impl.CreateAccountServiceImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-public class CreateAccountServiceTest extends UnitTestAbstract {
+class CreateAccountServiceTest extends UnitTestAbstract {
     @Mock
     private AccountRepository accountRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private AccountMapper accountMapper;
+    @Spy
+    private AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
 
     @InjectMocks
     CreateAccountServiceImpl createAccountService;
@@ -51,7 +53,6 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
             .termsOfUserConsent(accountDto.termsOfUserConsent())
             .build();
 
-        when(accountMapper.toAccountEntity(accountDto)).thenReturn(accountEntity);
         when(accountRepository.existsByEmail(accountDto.email())).thenReturn(false);
         when(passwordEncoder.encode(accountDto.password())).thenReturn(encryptedPassword);
         when(accountRepository.save(accountEntity)).thenReturn(accountEntity);
@@ -59,21 +60,16 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
         createAccountService.create(accountDto);
 
         var accountEntityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
-        var accountDtoCaptor = ArgumentCaptor.forClass(AccountDto.class);
 
         verify(passwordEncoder, times(1)).encode(accountDto.password());
         verify(accountRepository, times(1))
             .save(accountEntityCaptor.capture());
-        verify(accountMapper, times(1))
-            .toAccountEntity(accountDtoCaptor.capture());
 
         assertThat(accountEntity)
             .usingRecursiveComparison()
             .isEqualTo(accountEntityCaptor.getValue());
 
-        assertThat(accountDto)
-            .usingRecursiveComparison()
-            .isEqualTo(accountDtoCaptor.getValue());
+        assertThat(accountEntityCaptor.getValue().getAccountId()).isNull();
     }
 
     @Test

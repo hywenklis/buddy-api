@@ -10,19 +10,22 @@ import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.AccountRequest;
 import java.util.Locale;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("POST /v1/accounts/register")
-public class CreateAccountControllerTest extends IntegrationTestAbstract {
+class CreateAccountControllerTest extends IntegrationTestAbstract {
     private static final String ACCOUNT_REGISTER_URL = "/v1/accounts/register";
 
     @Test
@@ -31,50 +34,7 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
         var request = validAccountRequest().build();
 
         expectCreatedFrom(performCreateAccountRequest(request));
-    }
-
-    @Test
-    @DisplayName("Should match request fields for new account on save")
-    void should_match_request_fields_for_new_account_on_save() throws Exception {
-        var request = validAccountRequest().build();
-
-        performCreateAccountRequest(request);
-
-        final var createdAccount = accountRepository
-            .findByEmail(new EmailAddress(request.email()))
-            .orElseThrow();
-
-        assertThat(request)
-            .usingRecursiveComparison()
-            .withEqualsForFields(
-                (x, y) -> passwordEncoder.matches(x.toString(), y.toString()),
-                "password", "password"
-            )
-            .withEqualsForFields(
-                (x, y) -> new EmailAddress(x.toString()).equals(y),
-                "email", "email"
-            )
-            .isEqualTo(createdAccount);
-    }
-
-    @Test
-    @DisplayName("Should set default fields correctly for a new account")
-    void should_set_default_fields_correctly_for_new_account() throws Exception {
-        var request = validAccountRequest().build();
-
-        performCreateAccountRequest(request);
-
-        final var createdAccount = accountRepository
-            .findByEmail(new EmailAddress(request.email()))
-            .orElseThrow();
-
-        assertThat(createdAccount.getAccountId()).isNotNull();
-        assertThat(createdAccount.getIsVerified()).isFalse();
-        assertThat(createdAccount.getIsBlocked()).isFalse();
-        assertThat(createdAccount.getIsDeleted()).isFalse();
-        assertThat(createdAccount.getLastLogin()).isNull();
-        assertThat(createdAccount.getCreationDate()).isNotNull();
-        assertThat(createdAccount.getUpdatedDate()).isNotNull();
+        assertAccountExists(request);
     }
 
     @Test
@@ -224,4 +184,40 @@ public class CreateAccountControllerTest extends IntegrationTestAbstract {
             .forField("password", errorMessage);
     }
 
+    private void assertAccountExists(final AccountRequest request) {
+        Optional<AccountEntity> accountEntitySaved =
+            accountRepository.findByEmail(new EmailAddress(request.email()));
+
+        assertThat(accountEntitySaved)
+            .as("Account should exist after creation")
+            .isPresent();
+
+        var account = accountEntitySaved.get();
+
+        assertAll(
+            "Validating AccountEntity details",
+            () -> assertThat(account.getAccountId()).isNotNull(),
+            () -> assertThat(account.getEmail()).isEqualTo(new EmailAddress(request.email())),
+            () -> assertThat(account.getPhoneNumber()).isEqualTo(request.phoneNumber()),
+            () -> assertThat(passwordEncoder.matches(
+                request.password(), account.getPassword())
+            ).isTrue(),
+            () -> assertThat(account.getTermsOfUserConsent()).isEqualTo(
+                request.termsOfUserConsent())
+        );
+
+        assertAll(
+            "Validating AccountEntity state",
+            () -> assertThat(account.getIsVerified()).isFalse(),
+            () -> assertThat(account.getIsBlocked()).isFalse(),
+            () -> assertThat(account.getIsDeleted()).isFalse()
+        );
+
+        assertAll(
+            "Validating AccountEntity timestamps",
+            () -> assertThat(account.getLastLogin()).isNull(),
+            () -> assertThat(account.getCreationDate()).isNotNull(),
+            () -> assertThat(account.getUpdatedDate()).isNotNull()
+        );
+    }
 }

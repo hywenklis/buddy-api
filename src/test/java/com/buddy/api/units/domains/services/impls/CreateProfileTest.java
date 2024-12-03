@@ -15,23 +15,31 @@ import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.profile.mappers.ProfileMapper;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.impl.CreateProfileImpl;
 import com.buddy.api.units.UnitTestAbstract;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 
-public class CreateProfileTest extends UnitTestAbstract {
+class CreateProfileTest extends UnitTestAbstract {
 
     @Mock
     private FindAccount findAccount;
 
-    @Mock
-    private AccountMapper accountMapper;
+    @Spy
+    private AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
+
+    @Spy
+    private ProfileMapper profileMapper = Mappers.getMapper(ProfileMapper.class);
 
     @Mock
     private ProfileRepository profileRepository;
@@ -59,7 +67,6 @@ public class CreateProfileTest extends UnitTestAbstract {
         final var profileEntityCaptor = ArgumentCaptor.forClass(ProfileEntity.class);
 
         when(findAccount.existsById(accountId)).thenReturn(true);
-        when(accountMapper.toAccountEntity(accountId)).thenReturn(accountEntity);
         when(profileRepository.save(profileEntity)).thenReturn(profileEntity);
 
         createProfile.create(validProfileDto);
@@ -67,11 +74,10 @@ public class CreateProfileTest extends UnitTestAbstract {
         verify(profileRepository, times(1))
             .save(profileEntityCaptor.capture());
 
-        verify(accountMapper, times(1))
-            .toAccountEntity(accountId);
-
         assertThat(profileEntity)
             .usingRecursiveComparison()
+            .withComparatorForType(Comparator.comparing(Objects::nonNull), UUID.class)
+            .ignoringExpectedNullFields()
             .isEqualTo(profileEntityCaptor.getValue());
     }
 
