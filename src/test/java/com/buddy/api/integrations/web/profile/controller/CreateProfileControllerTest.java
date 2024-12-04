@@ -181,6 +181,8 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create ADMIN profile")
     void should_not_create_admin_profile() throws Exception {
+        // TODO: extrair lógica de validação do tipo ADMIN para esquema de autorização
+
         final var accountEntity = accountRepository.save(validAccountEntity().build());
 
         final var request = profileComponent

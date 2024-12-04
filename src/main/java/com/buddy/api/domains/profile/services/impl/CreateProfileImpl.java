@@ -34,6 +34,8 @@ public class CreateProfileImpl implements CreateProfile {
     }
 
     private void validateProfileDto(final ProfileDto profileDto) {
+        // TODO: extrair lógica de validação do tipo ADMIN para esquema de autorização
+
         if (profileDto.profileType() == ProfileTypeEnum.ADMIN) {
             throw new InvalidProfileTypeException(
                 "Profile type ADMIN cannot be created by user"

@@ -106,6 +106,8 @@ class CreateProfileTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should not create ADMIN profile")
     void should_not_create_admin_profile() {
+        // TODO: extrair lógica de validação do tipo ADMIN para esquema de autorização
+
         final var invalidProfileDto = profileDto()
             .profileType(ProfileTypeEnum.ADMIN)
             .build();
