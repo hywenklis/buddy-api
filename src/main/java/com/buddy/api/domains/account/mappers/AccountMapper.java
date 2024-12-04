@@ -17,8 +17,8 @@ public interface AccountMapper {
     @Mapping(target = "lastLogin", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
-    @Mapping(target = "isVerified", expression = "java(false)")
-    @Mapping(target = "isBlocked", expression = "java(false)")
-    @Mapping(target = "isDeleted", expression = "java(false)")
+    @Mapping(target = "isVerified", constant = "false")
+    @Mapping(target = "isBlocked", constant = "false")
+    @Mapping(target = "isDeleted", constant = "false")
     AccountEntity toAccountEntity(final AccountDto accountDto);
 }
