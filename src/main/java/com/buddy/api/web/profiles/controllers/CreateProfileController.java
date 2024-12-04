@@ -1,8 +1,8 @@
-package com.buddy.api.web.accounts.controllers;
+package com.buddy.api.web.profiles.controllers;
 
-import com.buddy.api.domains.account.services.CreateAccountService;
-import com.buddy.api.web.accounts.requests.AccountRequest;
+import com.buddy.api.domains.profile.services.CreateProfile;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
+import com.buddy.api.web.profiles.requests.ProfileRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,21 +15,21 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/accounts/register")
+@RequestMapping("/v1/profiles/register")
 @RequiredArgsConstructor
-@Tag(name = "Account", description = "Endpoint related to account registration")
-public class CreateAccountController {
-    private final CreateAccountService createAccountService;
+@Tag(name = "Profile", description = "Endpoint related to profile registration")
+public class CreateProfileController {
+
+    private final CreateProfile createProfile;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
-        summary = "Register account",
-        description = "Register account with their appropriate information"
+        summary = "Register profile",
+        description = "Register profile with their appropriate information"
     )
-    public CreatedSuccessResponse registration(
-        @Valid @RequestBody final AccountRequest accountRequest) {
-        createAccountService.create(accountRequest.toAccountDto());
+    public CreatedSuccessResponse registration(@Valid @RequestBody final ProfileRequest request) {
+        createProfile.create(request.toProfileDto());
         return new CreatedSuccessResponse();
     }
 }

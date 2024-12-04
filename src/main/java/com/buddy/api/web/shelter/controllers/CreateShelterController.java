@@ -1,10 +1,9 @@
 package com.buddy.api.web.shelter.controllers;
 
 import com.buddy.api.domains.shelter.services.CreateShelter;
+import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.shelter.mappers.ShelterMapperRequest;
-import com.buddy.api.web.shelter.mappers.ShelterMapperResponse;
 import com.buddy.api.web.shelter.requests.ShelterRequest;
-import com.buddy.api.web.shelter.responses.ShelterResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,7 +23,6 @@ public class CreateShelterController {
 
     private final CreateShelter service;
     private final ShelterMapperRequest mapperRequest;
-    private final ShelterMapperResponse mapperResponse;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -32,8 +30,9 @@ public class CreateShelterController {
         summary = "Register shelter",
         description = "Register shelter with their appropriate information"
     )
-    public ShelterResponse registration(@RequestBody @Valid final ShelterRequest shelterRequest) {
+    public CreatedSuccessResponse registration(
+        @RequestBody @Valid final ShelterRequest shelterRequest) {
         service.create(mapperRequest.mapToDto(shelterRequest));
-        return mapperResponse.mapToResponse();
+        return new CreatedSuccessResponse();
     }
 }

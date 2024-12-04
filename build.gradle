@@ -25,6 +25,12 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 ext {
     set('springCloudVersion', "2023.0.1")
     set('mapstructVersion', "1.5.5.Final")
@@ -139,6 +145,15 @@ tasks.withType(SpotBugsTask).configureEach {
         html.required = true
     }
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.addAll([
+            "-parameters",
+            "-Amapstruct.defaultComponentModel=spring",
+            "-Amapstruct.unmappedTargetPolicy=IGNORE"
+    ])
+}
+
 
 spotbugs {
     ignoreFailures = false

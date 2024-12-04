@@ -13,22 +13,28 @@ import static org.mockito.Mockito.when;
 import com.buddy.api.commons.exceptions.EmailAlreadyRegisteredException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.account.services.impl.CreateAccountServiceImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-public class CreateAccountServiceTest extends UnitTestAbstract {
+class CreateAccountServiceTest extends UnitTestAbstract {
     @Mock
     private AccountRepository accountRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Spy
+    private AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
 
     @InjectMocks
     CreateAccountServiceImpl createAccountService;
@@ -62,6 +68,8 @@ public class CreateAccountServiceTest extends UnitTestAbstract {
         assertThat(accountEntity)
             .usingRecursiveComparison()
             .isEqualTo(accountEntityCaptor.getValue());
+
+        assertThat(accountEntityCaptor.getValue().getAccountId()).isNull();
     }
 
     @Test
