@@ -11,10 +11,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.profile.ProfileBuilder;
+import com.buddy.api.commons.exceptions.InvalidProfileTypeException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.profile.mappers.ProfileMapper;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.impl.CreateProfileImpl;
@@ -97,6 +99,22 @@ class CreateProfileTest extends UnitTestAbstract {
             .hasMessage("Account not found")
             .extracting("fieldName")
             .isEqualTo("accountId");
+
+        verify(profileRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should not create ADMIN profile")
+    void should_not_create_admin_profile() {
+        final var invalidProfileDto = profileDto()
+            .profileType(ProfileTypeEnum.ADMIN)
+            .build();
+
+        assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
+            .isInstanceOf(InvalidProfileTypeException.class)
+            .hasMessage("Profile type ADMIN cannot be created by user")
+            .extracting("fieldName")
+            .isEqualTo("profileType");
 
         verify(profileRepository, never()).save(any());
     }

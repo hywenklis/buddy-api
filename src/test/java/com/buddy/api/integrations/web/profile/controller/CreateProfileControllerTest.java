@@ -4,6 +4,7 @@ import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
+import static com.buddy.api.customverifications.CustomErrorVerifications.expectErrorStatusFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,11 +14,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("POST /v1/profiles/register")
@@ -32,6 +35,8 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     private static final String ERROR_DESCRIPTION_SIZE =
         "Profile description must have at most 255 characters";
     private static final String ERROR_PROFILE_TYPE_REQUIRED = "Profile type is mandatory";
+    private static final String ERROR_PROFILE_TYPE_ADMIN_FORBIDDEN
+        = "Profile type ADMIN cannot be created by user";
 
     @Test
     @DisplayName("Should register a new profile successfully")
@@ -171,6 +176,25 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(performCreateProfileRequest(request))
             .forField("profileType", ERROR_PROFILE_TYPE_REQUIRED);
+    }
+
+    @Test
+    @DisplayName("Should not create ADMIN profile")
+    void should_not_create_admin_profile() throws Exception {
+        final var accountEntity = accountRepository.save(validAccountEntity().build());
+
+        final var request = profileComponent
+            .validProfileRequest()
+            .accountId(accountEntity.getAccountId())
+            .profileType(ProfileTypeEnum.ADMIN)
+            .build();
+
+        expectErrorStatusFrom(
+            performCreateProfileRequest(request),
+            HttpStatus.FORBIDDEN
+        ).forField("profileType", ERROR_PROFILE_TYPE_ADMIN_FORBIDDEN);
+
+        assertProfileCount(accountEntity, 0);
     }
 
     private ResultActions performCreateProfileRequest(final ProfileRequest request)
