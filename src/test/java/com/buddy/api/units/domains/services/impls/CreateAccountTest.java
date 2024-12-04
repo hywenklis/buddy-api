@@ -15,7 +15,7 @@ import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repository.AccountRepository;
-import com.buddy.api.domains.account.services.impl.CreateAccountServiceImpl;
+import com.buddy.api.domains.account.services.impl.CreateAccountImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-class CreateAccountServiceTest extends UnitTestAbstract {
+class CreateAccountTest extends UnitTestAbstract {
     @Mock
     private AccountRepository accountRepository;
 
@@ -37,7 +37,7 @@ class CreateAccountServiceTest extends UnitTestAbstract {
     private AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
 
     @InjectMocks
-    CreateAccountServiceImpl createAccountService;
+    CreateAccountImpl createAccount;
 
     @Test
     @DisplayName("Should create account")
@@ -57,7 +57,7 @@ class CreateAccountServiceTest extends UnitTestAbstract {
         when(passwordEncoder.encode(accountDto.password())).thenReturn(encryptedPassword);
         when(accountRepository.save(accountEntity)).thenReturn(accountEntity);
 
-        createAccountService.create(accountDto);
+        createAccount.create(accountDto);
 
         var accountEntityCaptor = ArgumentCaptor.forClass(AccountEntity.class);
 
@@ -79,7 +79,7 @@ class CreateAccountServiceTest extends UnitTestAbstract {
 
         when(accountRepository.existsByEmail(accountDto.email())).thenReturn(true);
 
-        assertThatThrownBy(() -> createAccountService.create(accountDto))
+        assertThatThrownBy(() -> createAccount.create(accountDto))
             .isInstanceOf(EmailAlreadyRegisteredException.class)
             .hasMessage("Account email already registered")
             .extracting("fieldName")
