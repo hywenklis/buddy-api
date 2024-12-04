@@ -2,10 +2,9 @@ package com.buddy.api.web.pets.controllers;
 
 import com.buddy.api.domains.pet.dtos.PetDto;
 import com.buddy.api.domains.pet.services.CreatePet;
+import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.pets.mappers.PetMapperRequest;
-import com.buddy.api.web.pets.mappers.PetMapperResponse;
 import com.buddy.api.web.pets.requests.PetRequest;
-import com.buddy.api.web.pets.responses.PetResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,7 +24,6 @@ public class CreatePetController {
 
     private final CreatePet service;
     private final PetMapperRequest mapperRequest;
-    private final PetMapperResponse mapperResponse;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -33,9 +31,9 @@ public class CreatePetController {
         summary = "Register pet",
         description = "Register pet with their appropriate information"
     )
-    public PetResponse registration(@RequestBody @Valid final PetRequest petRequest) {
+    public CreatedSuccessResponse registration(@RequestBody @Valid final PetRequest petRequest) {
         PetDto petDto = mapperRequest.mapToDto(petRequest);
         service.create(petDto);
-        return mapperResponse.mapToResponse();
+        return new CreatedSuccessResponse();
     }
 }
