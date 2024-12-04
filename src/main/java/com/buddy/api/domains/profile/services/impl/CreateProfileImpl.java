@@ -2,6 +2,7 @@ package com.buddy.api.domains.profile.services.impl;
 
 import com.buddy.api.commons.exceptions.InvalidProfileTypeException;
 import com.buddy.api.commons.exceptions.NotFoundException;
+import com.buddy.api.commons.exceptions.ProfileNameAlreadyRegisteredException;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
@@ -29,7 +30,7 @@ public class CreateProfileImpl implements CreateProfile {
         final var accountId = profileDto.accountId();
         final var account = accountMapper.toAccountEntity(accountId);
         final var profileEntity = profileMapper.toProfileEntity(profileDto, account);
-
+        profileEntity.setName(profileDto.name().trim());
         profileRepository.save(profileEntity);
     }
 
@@ -44,6 +45,10 @@ public class CreateProfileImpl implements CreateProfile {
 
         if (!findAccount.existsById(profileDto.accountId())) {
             throw new NotFoundException("accountId", "Account not found");
+        }
+
+        if (profileRepository.existsByName(profileDto.name().trim())) {
+            throw new ProfileNameAlreadyRegisteredException("Profile name already registered");
         }
     }
 }

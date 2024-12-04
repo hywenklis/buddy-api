@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface ProfileRepository extends JpaRepository<ProfileEntity, UUID> {
 
     List<ProfileEntity> findByAccount(AccountEntity account);
+
+    Boolean existsByName(String name);
 }

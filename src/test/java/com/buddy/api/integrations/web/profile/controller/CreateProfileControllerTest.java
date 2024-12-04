@@ -32,6 +32,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     private static final String ERROR_NAME_REQUIRED = "Profile name is mandatory";
     private static final String ERROR_NAME_SIZE =
         "Profile name must have between 3 and 100 characters";
+    private static final String ERROR_REPEATED_NAME = "Profile name already registered";
     private static final String ERROR_DESCRIPTION_SIZE =
         "Profile description must have at most 255 characters";
     private static final String ERROR_PROFILE_TYPE_REQUIRED = "Profile type is mandatory";
@@ -126,8 +127,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(null)
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("name", ERROR_NAME_REQUIRED);
+        assertProfileNameErrorReported(request, ERROR_NAME_REQUIRED);
     }
 
     @Test
@@ -138,8 +138,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(generateRandomString(2))
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("name", ERROR_NAME_SIZE);
+        assertProfileNameErrorReported(request, ERROR_NAME_SIZE);
     }
 
     @Test
@@ -150,8 +149,30 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(generateRandomString(101))
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
-            .forField("name", ERROR_NAME_SIZE);
+        assertProfileNameErrorReported(request, ERROR_NAME_SIZE);
+    }
+
+    @Test
+    @DisplayName("Should not create profile when name is already in database")
+    void should_not_create_profile_when_name_is_already_in_database() throws Exception {
+        final var name = generateRandomString(10);
+
+        profileRepository
+            .save(profileComponent
+                .validProfileEntity()
+                .name(name)
+                .build());
+
+        final var accountEntity = accountRepository.save(validAccountEntity().build());
+
+        final var request = profileRequest()
+            .accountId(accountEntity.getAccountId())
+            .name(name)
+            .build();
+
+        assertProfileNameErrorReported(request, ERROR_REPEATED_NAME);
+
+        assertProfileCount(accountEntity, 0);
     }
 
     @Test
@@ -230,5 +251,12 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             () -> assertThat(profile.getCreationDate()).isNotNull(),
             () -> assertThat(profile.getUpdatedDate()).isNotNull()
         );
+    }
+
+    private void assertProfileNameErrorReported(final ProfileRequest request,
+                                                final String errorMessage)
+        throws Exception {
+        expectBadRequestFrom(performCreateProfileRequest(request))
+            .forField("name", errorMessage);
     }
 }
