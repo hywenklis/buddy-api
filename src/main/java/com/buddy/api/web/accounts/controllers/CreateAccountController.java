@@ -1,6 +1,6 @@
 package com.buddy.api.web.accounts.controllers;
 
-import com.buddy.api.domains.account.services.CreateAccountService;
+import com.buddy.api.domains.account.services.CreateAccount;
 import com.buddy.api.web.accounts.requests.AccountRequest;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Account", description = "Endpoint related to account registration")
 public class CreateAccountController {
-    private final CreateAccountService createAccountService;
+    private final CreateAccount createAccount;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -29,7 +29,7 @@ public class CreateAccountController {
     )
     public CreatedSuccessResponse registration(
         @Valid @RequestBody final AccountRequest accountRequest) {
-        createAccountService.create(accountRequest.toAccountDto());
+        createAccount.create(accountRequest.toAccountDto());
         return new CreatedSuccessResponse();
     }
 }

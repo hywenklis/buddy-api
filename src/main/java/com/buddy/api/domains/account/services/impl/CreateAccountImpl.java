@@ -4,7 +4,7 @@ import com.buddy.api.commons.exceptions.EmailAlreadyRegisteredException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repository.AccountRepository;
-import com.buddy.api.domains.account.services.CreateAccountService;
+import com.buddy.api.domains.account.services.CreateAccount;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CreateAccountServiceImpl implements CreateAccountService {
+public class CreateAccountImpl implements CreateAccount {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final AccountMapper accountMapper;
