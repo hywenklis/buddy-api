@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ValidationCollector implements Validation {
+public class ValidationCollector implements Validator {
 
     private final List<ErrorDetails> errors = new ArrayList<>();
 
