@@ -2,6 +2,7 @@ package com.buddy.api.commons.exceptions;
 
 import com.buddy.api.web.advice.error.ErrorDetails;
 import java.io.Serial;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
@@ -16,16 +17,22 @@ public class DomainException extends RuntimeException {
     private final List<ErrorDetails> errors;
 
     public DomainException(final String message,
-                           final String fieldName,
-                           final HttpStatus httpStatus) {
+                           final String field,
+                           final HttpStatus httpStatus
+    ) {
         super(message);
-        this.errors = Collections.singletonList(
-            new ErrorDetails(fieldName, message, httpStatus, httpStatus.value(), null));
+        this.errors = Collections.singletonList(new ErrorDetails(
+            field,
+            message,
+            httpStatus,
+            httpStatus.value(),
+            LocalDateTime.now()
+        ));
     }
 
     public DomainException(final List<ErrorDetails> errors) {
         super("Multiple validation errors occurred");
-        this.errors = List.copyOf(errors);
+        this.errors = errors;
     }
 
     public HttpStatus getHttpStatus() {
