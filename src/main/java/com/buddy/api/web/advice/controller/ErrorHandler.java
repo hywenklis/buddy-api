@@ -36,18 +36,9 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ErrorResponse> handleDomainException(
-        final DomainException ex
-    ) {
-        ErrorDetails error = new ErrorDetails(
-            ex.getFieldName(),
-            ex.getMessage(),
-            ex.getHttpStatus(),
-            ex.getHttpStatus().value(),
-            LocalDateTime.now());
-
+    public ResponseEntity<ErrorResponse> handleDomainException(final DomainException ex) {
         return ResponseEntity.status(ex.getHttpStatus())
-            .body(new ErrorResponse(List.of(error)));
+            .body(new ErrorResponse(ex.getErrors()));
     }
 
     private List<ErrorDetails> mapValidationErrors(final BindingResult bindingResult) {
