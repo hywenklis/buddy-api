@@ -10,10 +10,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ValidationCollector {
+public class ValidationCollector implements Validation {
 
     private final List<ErrorDetails> errors = new ArrayList<>();
 
+    @Override
     public <T extends DomainException> void validate(final BooleanSupplier condition,
                                                      final T exception) {
         if (condition.getAsBoolean()) {
@@ -21,6 +22,7 @@ public class ValidationCollector {
         }
     }
 
+    @Override
     public void throwIfErrors() {
         if (!errors.isEmpty()) {
             List<ErrorDetails> currentErrors = new ArrayList<>(errors);
