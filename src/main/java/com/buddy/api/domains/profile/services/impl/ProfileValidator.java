@@ -14,13 +14,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class ProfileValidator {
-
+// TODO: Não injetar ProfileRepository diretamente, extrair para um service especifico
     private final Validator validator;
     private final FindAccount findAccount;
     private final ProfileRepository profileRepository;
 
     public void validate(final ProfileDto profileDto) {
 
+        // TODO: extrair lógica de validação do tipo ADMIN para esquema de autorização
         validator.validate(
             () -> profileDto.profileType() == ProfileTypeEnum.ADMIN,
             new InvalidProfileTypeException(profileDto.profileType())
