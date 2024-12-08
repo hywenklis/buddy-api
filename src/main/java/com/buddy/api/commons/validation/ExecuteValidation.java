@@ -1,6 +1,6 @@
-package com.buddy.api.domains.validation.service;
+package com.buddy.api.commons.validation;
 
-import com.buddy.api.domains.validation.dtos.ValidationDetailsDto;
+import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
 import java.util.List;
 import java.util.function.Supplier;
 

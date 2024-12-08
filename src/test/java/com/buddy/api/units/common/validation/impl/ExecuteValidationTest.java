@@ -1,12 +1,12 @@
-package com.buddy.api.units.domains.services.impls;
+package com.buddy.api.units.common.validation.impl;
 
 import static com.buddy.api.utils.RandomValidationDetailsUtils.generateRandomValidationDetailsDto;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.buddy.api.commons.exceptions.DomainValidationException;
-import com.buddy.api.domains.validation.dtos.ValidationDetailsDto;
-import com.buddy.api.domains.validation.service.impl.ExecuteValidationImpl;
+import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
+import com.buddy.api.commons.validation.impl.ExecuteValidationImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.ArrayList;
 import java.util.List;

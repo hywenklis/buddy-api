@@ -2,7 +2,7 @@ package com.buddy.api.utils;
 
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 
-import com.buddy.api.domains.validation.dtos.ValidationDetailsDto;
+import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
 
 public class RandomValidationDetailsUtils {
     public static ValidationDetailsDto generateRandomValidationDetailsDto() {

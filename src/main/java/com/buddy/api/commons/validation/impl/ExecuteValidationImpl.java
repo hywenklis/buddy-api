@@ -1,8 +1,8 @@
-package com.buddy.api.domains.validation.service.impl;
+package com.buddy.api.commons.validation.impl;
 
 import com.buddy.api.commons.exceptions.DomainValidationException;
-import com.buddy.api.domains.validation.dtos.ValidationDetailsDto;
-import com.buddy.api.domains.validation.service.ExecuteValidation;
+import com.buddy.api.commons.validation.ExecuteValidation;
+import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
