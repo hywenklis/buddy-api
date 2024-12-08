@@ -24,6 +24,20 @@ public class ExecuteValidationTest extends UnitTestAbstract {
     }
 
     @Test
+    @DisplayName("Should be immutable")
+    void should_be_immutable() {
+        final var executeValidation = new ExecuteValidationImpl<Boolean>();
+        final var newExecuteValidation = executeValidation.validate(
+            () -> List.of(generateRandomValidationDetailsDto())
+        );
+
+        var executed = executeValidation.andThen(() -> true);
+
+        assertThat(newExecuteValidation).isNotSameAs(executeValidation);
+        assertThat(executed).isTrue();
+    }
+
+    @Test
     @DisplayName("Should throw validation exception when validation fails")
     void should_throw_validation_exception_when_validation_fails() {
         final var executeValidation = new ExecuteValidationImpl<Boolean>();
