@@ -12,9 +12,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.profile.ProfileBuilder;
+import com.buddy.api.commons.exceptions.DomainValidationException;
 import com.buddy.api.commons.exceptions.InvalidProfileTypeException;
-import com.buddy.api.commons.exceptions.NotFoundException;
-import com.buddy.api.commons.exceptions.ProfileNameAlreadyRegisteredException;
+import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
@@ -24,6 +24,7 @@ import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.impl.CreateProfileImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -97,10 +98,12 @@ class CreateProfileTest extends UnitTestAbstract {
         when(findAccount.existsById(accountId)).thenReturn(false);
 
         assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
-            .isInstanceOf(NotFoundException.class)
-            .hasMessage("Account not found")
-            .extracting("fieldName")
-            .isEqualTo("accountId");
+            .isInstanceOf(DomainValidationException.class)
+            .hasMessage("validation failed")
+            .extracting("errors")
+            .isEqualTo(List.of(
+                new ValidationDetailsDto("Account not found", "accountId")
+            ));
 
         verify(profileRepository, never()).save(any());
     }
@@ -133,10 +136,14 @@ class CreateProfileTest extends UnitTestAbstract {
         when(profileRepository.existsByName(existingName)).thenReturn(true);
 
         assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
-            .isInstanceOf(ProfileNameAlreadyRegisteredException.class)
-            .hasMessage("Profile name already registered")
-            .extracting("fieldName")
-            .isEqualTo("name");
+            .isInstanceOf(DomainValidationException.class)
+            .extracting("errors")
+            .isEqualTo(List.of(
+                new ValidationDetailsDto(
+                    "Profile name already registered",
+                    "name"
+                )
+            ));
 
         verify(profileRepository, never()).save(any());
     }

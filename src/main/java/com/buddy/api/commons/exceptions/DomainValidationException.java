@@ -1,9 +1,11 @@
 package com.buddy.api.commons.exceptions;
 
-import com.buddy.api.domains.validation.dtos.ValidationDetailsDto;
+import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
 import java.io.Serial;
 import java.util.List;
+import lombok.Getter;
 
+@Getter
 public class DomainValidationException extends RuntimeException {
 
     @Serial
