@@ -2,6 +2,7 @@ package com.buddy.api.commons.validation.impl;
 
 import com.buddy.api.commons.exceptions.DomainValidationException;
 import com.buddy.api.commons.validation.ExecuteValidation;
+import com.buddy.api.commons.validation.Validation;
 import com.buddy.api.commons.validation.dtos.ValidationDetailsDto;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,10 @@ public class ExecuteValidationImpl<T> implements ExecuteValidation<T> {
     }
 
     @Override
-    public ExecuteValidation<T> validate(final Supplier<List<ValidationDetailsDto>> errors) {
+    public ExecuteValidation<T> validate(final Validation validation) {
         var allErrors = new ArrayList<ValidationDetailsDto>();
         allErrors.addAll(this.errors);
-        allErrors.addAll(errors.get());
+        allErrors.addAll(validation.validate());
 
         return new ExecuteValidationImpl<>(allErrors);
     }
