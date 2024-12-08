@@ -5,7 +5,6 @@ import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectErrorStatusFrom;
-import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -102,7 +101,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_when_account_is_not_from_database_account() throws Exception {
         final var request = profileRequest().accountId(UUID.randomUUID()).build();
 
-        expectNotFoundFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request))
             .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
     }
 
@@ -115,7 +114,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
 
         final var request = profileRequest().accountId(accountId).build();
 
-        expectNotFoundFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request))
             .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
     }
 

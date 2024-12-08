@@ -1,6 +1,7 @@
 package com.buddy.api.web.advice.controller;
 
 import com.buddy.api.commons.exceptions.DomainException;
+import com.buddy.api.commons.exceptions.DomainValidationException;
 import com.buddy.api.commons.exceptions.PetSearchException;
 import com.buddy.api.web.advice.error.ErrorDetails;
 import com.buddy.api.web.advice.error.ErrorResponse;
@@ -48,6 +49,26 @@ public class ErrorHandler {
 
         return ResponseEntity.status(ex.getHttpStatus())
             .body(new ErrorResponse(List.of(error)));
+    }
+
+
+    @ExceptionHandler(DomainValidationException.class)
+    public ResponseEntity<ErrorResponse> handleDomainValidationException(
+        final DomainValidationException ex
+    ) {
+        var error = ex.getErrors()
+            .stream()
+            .map(details -> new ErrorDetails(
+                details.fieldName(),
+                details.message(),
+                HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()))
+            .toList();
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse(error));
     }
 
     private List<ErrorDetails> mapValidationErrors(final BindingResult bindingResult) {
