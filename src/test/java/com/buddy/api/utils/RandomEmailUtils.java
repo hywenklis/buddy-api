@@ -1,13 +1,11 @@
 package com.buddy.api.utils;
 
-import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
-
 import com.buddy.api.domains.valueobjects.EmailAddress;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class RandomEmailUtils {
     public static String generateValidEmail() {
-        return generateRandomString(10, ALPHABET) + "@example.com";
+        return RandomStringUtils.secure().nextAlphabetic(10) + "@example.com";
     }
 
     public static EmailAddress generateValidEmailAddress() {

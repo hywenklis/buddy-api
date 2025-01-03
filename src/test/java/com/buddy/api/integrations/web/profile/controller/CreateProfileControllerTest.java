@@ -6,7 +6,6 @@ import static com.buddy.api.customverifications.CustomCreatedVerifications.expec
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectErrorStatusFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -18,6 +17,7 @@ import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
 import java.util.UUID;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -135,7 +135,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_when_name_is_too_small() throws Exception {
         final var request = profileComponent
             .validProfileRequest()
-            .name(generateRandomString(2))
+            .name(RandomStringUtils.secure().nextAlphabetic(2))
             .build();
 
         assertProfileNameErrorReported(request, ERROR_NAME_SIZE);
@@ -146,7 +146,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_when_name_is_too_big() throws Exception {
         final var request = profileComponent
             .validProfileRequest()
-            .name(generateRandomString(101))
+            .name(RandomStringUtils.secure().nextAlphabetic(101))
             .build();
 
         assertProfileNameErrorReported(request, ERROR_NAME_SIZE);
@@ -155,7 +155,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not create profile when name is already in database")
     void should_not_create_profile_when_name_is_already_in_database() throws Exception {
-        final var name = generateRandomString(10);
+        final var name = RandomStringUtils.secure().nextAlphabetic(10);
 
         profileRepository
             .save(profileComponent
@@ -180,7 +180,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_when_description_too_big() throws Exception {
         final var request = profileComponent
             .validProfileRequest()
-            .description(generateRandomString(256))
+            .description(RandomStringUtils.secure().nextAlphabetic(256))
             .build();
 
         expectBadRequestFrom(performCreateProfileRequest(request))

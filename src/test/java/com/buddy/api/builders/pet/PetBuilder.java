@@ -3,8 +3,6 @@ package com.buddy.api.builders.pet;
 import static com.buddy.api.builders.pet.PetImageBuilder.createPetImageDto;
 import static com.buddy.api.builders.pet.PetImageBuilder.createPetImageEntityCompleted;
 import static java.util.UUID.randomUUID;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 
 import com.buddy.api.builders.shelter.ShelterBuilder;
 import com.buddy.api.domains.pet.dtos.PetDto;
@@ -18,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class PetBuilder {
 
@@ -35,7 +34,7 @@ public class PetBuilder {
             .specie(specie)
             .gender(gender)
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
             .weight(weight)
             .description(description)
             .avatar(avatar)
@@ -46,14 +45,14 @@ public class PetBuilder {
 
     public static PetRequest createPetRequest(final UUID shelterId) {
         return PetRequest.builder()
-            .name(randomAlphabetic(10))
-            .specie(randomAlphabetic(10))
-            .gender(randomAlphabetic(10))
+            .name(RandomStringUtils.secure().nextAlphabetic(10))
+            .specie(RandomStringUtils.secure().nextAlphabetic(10))
+            .gender(RandomStringUtils.secure().nextAlphabetic(10))
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
-            .weight(Double.valueOf(randomNumeric(1)))
-            .description(randomAlphabetic(10))
-            .avatar(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
+            .weight(Double.valueOf(RandomStringUtils.secure().nextNumeric(1)))
+            .description(RandomStringUtils.secure().nextAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .images(List.of(PetImageBuilder.createPetRequest()))
             .shelterId(shelterId)
             .build();
@@ -76,7 +75,7 @@ public class PetBuilder {
             .specie(specie)
             .gender(gender)
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
             .avatar(avatar)
             .weight(weight)
             .description(description)
@@ -88,15 +87,15 @@ public class PetBuilder {
         return PetDto.builder()
             .id(randomUUID())
             .shelterId(shelterId)
-            .name(randomAlphabetic(10))
-            .specie(randomAlphabetic(10))
-            .gender(randomAlphabetic(10))
+            .name(RandomStringUtils.secure().nextAlphabetic(10))
+            .specie(RandomStringUtils.secure().nextAlphabetic(10))
+            .gender(RandomStringUtils.secure().nextAlphabetic(10))
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
-            .avatar(randomAlphabetic(10))
-            .weight(Double.valueOf(randomNumeric(2)))
-            .description(randomAlphabetic(10))
-            .images(List.of(createPetImageDto(randomAlphabetic(10))))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
+            .weight(Double.valueOf(RandomStringUtils.secure().nextNumeric(2)))
+            .description(RandomStringUtils.secure().nextAlphabetic(10))
+            .images(List.of(createPetImageDto(RandomStringUtils.secure().nextAlphabetic(10))))
             .build();
     }
 
@@ -114,7 +113,7 @@ public class PetBuilder {
             .specie(specie)
             .gender(gender)
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
             .weight(weight)
             .description(description)
             .avatar(avatar)
@@ -128,14 +127,14 @@ public class PetBuilder {
     public static PetEntity createPetEntity() {
         return PetEntity.builder()
             .id(randomUUID())
-            .name(randomAlphabetic(10))
-            .specie(randomAlphabetic(10))
-            .gender(randomAlphabetic(10))
+            .name(RandomStringUtils.secure().nextAlphabetic(10))
+            .specie(RandomStringUtils.secure().nextAlphabetic(10))
+            .gender(RandomStringUtils.secure().nextAlphabetic(10))
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
-            .weight(Double.valueOf(randomNumeric(2)))
-            .description(randomAlphabetic(10))
-            .avatar(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
+            .weight(Double.valueOf(RandomStringUtils.secure().nextNumeric(2)))
+            .description(RandomStringUtils.secure().nextAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .images(List.of(createPetImageEntityCompleted()))
             .shelter(ShelterBuilder.createShelterEntity())
             .createDate(LocalDateTime.now())
@@ -153,7 +152,7 @@ public class PetBuilder {
             .specie(petDto.specie())
             .gender(petDto.gender())
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
             .weight(petDto.weight())
             .description(petDto.description())
             .avatar(petDto.avatar())
@@ -172,7 +171,7 @@ public class PetBuilder {
             .specie(petDto.specie())
             .gender(petDto.gender())
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
             .weight(petDto.weight())
             .description(petDto.description())
             .avatar(petDto.avatar())
@@ -190,7 +189,7 @@ public class PetBuilder {
             .specie(petDto.specie())
             .gender(petDto.gender())
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
             .weight(petDto.weight())
             .description(petDto.description())
             .avatar(petDto.avatar())
@@ -201,18 +200,18 @@ public class PetBuilder {
     public static PetDto createPetDtoWithImages(final UUID shelterId) {
         return PetDto.builder()
             .id(randomUUID())
-            .name(randomAlphabetic(10))
-            .specie(randomAlphabetic(10))
-            .gender(randomAlphabetic(10))
+            .name(RandomStringUtils.secure().nextAlphabetic(10))
+            .specie(RandomStringUtils.secure().nextAlphabetic(10))
+            .gender(RandomStringUtils.secure().nextAlphabetic(10))
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
-            .weight(Double.valueOf(randomNumeric(2)))
-            .description(randomAlphabetic(10))
-            .avatar(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
+            .weight(Double.valueOf(RandomStringUtils.secure().nextNumeric(2)))
+            .description(RandomStringUtils.secure().nextAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .shelterId(shelterId)
             .images(List.of(
-                createPetImageDto(randomAlphabetic(10)),
-                createPetImageDto(randomAlphabetic(10)))
+                createPetImageDto(RandomStringUtils.secure().nextAlphabetic(10)),
+                createPetImageDto(RandomStringUtils.secure().nextAlphabetic(10)))
             )
             .build();
     }
@@ -220,14 +219,14 @@ public class PetBuilder {
     public static PetDto createPetDtoWithoutImages(final UUID shelterId) {
         return PetDto.builder()
             .id(randomUUID())
-            .name(randomAlphabetic(10))
-            .specie(randomAlphabetic(10))
-            .gender(randomAlphabetic(10))
+            .name(RandomStringUtils.secure().nextAlphabetic(10))
+            .specie(RandomStringUtils.secure().nextAlphabetic(10))
+            .gender(RandomStringUtils.secure().nextAlphabetic(10))
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
-            .weight(Double.valueOf(randomNumeric(2)))
-            .description(randomAlphabetic(10))
-            .avatar(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
+            .weight(Double.valueOf(RandomStringUtils.secure().nextNumeric(2)))
+            .description(RandomStringUtils.secure().nextAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .shelterId(shelterId)
             .images(List.of())
             .build();

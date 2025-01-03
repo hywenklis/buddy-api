@@ -2,7 +2,6 @@ package com.buddy.api.units.domains.services.impls;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountDto;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomPassword;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +16,7 @@ import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repository.AccountRepository;
 import com.buddy.api.domains.account.services.impl.CreateAccountImpl;
 import com.buddy.api.units.UnitTestAbstract;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -42,7 +42,7 @@ class CreateAccountTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should create account")
     void should_create_account() {
-        final var encryptedPassword = generateRandomPassword();
+        final var encryptedPassword = RandomStringUtils.secure().nextAlphanumeric(10);
 
         final AccountDto accountDto = validAccountDto().build();
 

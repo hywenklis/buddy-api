@@ -6,9 +6,6 @@ import static com.buddy.api.customverifications.CustomCreatedVerifications.expec
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
-import static com.buddy.api.utils.RandomStringUtils.ALPHABET;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomNumeric;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -20,6 +17,7 @@ import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.AccountRequest;
 import java.util.Locale;
 import java.util.Optional;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.ResultActions;
@@ -49,7 +47,7 @@ class CreateAccountControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should not register account if email is invalid")
     void should_not_register_account_with_invalid_email() throws Exception {
         var request = validAccountRequest()
-            .email(generateRandomString(10, ALPHABET))
+            .email(RandomStringUtils.secure().nextAlphabetic(10))
             .build();
 
         expectEmailErrorReported(request, "Account email must be a valid email address");
@@ -96,7 +94,10 @@ class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if password is too small")
     void should_not_register_account_with_small_password() throws Exception {
-        var request = validAccountRequest().password(generateRandomString(5)).build();
+        var request = validAccountRequest()
+            .password(
+                RandomStringUtils.secure().nextAlphabetic(5)
+            ).build();
 
         expectPasswordErrorReported(
             request,
@@ -107,7 +108,10 @@ class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if password is too big")
     void should_not_register_account_with_too_big_password() throws Exception {
-        var request = validAccountRequest().password(generateRandomString(17)).build();
+        var request = validAccountRequest()
+            .password(
+                RandomStringUtils.secure().nextAlphanumeric(17)
+            ).build();
 
         expectPasswordErrorReported(
             request,
@@ -142,7 +146,10 @@ class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if phone number is too small")
     void should_not_register_account_if_phone_number_is_too_small() throws Exception {
-        var request = validAccountRequest().phoneNumber(generateRandomNumeric(3)).build();
+        var request = validAccountRequest()
+            .phoneNumber(
+                RandomStringUtils.secure().nextNumeric(3)
+            ).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .forField(
@@ -154,7 +161,10 @@ class CreateAccountControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not register account if phone number is too big")
     void should_not_register_account_if_phone_number_is_too_big() throws Exception {
-        var request = validAccountRequest().phoneNumber(generateRandomNumeric(21)).build();
+        var request = validAccountRequest()
+            .phoneNumber(
+                RandomStringUtils.secure().nextNumeric(21)
+            ).build();
 
         expectBadRequestFrom(performCreateAccountRequest(request))
             .forField(

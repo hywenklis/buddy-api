@@ -11,7 +11,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class EmailAddressTest extends UnitTestAbstract {
+class EmailAddressTest extends UnitTestAbstract {
 
     @Test
     @DisplayName("Should recognize equal email addresses")

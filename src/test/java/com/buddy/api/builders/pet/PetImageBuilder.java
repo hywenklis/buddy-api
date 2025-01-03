@@ -1,13 +1,12 @@
 package com.buddy.api.builders.pet;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-
 import com.buddy.api.domains.pet.dtos.PetImageDto;
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.pet.entities.PetImageEntity;
 import com.buddy.api.web.pets.requests.PetImageRequest;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class PetImageBuilder {
 
@@ -16,7 +15,10 @@ public class PetImageBuilder {
     }
 
     public static PetImageRequest createPetRequest() {
-        return PetImageRequest.builder().imageUrl(randomAlphabetic(10)).build();
+        return PetImageRequest
+            .builder()
+            .imageUrl(RandomStringUtils.secure().nextAlphabetic(10))
+            .build();
     }
 
     public static PetImageDto createPetImageDto(final String imageUrl) {
@@ -26,7 +28,7 @@ public class PetImageBuilder {
     public static PetImageEntity createPetImageEntityCompleted() {
         return PetImageEntity.builder()
             .id(UUID.randomUUID())
-            .imageUrl(randomAlphabetic(10))
+            .imageUrl(RandomStringUtils.secure().nextAlphabetic(10))
             .pet(PetBuilder.createPetEntity())
             .createDate(LocalDateTime.now())
             .updateDate(LocalDateTime.now())
