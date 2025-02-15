@@ -5,11 +5,11 @@ import static com.buddy.api.customverifications.CustomCreatedVerifications.expec
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomCpfUtils.generateValidCpf;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.buddy.api.integrations.IntegrationTestAbstract;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -81,10 +81,10 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     void should_return_bad_request_name_shelter_not_filled() throws Exception {
         var request = createShelterRequest(
             null,
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             generateValidCpf(),
             generateValidEmail(),
-            randomAlphabetic(10)
+            RandomStringUtils.secure().nextAlphabetic(10)
         );
 
         expectBadRequestFrom(mockMvc
@@ -98,11 +98,11 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if nameResponsible is not filled in")
     void should_return_bad_request_name_responsible_not_filled() throws Exception {
         var request = createShelterRequest(
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null,
             generateValidCpf(),
             generateValidEmail(),
-            randomAlphabetic(10)
+            RandomStringUtils.secure().nextAlphabetic(10)
         );
 
         expectBadRequestFrom(mockMvc
@@ -116,11 +116,11 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if cpfResponsible is not filled in")
     void should_return_bad_request_cpf_responsible_not_filled() throws Exception {
         var request = createShelterRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null,
             generateValidEmail(),
-            randomAlphabetic(10)
+            RandomStringUtils.secure().nextAlphabetic(10)
         );
 
         expectBadRequestFrom(mockMvc
@@ -134,11 +134,11 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if cpfResponsible is invalid format")
     void should_return_bad_request_cpf_responsible_is_invalid_format() throws Exception {
         var request = createShelterRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             generateValidEmail(),
-            randomAlphabetic(10)
+            RandomStringUtils.secure().nextAlphabetic(10)
         );
 
         expectBadRequestFrom(mockMvc
@@ -152,11 +152,11 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if email is not filled in")
     void should_return_bad_request_email_not_filled() throws Exception {
         var request = createShelterRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             generateValidCpf(),
             null,
-            randomAlphabetic(10)
+            RandomStringUtils.secure().nextAlphabetic(10)
         );
 
         expectBadRequestFrom(mockMvc
@@ -170,11 +170,11 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if email is invalid format")
     void should_return_bad_request_email_is_invalid_format() throws Exception {
         var request = createShelterRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             generateValidCpf(),
-            randomAlphabetic(10),
-            randomAlphabetic(10)
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10)
         );
 
         expectBadRequestFrom(mockMvc

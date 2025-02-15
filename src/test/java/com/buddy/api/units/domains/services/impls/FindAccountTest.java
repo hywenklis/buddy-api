@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-public class FindAccountTest extends UnitTestAbstract {
+class FindAccountTest extends UnitTestAbstract {
 
     @Mock
     private AccountRepository accountRepository;

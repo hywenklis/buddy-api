@@ -1,14 +1,12 @@
 package com.buddy.api.components;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
-
 import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.shelter.entities.ShelterEntity;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,13 +22,13 @@ public class PetComponent {
 
     private PetEntity.PetEntityBuilder valid(final ShelterEntity shelter) {
         return PetEntity.builder()
-            .name(randomAlphabetic(10))
-            .specie(randomAlphabetic(10))
-            .gender(randomAlphabetic(10))
+            .name(RandomStringUtils.secure().nextAlphabetic(10))
+            .specie(RandomStringUtils.secure().nextAlphabetic(10))
+            .gender(RandomStringUtils.secure().nextAlphabetic(10))
             .birthDate(LocalDate.now())
-            .location(randomAlphabetic(10))
-            .weight(Double.valueOf(randomNumeric(2)))
-            .description(randomAlphabetic(10))
+            .location(RandomStringUtils.secure().nextAlphabetic(10))
+            .weight(Double.valueOf(RandomStringUtils.secure().nextNumeric(2)))
+            .description(RandomStringUtils.secure().nextAlphabetic(10))
             .images(List.of())
             .shelter(shelter);
     }

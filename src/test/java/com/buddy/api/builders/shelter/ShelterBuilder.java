@@ -2,7 +2,6 @@ package com.buddy.api.builders.shelter;
 
 import static com.buddy.api.utils.RandomCpfUtils.generateValidCpf;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 import com.buddy.api.builders.pet.PetBuilder;
 import com.buddy.api.domains.pet.dtos.PetDto;
@@ -13,6 +12,7 @@ import com.buddy.api.web.shelter.requests.ShelterRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class ShelterBuilder {
 
@@ -33,11 +33,11 @@ public class ShelterBuilder {
 
     public static ShelterRequest createShelterRequest() {
         return ShelterRequest.builder()
-            .nameShelter(randomAlphabetic(10))
-            .nameResponsible(randomAlphabetic(10))
+            .nameShelter(RandomStringUtils.secure().nextAlphabetic(10))
+            .nameResponsible(RandomStringUtils.secure().nextAlphabetic(10))
             .cpfResponsible(generateValidCpf())
             .email(generateValidEmail())
-            .avatar(randomAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .build();
     }
 
@@ -63,13 +63,13 @@ public class ShelterBuilder {
 
     public static ShelterDto createShelterDto() {
         return ShelterDto.builder()
-            .nameShelter(randomAlphabetic(10))
-            .nameResponsible(randomAlphabetic(10))
-            .cpfResponsible(randomAlphabetic(10))
-            .address(randomAlphabetic(10))
-            .phoneNumber(randomAlphabetic(10))
-            .email(randomAlphabetic(10))
-            .avatar(randomAlphabetic(10))
+            .nameShelter(RandomStringUtils.secure().nextAlphabetic(10))
+            .nameResponsible(RandomStringUtils.secure().nextAlphabetic(10))
+            .cpfResponsible(RandomStringUtils.secure().nextAlphabetic(10))
+            .address(RandomStringUtils.secure().nextAlphabetic(10))
+            .phoneNumber(RandomStringUtils.secure().nextAlphabetic(10))
+            .email(RandomStringUtils.secure().nextAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .pets(List.of())
             .build();
     }
@@ -83,7 +83,6 @@ public class ShelterBuilder {
                                                     final String avatar,
                                                     final List<PetEntity> pets) {
         return ShelterEntity.builder()
-            .id(UUID.randomUUID())
             .nameShelter(nameShelter)
             .nameResponsible(nameResponsible)
             .cpfResponsible(cpfResponsible)
@@ -92,21 +91,19 @@ public class ShelterBuilder {
             .email(email)
             .avatar(avatar)
             .pets(pets)
-            .createDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
             .build();
     }
 
     public static ShelterEntity createShelterEntity() {
         return ShelterEntity.builder()
             .id(UUID.randomUUID())
-            .nameShelter(randomAlphabetic(10))
-            .nameResponsible(randomAlphabetic(10))
+            .nameShelter(RandomStringUtils.secure().nextAlphabetic(10))
+            .nameResponsible(RandomStringUtils.secure().nextAlphabetic(10))
             .cpfResponsible(generateValidCpf())
-            .address(randomAlphabetic(10))
-            .phoneNumber(randomAlphabetic(10))
+            .address(RandomStringUtils.secure().nextAlphabetic(10))
+            .phoneNumber(RandomStringUtils.secure().nextAlphabetic(10))
             .email(generateValidEmail())
-            .avatar(randomAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .pets(List.of(PetBuilder.createPetEntity()))
             .createDate(LocalDateTime.now())
             .updateDate(LocalDateTime.now())
@@ -131,17 +128,14 @@ public class ShelterBuilder {
 
     public static ShelterEntity createShelterEntityNoPets() {
         return ShelterEntity.builder()
-            .id(UUID.randomUUID())
-            .nameShelter(randomAlphabetic(10))
-            .nameResponsible(randomAlphabetic(10))
+            .nameShelter(RandomStringUtils.secure().nextAlphabetic(10))
+            .nameResponsible(RandomStringUtils.secure().nextAlphabetic(10))
             .cpfResponsible(generateValidCpf())
-            .address(randomAlphabetic(10))
-            .phoneNumber(randomAlphabetic(10))
+            .address(RandomStringUtils.secure().nextAlphabetic(10))
+            .phoneNumber(RandomStringUtils.secure().nextAlphabetic(10))
             .email(generateValidEmail())
-            .avatar(randomAlphabetic(10))
+            .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .pets(List.of())
-            .createDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
             .build();
     }
 }
