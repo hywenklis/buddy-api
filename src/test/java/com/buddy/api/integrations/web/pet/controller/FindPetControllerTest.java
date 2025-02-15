@@ -1,6 +1,5 @@
 package com.buddy.api.integrations.web.pet.controller;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,6 +13,7 @@ import com.buddy.api.domains.pet.entities.PetEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import java.time.LocalDate;
 import java.util.List;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,9 +30,11 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return last two pets ordered by createDate descending")
     void return_last_two_pets_ordered_createDate_desc() throws Exception {
-        petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        PetEntity lolo = petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        PetEntity kiki = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        PetEntity lolo =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        PetEntity kiki =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(
             PET_BASE_URL + "?page=0&size=2&sort=createDate,desc",
@@ -45,8 +47,10 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return pets ordered by createDate descending by default")
     void return_pets_ordered_createDate_desc_default() throws Exception {
         clearRepositories();
-        PetEntity lolo = petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        PetEntity kiki = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity lolo =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        PetEntity kiki =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(PET_BASE_URL, kiki, lolo);
     }
@@ -56,9 +60,11 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     void return_first_two_pets_ordered_createDate_asc() throws Exception {
         clearRepositories();
 
-        PetEntity tata = petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        PetEntity lolo = petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity tata =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        PetEntity lolo =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(
             PET_BASE_URL + "?page=0&size=2&sort=createDate,asc",
@@ -70,10 +76,12 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should correctly paginate when only page and size are provided")
     void return_all_pets_when_no_order_defined() throws Exception {
-        petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        PetEntity kiki = petComponent.savePetWithName(randomAlphabetic(4), shelter);
-        PetEntity zeze = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        PetEntity kiki =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
+        PetEntity zeze =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
 
         performGetRequestAndExpectTwoPets(PET_BASE_URL + "?page=0&size=2", zeze, kiki);
     }
@@ -81,7 +89,8 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pet by id")
     void return_pet_by_id() throws Exception {
-        PetEntity pet = petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        PetEntity pet =
+            petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
 
         mockMvc.perform(get(PET_BASE_URL + "?id=" + pet.getId()))
             .andExpect(status().isOk())
@@ -118,9 +127,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should return pets with given name")
     void return_pet_by_name() throws Exception {
-        String petName = randomAlphabetic(4);
+        String petName = RandomStringUtils.secure().nextAlphabetic(4);
         PetEntity firstTata = petComponent.savePetWithName(petName, shelter);
-        petComponent.savePetWithName(randomAlphabetic(4), shelter);
+        petComponent.savePetWithName(RandomStringUtils.secure().nextAlphabetic(4), shelter);
         PetEntity secondTata = petComponent.savePetWithName(petName, shelter);
 
         performGetRequestAndExpectTwoPets(

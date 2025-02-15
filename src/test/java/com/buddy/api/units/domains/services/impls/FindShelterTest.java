@@ -2,7 +2,6 @@ package com.buddy.api.units.domains.services.impls;
 
 import static com.buddy.api.builders.shelter.ShelterBuilder.createShelterDto;
 import static com.buddy.api.builders.shelter.ShelterBuilder.createShelterEntity;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,6 +12,7 @@ import com.buddy.api.domains.shelter.repositories.ShelterRepository;
 import com.buddy.api.domains.shelter.services.impls.FindShelterImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.Optional;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -35,16 +35,16 @@ class FindShelterTest extends UnitTestAbstract {
     void should_return_shelter_when_found_in_database_by_cpf_responsible() {
 
         // Given
-        var cpfResponsible = randomAlphabetic(10);
+        var cpfResponsible = RandomStringUtils.secure().nextAlphabetic(10);
 
         var shelterDto = createShelterDto(
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             cpfResponsible,
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null);
 
         var shelterEntity = createShelterEntity(shelterDto);
@@ -84,16 +84,16 @@ class FindShelterTest extends UnitTestAbstract {
     void should_return_shelter_when_found_in_database_by_email() {
 
         // Given
-        var email = randomAlphabetic(10);
+        var email = RandomStringUtils.secure().nextAlphabetic(10);
 
         var shelterDto = createShelterDto(
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             email,
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null);
 
         var shelterEntity = createShelterEntity(shelterDto);
@@ -131,7 +131,7 @@ class FindShelterTest extends UnitTestAbstract {
     @DisplayName("Should return empty when shelter not found in the database by cpf responsible")
     void should_return_empty_when_shelter_not_found_in_database_by_cpf_responsible() {
         // Given
-        var cpfResponsible = randomAlphabetic(10);
+        var cpfResponsible = RandomStringUtils.secure().nextAlphabetic(10);
 
         when(shelterRepository.findShelterByCpfResponsible(cpfResponsible))
             .thenReturn(Optional.empty());
@@ -150,7 +150,7 @@ class FindShelterTest extends UnitTestAbstract {
     @DisplayName("Should return empty when shelter not found in the database by email")
     void should_return_empty_when_shelter_not_found_in_database_by_email() {
         // Given
-        var email = randomAlphabetic(10);
+        var email = RandomStringUtils.secure().nextAlphabetic(10);
 
         when(shelterRepository.findByEmail(email)).thenReturn(Optional.empty());
 

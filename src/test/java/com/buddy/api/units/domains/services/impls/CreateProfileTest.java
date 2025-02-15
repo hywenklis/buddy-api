@@ -2,7 +2,6 @@ package com.buddy.api.units.domains.services.impls;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.profile.ProfileBuilder.profileDto;
-import static com.buddy.api.utils.RandomStringUtils.generateRandomString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +25,7 @@ import com.buddy.api.units.UnitTestAbstract;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.UUID;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -126,7 +126,7 @@ class CreateProfileTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should not create profile when name already exists in database")
     void should_not_create_profile_with_repeated_name() {
-        final var existingName = generateRandomString(10);
+        final var existingName = RandomStringUtils.secure().nextAlphabetic(10);
         final var invalidProfileDto = profileDto().name(existingName).build();
 
         when(findAccount.existsById(invalidProfileDto.accountId())).thenReturn(true);
@@ -144,7 +144,7 @@ class CreateProfileTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should remove leading and trailing spaces from name before saving")
     void should_remove_leading_and_trailing_spaces_from_name_before_saving() {
-        final var name = generateRandomString(10);
+        final var name = RandomStringUtils.secure().nextAlphabetic(10);
 
         final var accountId = UUID.randomUUID();
 

@@ -4,8 +4,6 @@ import static com.buddy.api.builders.pet.PetBuilder.createPetRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -13,6 +11,7 @@ import com.buddy.api.builders.pet.PetBuilder;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import java.util.List;
 import java.util.UUID;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -52,11 +51,11 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         var request = PetBuilder.createPetRequest(
             null,
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            Double.valueOf(randomNumeric(1)),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            Double.valueOf(RandomStringUtils.secure().nextNumeric(1)),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             List.of(),
             shelter.getId()
         );
@@ -74,12 +73,12 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null,
-            randomAlphabetic(10),
-            Double.valueOf(randomNumeric(1)),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            Double.valueOf(RandomStringUtils.secure().nextNumeric(1)),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             List.of(),
             shelter.getId()
         );
@@ -97,12 +96,12 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null,
-            Double.valueOf(randomNumeric(1)),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            Double.valueOf(RandomStringUtils.secure().nextNumeric(1)),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             List.of(),
             shelter.getId()
         );
@@ -120,12 +119,12 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             null,
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             List.of(),
             shelter.getId()
         );
@@ -143,12 +142,12 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
         var shelter = shelterComponent.createShelterNoPets();
 
         var request = PetBuilder.createPetRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            Double.valueOf(randomNumeric(1)),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            Double.valueOf(RandomStringUtils.secure().nextNumeric(1)),
             null,
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             List.of(),
             shelter.getId()
         );
@@ -164,12 +163,12 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should return bad request if shelterId is not filled in")
     void should_return_bad_request_shelterId_not_filled() throws Exception {
         var request = PetBuilder.createPetRequest(
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
-            Double.valueOf(randomNumeric(1)),
-            randomAlphabetic(10),
-            randomAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            Double.valueOf(RandomStringUtils.secure().nextNumeric(1)),
+            RandomStringUtils.secure().nextAlphabetic(10),
+            RandomStringUtils.secure().nextAlphabetic(10),
             List.of(),
             null
         );
