@@ -83,7 +83,6 @@ public class ShelterBuilder {
                                                     final String avatar,
                                                     final List<PetEntity> pets) {
         return ShelterEntity.builder()
-            .id(UUID.randomUUID())
             .nameShelter(nameShelter)
             .nameResponsible(nameResponsible)
             .cpfResponsible(cpfResponsible)
@@ -92,8 +91,6 @@ public class ShelterBuilder {
             .email(email)
             .avatar(avatar)
             .pets(pets)
-            .createDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
             .build();
     }
 
@@ -131,7 +128,6 @@ public class ShelterBuilder {
 
     public static ShelterEntity createShelterEntityNoPets() {
         return ShelterEntity.builder()
-            .id(UUID.randomUUID())
             .nameShelter(RandomStringUtils.secure().nextAlphabetic(10))
             .nameResponsible(RandomStringUtils.secure().nextAlphabetic(10))
             .cpfResponsible(generateValidCpf())
@@ -140,8 +136,6 @@ public class ShelterBuilder {
             .email(generateValidEmail())
             .avatar(RandomStringUtils.secure().nextAlphabetic(10))
             .pets(List.of())
-            .createDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
             .build();
     }
 }
