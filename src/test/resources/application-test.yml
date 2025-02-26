@@ -28,3 +28,8 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
+
+jwt:
+  secret-key: "chave-secreta-muito-longa-e-segura"
+  access-token-expiration: 900000    # 15 minutos em milissegundos (15 * 60 * 1000)
+  refresh-token-expiration: 86400000 # 1 dia em milissegundos (24 * 60 * 60 * 1000)

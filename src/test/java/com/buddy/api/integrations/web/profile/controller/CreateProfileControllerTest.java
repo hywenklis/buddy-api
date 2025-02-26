@@ -16,7 +16,6 @@ import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -58,7 +57,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
         assertProfileCount(accountEntity, 1);
 
         var newProfile = findProfileByName(accountEntity, request.name());
-        assertProfileDetails(newProfile, request);
+        assertProfileDetails(newProfile.get(), request);
     }
 
     @Test
@@ -87,7 +86,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
         assertProfileCount(accountEntity, 2);
 
         var newProfile = findProfileByName(accountEntity, secondProfileRequest.name());
-        assertProfileDetails(newProfile, secondProfileRequest);
+        assertProfileDetails(newProfile.get(), secondProfileRequest);
     }
 
     @Test
@@ -236,36 +235,25 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
         assertThat(profiles.get()).hasSize(expectedCount);
     }
 
-    private Optional<List<ProfileEntity>> findProfileByName(final AccountEntity account,
-                                                            final String name
+    private Optional<ProfileEntity> findProfileByName(final AccountEntity account,
+                                                      final String name
     ) {
-        return profileRepository.findByAccountAccountId(account.getAccountId()).stream()
-            .filter(profile -> profile.getFirst().getName().equals(name))
+        return profileRepository.findByAccountAccountId(account.getAccountId()).get().stream()
+            .filter(profile -> profile.getName().equals(name))
             .findFirst();
     }
 
-    private void assertProfileDetails(final Optional<List<ProfileEntity>> profile,
-                                      final ProfileRequest request
-    ) {
+    private void assertProfileDetails(final ProfileEntity profile, final ProfileRequest request) {
         assertAll(
             "Validating ProfileEntity details",
-            () -> assertThat(profile).isPresent(),
-            () -> assertThat(profile.get().getFirst().getProfileId()).isNotNull(),
-
-            () -> assertThat(profile.get().getFirst().getAccount().getAccountId())
-                .isEqualTo(request.accountId()),
-
-            () -> assertThat(profile.get().getFirst().getName()).isEqualTo(request.name()),
-
-            () -> assertThat(profile.get().getFirst().getDescription())
-                .isEqualTo(request.description()),
-
-            () -> assertThat(profile.get().getFirst().getProfileType())
-                .isEqualTo(request.profileType()),
-
-            () -> assertThat(profile.get().getFirst().getIsDeleted()).isFalse(),
-            () -> assertThat(profile.get().getFirst().getCreationDate()).isNotNull(),
-            () -> assertThat(profile.get().getFirst().getUpdatedDate()).isNotNull()
+            () -> assertThat(profile.getProfileId()).isNotNull(),
+            () -> assertThat(profile.getAccount().getAccountId()).isEqualTo(request.accountId()),
+            () -> assertThat(profile.getName()).isEqualTo(request.name()),
+            () -> assertThat(profile.getDescription()).isEqualTo(request.description()),
+            () -> assertThat(profile.getProfileType()).isEqualTo(request.profileType()),
+            () -> assertThat(profile.getIsDeleted()).isFalse(),
+            () -> assertThat(profile.getCreationDate()).isNotNull(),
+            () -> assertThat(profile.getUpdatedDate()).isNotNull()
         );
     }
 
