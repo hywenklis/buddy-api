@@ -1,5 +1,6 @@
 package com.buddy.api.domains.account.services.impl;
 
+import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.UpdateAccount;
@@ -19,7 +20,7 @@ public class UpdateAccountImpl implements UpdateAccount {
     @Override
     public void updateLastLogin(final UUID accountId, final LocalDateTime lastLogin) {
         AccountEntity account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new RuntimeException("Account not found"));
+            .orElseThrow(() -> new NotFoundException("accountId", "Account not found"));
         account.setLastLogin(lastLogin);
         accountRepository.save(account);
     }
