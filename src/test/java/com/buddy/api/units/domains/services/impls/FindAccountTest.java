@@ -3,7 +3,7 @@ package com.buddy.api.units.domains.services.impls;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.domains.account.repository.AccountRepository;
+import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.impl.FindAccountImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.UUID;

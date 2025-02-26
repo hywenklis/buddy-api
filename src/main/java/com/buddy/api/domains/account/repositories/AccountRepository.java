@@ -1,4 +1,4 @@
-package com.buddy.api.domains.account.repository;
+package com.buddy.api.domains.account.repositories;
 
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.valueobjects.EmailAddress;

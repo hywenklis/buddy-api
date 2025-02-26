@@ -9,5 +9,6 @@ public record ProfileDto(UUID accountId,
                          String name,
                          String description,
                          String bio,
+                         Boolean isDeleted,
                          ProfileTypeEnum profileType) {
 }

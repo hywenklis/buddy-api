@@ -13,7 +13,7 @@ import com.buddy.api.commons.exceptions.EmailAlreadyRegisteredException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.account.mappers.AccountMapper;
-import com.buddy.api.domains.account.repository.AccountRepository;
+import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.impl.CreateAccountImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import org.apache.commons.lang3.RandomStringUtils;
