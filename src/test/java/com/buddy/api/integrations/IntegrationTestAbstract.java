@@ -1,5 +1,6 @@
 package com.buddy.api.integrations;
 
+import com.buddy.api.commons.configuration.security.jwt.JwtUtil;
 import com.buddy.api.components.PetComponent;
 import com.buddy.api.components.ProfileComponent;
 import com.buddy.api.components.ShelterComponent;
@@ -52,6 +53,9 @@ public abstract class IntegrationTestAbstract {
 
     @Autowired
     protected PasswordEncoder passwordEncoder;
+
+    @Autowired
+    protected JwtUtil jwtUtil;
 
     protected static final String PET_BASE_URL = "/v1/pets";
     protected static final String EMBEDDED_PET_RESPONSES = "$._embedded.petParamsResponseList";

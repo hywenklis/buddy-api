@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/profiles/register")
+@RequestMapping("/v1/profiles")
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "Endpoint related to profile registration")
 public class CreateProfileController {
@@ -24,7 +24,7 @@ public class CreateProfileController {
     private final CreateProfile createProfile;
     private final ProfileMapperRequest mapperRequest;
 
-    @PostMapping
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
         summary = "Register profile",

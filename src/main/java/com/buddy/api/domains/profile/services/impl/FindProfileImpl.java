@@ -4,9 +4,9 @@ import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.mappers.ProfileMapper;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.profile.services.FindProfile;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +20,8 @@ public class FindProfileImpl implements FindProfile {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProfileDto> findByAccountId(final UUID accountId) {
-        return profileRepository.findByAccountAccountId(accountId)
+    public List<ProfileDto> findByAccountEmail(final String email) {
+        return profileRepository.findByAccountEmail(new EmailAddress(email))
             .map(profileMapper::toProfilesDto)
             .orElse(Collections.emptyList());
     }

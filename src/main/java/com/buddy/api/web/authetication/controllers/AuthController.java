@@ -1,11 +1,12 @@
 package com.buddy.api.web.authetication.controllers;
 
+import com.buddy.api.commons.configuration.security.cookies.CookieManager;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
-import com.buddy.api.domains.authentication.services.AuthenticationService;
+import com.buddy.api.domains.authentication.services.AuthService;
 import com.buddy.api.web.authetication.mappers.AuthenticationMapper;
 import com.buddy.api.web.authetication.requests.AuthRequest;
 import com.buddy.api.web.authetication.responses.AuthResponse;
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,28 +21,42 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationService accountService;
+    private final AuthService authenticateService;
     private final AuthenticationMapper mapper;
+    private final CookieManager cookieManager;
 
     @PostMapping
-    @ResponseStatus(value = HttpStatus.OK)
-    public AuthResponse authenticate(@RequestBody final AuthRequest request,
-                                     final HttpServletResponse response
+    @ResponseStatus(HttpStatus.OK)
+    public AuthResponse authenticate(
+        @RequestBody final AuthRequest request,
+        final HttpServletRequest httpRequest,
+        final HttpServletResponse response
     ) {
-        AuthDto authDto = accountService.authenticate(mapper.toAuthDto(request));
+        AuthDto authDto = authenticateService.authenticate(mapper.toAuthDto(request));
 
-        // TODO: Extrair código para uma classe utilitária e tranformar magic number em propriedades
-        Cookie accessCookie = new Cookie("access_token", authDto.accessToken());
-        accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(15 * 60);
-        response.addCookie(accessCookie);
+        cookieManager.handleCookies(
+            httpRequest,
+            response,
+            authDto.accessToken(),
+            authDto.refreshToken()
+        );
 
-        Cookie refreshCookie = new Cookie("refresh_token", authDto.refreshToken());
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(24 * 60 * 60);
-        response.addCookie(refreshCookie);
+        return mapper.toAuthResponse(authDto);
+    }
+
+    @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.OK)
+    public AuthResponse refreshToken(
+        final HttpServletRequest request,
+        final HttpServletResponse response
+    ) {
+        AuthDto authDto = authenticateService.refreshToken(request);
+        cookieManager.handleCookies(
+            request,
+            response,
+            authDto.accessToken(),
+            authDto.refreshToken()
+        );
 
         return mapper.toAuthResponse(authDto);
     }

@@ -2,12 +2,11 @@ package com.buddy.api.commons.configuration.security;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-import com.buddy.api.commons.configuration.jwt.JwtAuthenticationFilter;
-import com.buddy.api.domains.authentication.services.CustomUserDetailsService;
+import com.buddy.api.commons.configuration.security.jwt.JwtAuthenticationFilter;
+import com.buddy.api.domains.authentication.services.impls.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,13 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // TODO: criar interface para -> CustomUserDetailsService
-    // TODO: Analisar endpoints que ficaram publicos e que vai ser necessário ter autoridades,
-    // TODO: Analisar endpoints privados e que vai ser necessário ter autoridades
-    // TODO: Extrair AuthenticationManager para uma classe especifica
-
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
@@ -34,19 +29,15 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // TODO: Ajustar, foi feito para os testes passarem
-                .requestMatchers("/v1/**").permitAll()
-                //  .requestMatchers("/v1/admin/**").hasAuthority("ADMIN")
+                .requestMatchers(
+                    "/v1/auth/**",
+                    "v1/accounts/register",
+                    "/v1/pets/**",
+                    "v1/shelters/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-        final AuthenticationConfiguration config
-    ) throws Exception {
-        return config.getAuthenticationManager();
     }
 }
