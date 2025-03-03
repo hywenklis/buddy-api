@@ -31,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final UpdateAccount updateAccount;
 
+    @Override
     public AuthDto authenticate(final AuthDto authDto) {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(authDto.email(), authDto.password())
