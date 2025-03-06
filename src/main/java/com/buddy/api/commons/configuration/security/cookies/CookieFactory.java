@@ -15,16 +15,17 @@ public class CookieFactory {
     private static final String SET_COOKIE_HEADER = "Set-Cookie";
     private static final String COOKIE_ATTRIBUTES = "Path=/; HttpOnly; Secure; SameSite=Strict";
 
-    private final AuthProperties jwtProperties;
+    private final AuthProperties authProperties;
 
     public void addAuthCookies(final HttpServletResponse response,
                                final String accessToken,
                                final String refreshToken
     ) {
         addCookie(response, ACCESS_TOKEN_NAME, accessToken,
-            (int) (jwtProperties.accessTokenExpiration() / 1000));
+            authProperties.getAccessTokenExpirationInSeconds());
+
         addCookie(response, REFRESH_TOKEN_NAME, refreshToken,
-            (int) (jwtProperties.refreshTokenExpiration() / 1000));
+            authProperties.getRefreshTokenExpirationInSeconds());
     }
 
     public void invalidateAuthCookies(final HttpServletResponse response) {
