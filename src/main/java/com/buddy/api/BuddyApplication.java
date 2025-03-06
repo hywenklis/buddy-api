@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EnableJpaRepositories
-@ConfigurationPropertiesScan(basePackages = "com.buddy.api.commons.configuration.properties")
+@ConfigurationPropertiesScan(basePackages = "com.buddy.api.commons.configurations.properties")
 public class BuddyApplication {
 
     public static void main(final String[] args) {

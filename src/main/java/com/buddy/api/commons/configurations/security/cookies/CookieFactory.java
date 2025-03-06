@@ -1,6 +1,6 @@
-package com.buddy.api.commons.configuration.security.cookies;
+package com.buddy.api.commons.configurations.security.cookies;
 
-import com.buddy.api.commons.configuration.properties.AuthProperties;
+import com.buddy.api.commons.configurations.properties.AuthProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

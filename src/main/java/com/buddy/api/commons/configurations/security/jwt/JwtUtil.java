@@ -1,6 +1,6 @@
-package com.buddy.api.commons.configuration.security.jwt;
+package com.buddy.api.commons.configurations.security.jwt;
 
-import com.buddy.api.commons.configuration.properties.AuthProperties;
+import com.buddy.api.commons.configurations.properties.AuthProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

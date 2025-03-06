@@ -1,4 +1,4 @@
-package com.buddy.api.commons.configuration.swagger;
+package com.buddy.api.commons.configurations.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

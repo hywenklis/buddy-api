@@ -1,4 +1,4 @@
-package com.buddy.api.commons.configuration.security.jwt;
+package com.buddy.api.commons.configurations.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

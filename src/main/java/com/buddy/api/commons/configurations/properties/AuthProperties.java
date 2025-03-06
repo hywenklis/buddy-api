@@ -1,4 +1,4 @@
-package com.buddy.api.commons.configuration.properties;
+package com.buddy.api.commons.configurations.properties;
 
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;

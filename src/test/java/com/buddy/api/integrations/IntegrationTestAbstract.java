@@ -1,6 +1,6 @@
 package com.buddy.api.integrations;
 
-import com.buddy.api.commons.configuration.security.jwt.JwtUtil;
+import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.components.PetComponent;
 import com.buddy.api.components.ProfileComponent;
 import com.buddy.api.components.ShelterComponent;

@@ -1,8 +1,8 @@
-package com.buddy.api.commons.configuration.security;
+package com.buddy.api.commons.configurations.security;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-import com.buddy.api.commons.configuration.security.jwt.JwtAuthenticationFilter;
+import com.buddy.api.commons.configurations.security.jwt.JwtAuthenticationFilter;
 import com.buddy.api.domains.authentication.services.impls.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

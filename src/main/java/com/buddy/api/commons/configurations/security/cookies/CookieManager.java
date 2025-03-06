@@ -1,7 +1,7 @@
-package com.buddy.api.commons.configuration.security.cookies;
+package com.buddy.api.commons.configurations.security.cookies;
 
-import com.buddy.api.commons.configuration.security.origin.ClientTypeDetector;
-import com.buddy.api.commons.configuration.security.origin.enums.ClientType;
+import com.buddy.api.commons.configurations.security.origin.ClientTypeDetector;
+import com.buddy.api.commons.configurations.security.origin.enums.ClientType;
 import com.buddy.api.commons.exceptions.InvalidClientOriginException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,7 +33,7 @@ public class CookieManager {
         final String accessToken,
         final String refreshToken
     ) {
-        ClientType clientType = clientTypeDetector.isWebClient(request);
+        ClientType clientType = clientTypeDetector.detectClientType(request);
         log.debug("Handling cookies for client type: {}", clientType);
 
         CookieData cookieData = new CookieData(accessToken, refreshToken);

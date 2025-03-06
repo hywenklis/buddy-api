@@ -2,7 +2,7 @@ package com.buddy.api.domains.authentication.services.impls;
 
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 
-import com.buddy.api.commons.configuration.security.jwt.JwtUtil;
+import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;

@@ -1,6 +1,6 @@
 package com.buddy.api.web.authetication.controllers;
 
-import com.buddy.api.commons.configuration.security.cookies.CookieManager;
+import com.buddy.api.commons.configurations.security.cookies.CookieManager;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
 import com.buddy.api.web.authetication.mappers.AuthenticationMapper;

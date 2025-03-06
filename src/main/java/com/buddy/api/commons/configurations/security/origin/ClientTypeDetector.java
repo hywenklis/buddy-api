@@ -1,7 +1,7 @@
-package com.buddy.api.commons.configuration.security.origin;
+package com.buddy.api.commons.configurations.security.origin;
 
-import com.buddy.api.commons.configuration.properties.AuthProperties;
-import com.buddy.api.commons.configuration.security.origin.enums.ClientType;
+import com.buddy.api.commons.configurations.properties.AuthProperties;
+import com.buddy.api.commons.configurations.security.origin.enums.ClientType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ public class ClientTypeDetector {
 
     private final AuthProperties authProperties;
 
-    public ClientType isWebClient(final HttpServletRequest request) {
+    public ClientType detectClientType(final HttpServletRequest request) {
         String origin = request.getHeader("Origin");
         log.debug("Detecting client type for origin: {}", origin);
 

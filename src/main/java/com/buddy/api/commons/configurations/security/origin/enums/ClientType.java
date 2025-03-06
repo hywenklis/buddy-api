@@ -1,4 +1,4 @@
-package com.buddy.api.commons.configuration.security.origin.enums;
+package com.buddy.api.commons.configurations.security.origin.enums;
 
 import java.util.Locale;
 
