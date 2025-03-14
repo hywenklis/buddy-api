@@ -1,6 +1,6 @@
 package com.buddy.api.domains.account.services.impl;
 
-import com.buddy.api.commons.exceptions.BlockedOrDeletedAccountException;
+import com.buddy.api.commons.exceptions.AccountUnavailableException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.mappers.AccountMapper;
@@ -9,9 +9,11 @@ import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FindAccountImpl implements FindAccount {
@@ -32,7 +34,11 @@ public class FindAccountImpl implements FindAccount {
             .orElseThrow(() -> new NotFoundException("email", "Account not found"));
 
         if (account.getIsBlocked() || account.getIsDeleted()) {
-            throw new BlockedOrDeletedAccountException("email", "Account is blocked or deleted");
+            log.info("Account unavailable: email={}, blocked={}, deleted={}",
+                email, account.getIsBlocked(), account.getIsDeleted()
+            );
+
+            throw new AccountUnavailableException("email", "Account is not available");
         }
 
         return accountMapper.toAccountDto(account);

@@ -36,7 +36,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             .withUsername(account.email().value())
             .password(account.password())
             .authorities(authorities)
-            .disabled(account.isBlocked() || account.isDeleted())
             .build();
     }
 }
