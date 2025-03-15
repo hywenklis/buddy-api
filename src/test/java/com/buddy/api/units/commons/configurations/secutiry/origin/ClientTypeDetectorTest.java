@@ -35,32 +35,32 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should return UNKNOWN when Origin header is null")
     void should_return_unknown_when_origin_is_null() {
-        when(request.getHeader("Origin")).thenReturn(null);
+        when(request.getHeader(ORIGIN_NAME)).thenReturn(null);
 
         ClientType result = clientTypeDetector.detectClientType(request);
 
         assertThat(result).isEqualTo(ClientType.UNKNOWN);
 
-        verify(request, times(1)).getHeader("Origin");
+        verify(request, times(1)).getHeader(ORIGIN_NAME);
         verify(authProperties, times(0)).allowedOrigins();
     }
 
     @ParameterizedTest
     @MethodSource("provideKnownOrigins")
     @DisplayName("Should return correct client type when Origin matches a known config")
-    void should_return_correct_client_type_when_origin_matches(String origin,
-                                                               ClientType expectedType
+    void should_return_correct_client_type_when_origin_matches(final String origin,
+                                                               final ClientType expectedType
     ) {
         List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
 
-        when(request.getHeader("Origin")).thenReturn(origin);
+        when(request.getHeader(ORIGIN_NAME)).thenReturn(origin);
         when(authProperties.allowedOrigins()).thenReturn(origins);
 
         ClientType result = clientTypeDetector.detectClientType(request);
 
         assertThat(result).isEqualTo(expectedType);
 
-        verify(request, times(1)).getHeader("Origin");
+        verify(request, times(1)).getHeader(ORIGIN_NAME);
         verify(authProperties, times(1)).allowedOrigins();
     }
 
@@ -69,13 +69,13 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
     void should_return_unknown_when_origin_does_not_match() {
         String origin = UUID.randomUUID().toString();
 
-        when(request.getHeader("Origin")).thenReturn(origin);
+        when(request.getHeader(ORIGIN_NAME)).thenReturn(origin);
 
         ClientType result = clientTypeDetector.detectClientType(request);
 
         assertThat(result).isEqualTo(ClientType.UNKNOWN);
 
-        verify(request, times(1)).getHeader("Origin");
+        verify(request, times(1)).getHeader(ORIGIN_NAME);
         verify(authProperties, times(1)).allowedOrigins();
     }
 

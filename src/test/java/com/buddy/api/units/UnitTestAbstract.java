@@ -35,4 +35,5 @@ public abstract class UnitTestAbstract {
         ADMIN.name(),
         SHELTER.name()
     );
+    protected static final String ORIGIN_NAME = "Origin";
 }
