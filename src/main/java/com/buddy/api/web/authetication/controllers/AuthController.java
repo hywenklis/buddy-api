@@ -8,6 +8,7 @@ import com.buddy.api.web.authetication.requests.AuthRequest;
 import com.buddy.api.web.authetication.responses.AuthResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ public class AuthController {
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse authenticate(
-        @RequestBody final AuthRequest request,
+        @Valid @RequestBody final AuthRequest request,
         final HttpServletRequest httpRequest,
         final HttpServletResponse response
     ) {

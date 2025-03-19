@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.impls.AuthServiceImpl;
@@ -105,7 +106,7 @@ class AuthServiceTest extends UnitTestAbstract {
 
         assertThat(result).isNotNull();
         assertThat(result.email()).isEqualTo(authDto.email());
-        assertThat(result.password()).isEqualTo(authDto.password());
+        assertThat(result.password()).isNull();
         assertThat(result.profiles().size() == 1).isSameAs(true);
         assertThat(result.profiles()).isEqualTo(List.of(activeProfile));
         assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
@@ -169,7 +170,7 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authService.refreshToken(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(AuthenticationException.class)
             .hasMessage("Refresh token is required");
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);
@@ -196,7 +197,7 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(false);
 
         assertThatThrownBy(() -> authService.refreshToken(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(AuthenticationException.class)
             .hasMessage("Invalid refresh token");
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);

@@ -3,6 +3,7 @@ package com.buddy.api.domains.authentication.services.impls;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
@@ -13,17 +14,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
@@ -32,23 +36,11 @@ public class AuthServiceImpl implements AuthService {
     private final UpdateAccount updateAccount;
 
     @Override
+    @Transactional
     public AuthDto authenticate(final AuthDto authDto) {
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(authDto.email(), authDto.password())
-        );
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(authDto.email());
-
-        List<String> profileAuthorities = userDetails.getAuthorities().stream()
-            .map(Object::toString)
-            .toList();
-
-        List<ProfileDto> profiles = findProfile.findByAccountEmail(userDetails.getUsername());
-
-        List<ProfileDto> filteredProfiles = profiles.stream()
-            .filter(profile -> !profile.isDeleted())
-            .filter(profile -> !profile.profileType().equals(ADMIN))
-            .toList();
+        UserDetails userDetails = authenticateUser(authDto.email(), authDto.password());
+        List<String> profileAuthorities = extractAuthorities(userDetails);
+        List<ProfileDto> filteredProfiles = fetchAndFilterProfiles(userDetails.getUsername());
 
         String accessToken = jwtUtil.generateAccessToken(authDto.email(), profileAuthorities);
         String refreshToken = jwtUtil.generateRefreshToken(authDto.email());
@@ -58,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
 
         return new AuthDto(
             authDto.email(),
-            authDto.password(),
+            null,
             filteredProfiles,
             accessToken,
             refreshToken
@@ -66,31 +58,57 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthDto refreshToken(
-        final HttpServletRequest request
-    ) {
-        Optional<String> refreshToken = jwtUtil.extractRefreshToken(request);
+    @Transactional(readOnly = true)
+    public AuthDto refreshToken(final HttpServletRequest request) {
+        String refreshToken = extractRefreshToken(request)
+            .orElseThrow(() -> {
+                log.warn("No valid refresh token found in request");
+                return new AuthenticationException("Refresh token is required", "refresh-token");
+            });
 
-        if (refreshToken.isEmpty()) {
-            log.warn("No valid refresh token found in request or AuthDto");
-            throw new IllegalArgumentException("Refresh token is required");
-        }
-
-        String token = refreshToken.get();
-        String email = jwtUtil.getEmailFromToken(token);
+        String email = jwtUtil.getEmailFromToken(refreshToken);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        if (!jwtUtil.validateToken(token, email)) {
+        if (!jwtUtil.validateToken(refreshToken, email)) {
             log.warn("Invalid refresh token for email: {}", email);
-            throw new IllegalArgumentException("Invalid refresh token");
+            throw new AuthenticationException("Invalid refresh token", "refresh-token");
         }
 
-        log.debug("Generating new access token for email: {}", email);
-        String newAccessToken = jwtUtil.generateAccessToken(email, userDetails.getAuthorities()
-            .stream()
-            .map(Object::toString)
-            .toList());
+        List<String> authorities = extractAuthorities(userDetails);
+        String newAccessToken = jwtUtil.generateAccessToken(email, authorities);
 
-        return new AuthDto(email, null, null, newAccessToken, token);
+        log.info("Refresh token successful for email: {}", email);
+        return new AuthDto(email, null, null, newAccessToken, refreshToken);
+    }
+
+    private UserDetails authenticateUser(final String email, final String password) {
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+            );
+            return userDetailsService.loadUserByUsername(email);
+        } catch (Exception ex) {
+            log.error("Authentication failed for user: {}", email, ex);
+            throw new AuthenticationException("Authentication error occurred: " + ex.getMessage(),
+                "credentials");
+        }
+    }
+
+    private List<String> extractAuthorities(final UserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+            .map(Object::toString)
+            .toList();
+    }
+
+    private List<ProfileDto> fetchAndFilterProfiles(final String email) {
+        List<ProfileDto> profiles = findProfile.findByAccountEmail(email);
+        return profiles.stream()
+            .filter(profile -> !profile.isDeleted())
+            .filter(profile -> !profile.profileType().equals(ADMIN))
+            .toList();
+    }
+
+    private Optional<String> extractRefreshToken(final HttpServletRequest request) {
+        return jwtUtil.extractRefreshToken(request);
     }
 }

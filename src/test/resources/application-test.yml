@@ -34,9 +34,9 @@ auth:
   access-token-expiration: 900000    # 15 minutos em milissegundos (15 * 60 * 1000)
   refresh-token-expiration: 86400000 # 1 dia em milissegundos (24 * 60 * 60 * 1000)
   allowed-origins:
-    - type: "web"
+    - type: "WEB"
       code: "550e8400-e29b-41d4-a716-446655440000"
-    - type: "mobile"
+    - type: "MOBILE"
       code: "123e4567-e89b-12d3-a456-426614174000"
-    - type: "tools"
+    - type: "TOOLS"
       code: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
