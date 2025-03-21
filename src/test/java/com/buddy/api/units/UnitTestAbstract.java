@@ -25,7 +25,7 @@ public abstract class UnitTestAbstract {
     protected static final String EMAIL_VALUE = RandomEmailUtils.generateValidEmail();
     protected static final String BEARER_PREFIX = "Bearer ";
     protected static final String BEARER_TOKEN = BEARER_PREFIX + VALID_JWT;
-    protected static final String SECRET_KEY = "my-secret-key-12345678901234567890123456789012";
+    protected static final String SECRET_KEY = "uma-chave-secreta-muito-longa-e-segura-com-mais-de-32-bytes";
     protected static final long ACCESS_TOKEN_EXPIRATION = 3600000; // 1 hora em ms
     protected static final long REFRESH_TOKEN_EXPIRATION = 604800000; // 7 dias em ms
     protected static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";

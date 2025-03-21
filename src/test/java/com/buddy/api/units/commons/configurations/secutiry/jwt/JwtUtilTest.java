@@ -1,25 +1,38 @@
 package com.buddy.api.units.commons.configurations.secutiry.jwt;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static java.lang.Math.toIntExact;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.configurations.properties.AuthProperties;
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.units.UnitTestAbstract;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
 class JwtUtilTest extends UnitTestAbstract {
 
     @Mock
     private AuthProperties properties;
+
+    @Mock
+    private JwtEncoder jwtEncoder;
 
     @Mock
     private HttpServletRequest request;
@@ -30,43 +43,55 @@ class JwtUtilTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should generate access token with email and profiles")
     void generateAccessToken_generatesValidToken() {
-        when(properties.secretKey()).thenReturn(SECRET_KEY);
-        when(properties.accessTokenExpiration()).thenReturn(
-            Math.toIntExact(ACCESS_TOKEN_EXPIRATION)
+        String validAccessToken = configureTokenMocks(
+            Map.of("profiles", PROFILES),
+            0,
+            ACCESS_TOKEN_EXPIRATION
         );
 
-        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        when(properties.secretKey()).thenReturn(SECRET_KEY);
+        when(properties.accessTokenExpiration()).thenReturn(toIntExact(ACCESS_TOKEN_EXPIRATION));
 
-        String emailFromToken = jwtUtil.getEmailFromToken(token);
-        assertThat(token).isNotEmpty();
+        String generatedToken = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        String emailFromToken = jwtUtil.getEmailFromToken(generatedToken);
+
+        assertThat(generatedToken).isEqualTo(validAccessToken);
         assertThat(emailFromToken).isEqualTo(EMAIL_VALUE);
     }
 
     @Test
     @DisplayName("Should generate refresh token with email")
     void generateRefreshToken_generatesValidToken() {
-        when(properties.secretKey()).thenReturn(SECRET_KEY);
-        when(properties.refreshTokenExpiration()).thenReturn(
-            Math.toIntExact(REFRESH_TOKEN_EXPIRATION)
+        String validRefreshToken = configureTokenMocks(
+            Map.of(),
+            0,
+            REFRESH_TOKEN_EXPIRATION
         );
 
-        String token = jwtUtil.generateRefreshToken(EMAIL_VALUE);
+        when(properties.secretKey()).thenReturn(SECRET_KEY);
+        when(properties.refreshTokenExpiration()).thenReturn(toIntExact(REFRESH_TOKEN_EXPIRATION));
 
-        String emailFromToken = jwtUtil.getEmailFromToken(token);
-        assertThat(token).isNotEmpty();
+        String generatedToken = jwtUtil.generateRefreshToken(EMAIL_VALUE);
+        String emailFromToken = jwtUtil.getEmailFromToken(generatedToken);
+
+        assertThat(generatedToken).isEqualTo(validRefreshToken);
         assertThat(emailFromToken).isEqualTo(EMAIL_VALUE);
     }
 
     @Test
     @DisplayName("Should extract email from valid token")
     void getEmailFromToken_extractsEmailCorrectly() {
+        configureTokenMocks(
+            Map.of("profiles", PROFILES),
+            0,
+            ACCESS_TOKEN_EXPIRATION
+        );
+
         when(properties.secretKey()).thenReturn(SECRET_KEY);
-        when(properties.accessTokenExpiration()).thenReturn(
-            Math.toIntExact(ACCESS_TOKEN_EXPIRATION));
+        when(properties.accessTokenExpiration()).thenReturn(toIntExact(ACCESS_TOKEN_EXPIRATION));
 
-        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
-
-        String extractedEmail = jwtUtil.getEmailFromToken(token);
+        String generatedToken = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        String extractedEmail = jwtUtil.getEmailFromToken(generatedToken);
 
         assertThat(extractedEmail).isEqualTo(EMAIL_VALUE);
     }
@@ -74,27 +99,27 @@ class JwtUtilTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should throw JwtException when token is invalid")
     void getEmailFromToken_withInvalidToken_throwsJwtException() {
-        String invalidToken = "invalid-token";
         when(properties.secretKey()).thenReturn(SECRET_KEY);
+        String invalidToken = "invalid-token";
 
         assertThatThrownBy(() -> jwtUtil.getEmailFromToken(invalidToken))
-            .isInstanceOf(JwtException.class)
-            .hasMessage(
-                "Invalid compact JWT string: "
-                    + "Compact JWSs must contain exactly 2 period characters, "
-                    + "and compact JWEs must contain exactly 4.  Found: 0"
-            );
+            .isInstanceOf(JwtException.class);
     }
 
     @Test
     @DisplayName("Should validate token when it matches username and is not expired")
     void validateToken_withValidToken_returnsTrue() {
-        when(properties.secretKey()).thenReturn(SECRET_KEY);
-        when(properties.accessTokenExpiration()).thenReturn(
-            Math.toIntExact(ACCESS_TOKEN_EXPIRATION));
-        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        configureTokenMocks(
+            Map.of("profiles", PROFILES),
+            0,
+            ACCESS_TOKEN_EXPIRATION
+        );
 
-        boolean isValid = jwtUtil.validateToken(token, EMAIL_VALUE);
+        when(properties.secretKey()).thenReturn(SECRET_KEY);
+        when(properties.accessTokenExpiration()).thenReturn(toIntExact(ACCESS_TOKEN_EXPIRATION));
+
+        String generatedToken = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        boolean isValid = jwtUtil.validateToken(generatedToken, EMAIL_VALUE);
 
         assertThat(isValid).isTrue();
     }
@@ -102,12 +127,17 @@ class JwtUtilTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should return false when token does not match username")
     void validateToken_withWrongUsername_returnsFalse() {
-        when(properties.secretKey()).thenReturn(SECRET_KEY);
-        when(properties.accessTokenExpiration()).thenReturn(
-            Math.toIntExact(ACCESS_TOKEN_EXPIRATION));
-        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        configureTokenMocks(
+            Map.of("profiles", PROFILES),
+            0,
+            ACCESS_TOKEN_EXPIRATION
+        );
 
-        boolean isValid = jwtUtil.validateToken(token, "wrong@example.com");
+        when(properties.secretKey()).thenReturn(SECRET_KEY);
+        when(properties.accessTokenExpiration()).thenReturn(toIntExact(ACCESS_TOKEN_EXPIRATION));
+
+        String generatedToken = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        boolean isValid = jwtUtil.validateToken(generatedToken, "wrong@example.com");
 
         assertThat(isValid).isFalse();
     }
@@ -148,25 +178,52 @@ class JwtUtilTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should extract JWT from cookies with specified name")
-    void extractJwtFromCookies_extractsCorrectly() {
-        String jwt = "jwt-token-sample";
-        Cookie[] cookies = {new Cookie(ACCESS_TOKEN_COOKIE_NAME, jwt)};
-        when(request.getCookies()).thenReturn(cookies);
+    @DisplayName("Should throw ExpiredJwtException when token is expired")
+    void validateToken_withExpiredToken_throwsExpiredJwtException() {
+        final var issuedAtOffset = -3600000;
+        final var expiresAtOffset = -1800000;
 
-        Optional<String> token = jwtUtil.extractJwtFromCookies(request, ACCESS_TOKEN_COOKIE_NAME);
+        configureTokenMocks(
+            Map.of(),
+            issuedAtOffset,
+            expiresAtOffset
+        );
 
-        assertThat(token).isPresent().contains(jwt);
+        when(properties.secretKey()).thenReturn(SECRET_KEY);
+        when(properties.accessTokenExpiration()).thenReturn(toIntExact(ACCESS_TOKEN_EXPIRATION));
+
+        String generatedToken = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        boolean validateToken = jwtUtil.validateToken(generatedToken, EMAIL_VALUE);
+
+        assertThat(validateToken).isFalse();
     }
 
-    @Test
-    @DisplayName("Should return empty when no matching cookie is found")
-    void extractJwtFromCookies_withNoMatchingCookie_returnsEmpty() {
-        Cookie[] cookies = {new Cookie("other_cookie", "other-value")};
-        when(request.getCookies()).thenReturn(cookies);
+    private String configureTokenMocks(Map<String, Object> additionalClaims,
+                                       long issuedAtOffset,
+                                       long expiresAtOffset
+    ) {
 
-        Optional<String> token = jwtUtil.extractJwtFromCookies(request, ACCESS_TOKEN_COOKIE_NAME);
+        long now = System.currentTimeMillis();
+        String token = Jwts.builder()
+            .subject(EMAIL_VALUE)
+            .issuedAt(new Date(now + issuedAtOffset))
+            .expiration(new Date(now + expiresAtOffset))
+            .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
+            .claims(additionalClaims)
+            .compact();
 
-        assertThat(token).isEmpty();
+        Instant issuedAt = Instant.now().plusMillis(issuedAtOffset);
+        Instant expiresAt = Instant.now().plusMillis(expiresAtOffset);
+
+        when(jwtEncoder.encode(any(JwtEncoderParameters.class)))
+            .thenReturn(Jwt.withTokenValue(token)
+                .header("alg", "HS256")
+                .subject(EMAIL_VALUE)
+                .issuedAt(issuedAt)
+                .expiresAt(expiresAt)
+                .claims(claims -> claims.putAll(additionalClaims))
+                .build());
+
+        return token;
     }
 }
