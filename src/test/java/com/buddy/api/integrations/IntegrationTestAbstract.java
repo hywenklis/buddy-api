@@ -63,14 +63,8 @@ public abstract class IntegrationTestAbstract {
     protected static final String REFRESH_URL = "/v1/auth/refresh";
     protected static final String ACCESS_TOKEN_NAME = "access_token";
     protected static final String REFRESH_TOKEN_NAME = "refresh_token";
-    protected static final String EMAIL = "email";
-    protected static final String ERROR_FIELD_NAME = "$.errors[0].field";
-    protected static final String ERROR_MESSAGE_NAME = "$.errors[0].message";
-    protected static final String ERROR_HTTPSTATUS_NAME = "$.errors[0].httpStatus";
-    protected static final String ERROR_CODE_NAME = "$.errors[0].errorCode";
-    protected static final String ERROR_TIMESTAMP_NAME = "$.errors[0].timestamp";
-    protected static final String UNAUTHORIZED_NAME = "UNAUTHORIZED";
     protected static final String ORIGIN = "Origin";
+    protected static final String CREDENTIALS_NAME = "credentials";
 
     protected ShelterEntity shelter;
 

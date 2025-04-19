@@ -44,7 +44,6 @@ ext {
     set('micrometerVersion', '1.4.1')
     set('flywayPostgresVersion', '11.1.0')
     set('jwtVersion', '0.12.6')
-    set('oauth2JoseVersion', '6.4.4')
 }
 
 dependencies {
@@ -54,7 +53,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation "org.springframework.security:spring-security-oauth2-jose:${oauth2JoseVersion}"
 
     // Spring Cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'

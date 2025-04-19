@@ -2,21 +2,21 @@ package com.buddy.api.commons.configurations.security.jwt;
 
 import com.buddy.api.commons.configurations.properties.AuthProperties;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,30 +25,29 @@ import org.springframework.stereotype.Component;
 public class JwtUtil {
 
     private final AuthProperties properties;
-    private final JwtEncoder jwtEncoder;
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
     public String generateAccessToken(final String email, final List<String> profiles) {
-        log.debug("Generating access token for email: {}", email);
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        Instant now = Instant.now();
+        return Jwts.builder()
             .subject(email)
             .claim("profiles", profiles)
-            .issuedAt(Instant.now())
-            .expiresAt(Instant.now().plusMillis(properties.accessTokenExpiration()))
-            .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(now.plusMillis(properties.accessTokenExpiration())))
+            .signWith(key())
+            .compact();
     }
 
     public String generateRefreshToken(final String email) {
-        log.debug("Generating refresh token for email: {}", email);
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        Instant now = Instant.now();
+        return Jwts.builder()
             .subject(email)
-            .issuedAt(Instant.now())
-            .expiresAt(Instant.now().plusMillis(properties.refreshTokenExpiration()))
-            .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(now.plusMillis(properties.refreshTokenExpiration())))
+            .signWith(key())
+            .compact();
     }
 
     public String getEmailFromToken(final String token) throws JwtException {
@@ -91,10 +90,16 @@ public class JwtUtil {
     }
 
     private Claims parseClaims(final String token) throws JwtException {
-        return Jwts.parser()
-            .verifyWith(Keys.hmacShaKeyFor(properties.secretKey().getBytes()))
+        Jws<Claims> jws = Jwts.parser()
+            .verifyWith(key())
             .build()
-            .parseSignedClaims(token)
-            .getPayload();
+            .parseSignedClaims(token);
+        return jws.getPayload();
+    }
+
+    private SecretKey key() {
+        byte[] keyBytes = properties.secretKey()
+            .getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

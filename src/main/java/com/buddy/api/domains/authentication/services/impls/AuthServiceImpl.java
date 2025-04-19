@@ -9,6 +9,7 @@ import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.services.FindProfile;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -60,25 +61,35 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public AuthDto refreshToken(final HttpServletRequest request) {
-        String refreshToken = extractRefreshToken(request)
-            .orElseThrow(() -> {
-                log.warn("No valid refresh token found in request");
-                return new AuthenticationException("Refresh token is required", "refresh-token");
-            });
+        try {
+            String refreshToken = extractRefreshToken(request)
+                .orElseThrow(() -> {
+                    log.warn("No valid refresh token found in request");
+                    return new AuthenticationException("Refresh token is required",
+                        "refresh-token");
+                });
 
-        String email = jwtUtil.getEmailFromToken(refreshToken);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        if (!jwtUtil.validateToken(refreshToken, email)) {
-            log.warn("Invalid refresh token for email: {}", email);
-            throw new AuthenticationException("Invalid refresh token", "refresh-token");
+            String email = jwtUtil.getEmailFromToken(refreshToken);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            if (!jwtUtil.validateToken(refreshToken, email)) {
+                log.warn("Invalid refresh token for email: {}", email);
+                throw new AuthenticationException("Invalid refresh token", "refresh-token");
+            }
+
+            List<String> authorities = extractAuthorities(userDetails);
+            String newAccessToken = jwtUtil.generateAccessToken(email, authorities);
+
+            log.info("Refresh token successful for email: {}", email);
+            return new AuthDto(email, null, null, newAccessToken, refreshToken);
+        } catch (JwtException e) {
+            log.error("Error refreshing token: {}", e.getMessage());
+            throw new AuthenticationException(
+                "Invalid refresh token or token expired",
+                "refresh-token"
+            );
         }
-
-        List<String> authorities = extractAuthorities(userDetails);
-        String newAccessToken = jwtUtil.generateAccessToken(email, authorities);
-
-        log.info("Refresh token successful for email: {}", email);
-        return new AuthDto(email, null, null, newAccessToken, refreshToken);
     }
 
     private UserDetails authenticateUser(final String email, final String password) {

@@ -38,7 +38,8 @@ public class FindAccountImpl implements FindAccount {
                 email, account.getIsBlocked(), account.getIsDeleted()
             );
 
-            throw new AccountUnavailableException("email", "Account is not available");
+            throw new AccountUnavailableException("credentials",
+                "Account is not available");
         }
 
         return accountMapper.toAccountDto(account);
