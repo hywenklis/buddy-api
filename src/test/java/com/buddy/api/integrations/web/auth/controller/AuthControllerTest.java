@@ -207,6 +207,19 @@ class AuthControllerTest extends IntegrationTestAbstract {
             .forField(CREDENTIALS_NAME, "Account is not available");
     }
 
+    @Test
+    @DisplayName("Should not authenticate when email exceeds maximum length")
+    void should_not_authenticate_with_email_too_long() throws Exception {
+        String longEmail = "a".repeat(101) + "@example.com";
+        var req = AuthRequest.builder()
+            .email(longEmail)
+            .password(RandomStringUtils.secure().nextAlphanumeric(10))
+            .build();
+
+        expectBadRequestFrom(performAuthRequest(req))
+            .forField("email", "Account email must be at most 100 characters");
+    }
+
     private ResultActions performAuthRequest(final AuthRequest req) throws Exception {
         return mockMvc.perform(post(AUTH_URL)
             .header(ORIGIN, WEB_ORIGIN)
