@@ -6,7 +6,6 @@ import com.buddy.api.domains.authentication.services.AuthService;
 import com.buddy.api.web.authetication.mappers.AuthenticationMapper;
 import com.buddy.api.web.authetication.requests.AuthRequest;
 import com.buddy.api.web.authetication.responses.AuthResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -21,14 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Endpoints for user authentication and token refresh")
 public class AuthController implements AuthControllerDoc {
 
     private final AuthService authenticateService;
     private final AuthenticationMapper mapper;
     private final CookieManager cookieManager;
 
-    @PostMapping
+    @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse authenticate(
         @Valid @RequestBody final AuthRequest request,
