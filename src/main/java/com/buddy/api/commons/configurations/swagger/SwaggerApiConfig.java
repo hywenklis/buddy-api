@@ -1,9 +1,11 @@
-package com.buddy.api.commons.configuration.swagger;
+package com.buddy.api.commons.configurations.swagger;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import java.time.ZoneId;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SwaggerApiConfig {
 
+    private static final String BEARER_AUTH = "bearerAuth";
     private final BuildProperties buildProperties;
 
     public SwaggerApiConfig(final BuildProperties buildProperties) {
@@ -21,7 +24,13 @@ public class SwaggerApiConfig {
     @Bean
     public OpenAPI swaggerApi() {
         return new OpenAPI()
-            .components(new Components())
+            .components(new Components()
+                .addSecuritySchemes(BEARER_AUTH, new SecurityScheme()
+                    .name(BEARER_AUTH)
+                    .type(SecurityScheme.Type.HTTP)
+                    .scheme("bearer")
+                    .bearerFormat("JWT")
+                    .description("JWT Authorization header using the Bearer scheme.")))
             .info(new Info()
                 .title("Microservice " + " - [" + buildProperties.getName() + "]")
                 .description(
@@ -29,7 +38,8 @@ public class SwaggerApiConfig {
                         + " | Timestamp of the Build: "
                         + buildProperties.getTime().atZone(ZoneId.systemDefault()))
                 .version(buildProperties.getVersion())
-                .license(getLicense()));
+                .license(getLicense()))
+            .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH));
     }
 
     private License getLicense() {

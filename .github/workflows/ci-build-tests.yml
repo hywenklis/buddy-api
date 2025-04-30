@@ -15,7 +15,9 @@ on:
       - 'hotfix/*'
 
 permissions:
+  actions: read
   contents: read
+  security-events: write
 
 env:
   JAVA_VERSION: '21'
@@ -34,7 +36,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.10.3
+        uses: step-security/harden-runner@v2.12.0
         with:
           egress-policy: audit
 
@@ -77,30 +79,17 @@ jobs:
           junit_files: '**/build/test-results/**/*.xml'
           strategy: replace
 
-      - name: Add coverage to PR
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.6.1
-        continue-on-error: true
-        if: github.event_name == 'pull_request'
-        with:
-          paths: ${{ github.workspace }}/**/build/reports/jacoco/test/*.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 80
-          min-coverage-changed-files: 80
-          title: Code Coverage
-          update-comment: true
-
-      - name: Report Coverage Metrics
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
-          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Create and push tag
         if: github.event_name == 'push' && github.repository == 'hywenklis/buddy-api' && contains(github.ref, 'refs/heads/')

@@ -1,6 +1,6 @@
-package com.buddy.api.commons.configuration.annotations;
+package com.buddy.api.commons.configurations.annotations;
 
-import com.buddy.api.commons.configuration.annotations.validators.UniqueValidator;
+import com.buddy.api.commons.configurations.annotations.validators.UniqueValidator;
 import com.buddy.api.commons.enums.UniqueType;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

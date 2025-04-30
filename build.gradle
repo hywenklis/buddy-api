@@ -8,8 +8,8 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.1.5'
-    id 'com.palantir.git-version' version '3.1.0'
+    id 'com.github.spotbugs' version '6.1.10'
+    id 'com.palantir.git-version' version '3.2.0'
     id 'pmd'
 }
 
@@ -43,6 +43,7 @@ ext {
     set('spotbugsVersion', '4.8.6')
     set('micrometerVersion', '1.4.1')
     set('flywayPostgresVersion', '11.1.0')
+    set('jwtVersion', '0.12.6')
 }
 
 dependencies {
@@ -51,6 +52,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // Spring Cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
@@ -62,6 +64,8 @@ dependencies {
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocOpenApiVersion}"
     implementation "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}"
     implementation "io.micrometer:micrometer-tracing-bridge-brave:${micrometerVersion}"
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+
     implementation 'org.flywaydb:flyway-core'
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -74,6 +78,8 @@ dependencies {
 
     runtimeOnly "org.flywaydb:flyway-database-postgresql:${flywayPostgresVersion}"
     runtimeOnly "org.postgresql:postgresql:${postgresqlVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.projectlombok:lombok:${lombokVersion}"

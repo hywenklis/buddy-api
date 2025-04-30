@@ -3,6 +3,7 @@ package com.buddy.api.domains.profile.mappers;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,5 +16,7 @@ public interface ProfileMapper {
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
     ProfileEntity toProfileEntity(ProfileDto profileDto, AccountEntity account);
+
+    List<ProfileDto> toProfilesDto(List<ProfileEntity> profiles);
 }
 
