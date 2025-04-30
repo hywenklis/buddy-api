@@ -1,6 +1,5 @@
 package com.buddy.api.web.profiles.requests;
 
-import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
@@ -43,7 +42,4 @@ public record ProfileRequest(
     @Enumerated(EnumType.STRING)
     ProfileTypeEnum profileType
 ) {
-    public ProfileDto toProfileDto() {
-        return new ProfileDto(accountId, name, description, bio, profileType);
-    }
 }

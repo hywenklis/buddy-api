@@ -2,6 +2,7 @@ package com.buddy.api.web.profiles.controllers;
 
 import com.buddy.api.domains.profile.services.CreateProfile;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
+import com.buddy.api.web.profiles.mappers.ProfileMapperRequest;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,21 +16,22 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/profiles/register")
+@RequestMapping("/v1/profiles")
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "Endpoint related to profile registration")
 public class CreateProfileController {
 
     private final CreateProfile createProfile;
+    private final ProfileMapperRequest mapperRequest;
 
-    @PostMapping
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
         summary = "Register profile",
         description = "Register profile with their appropriate information"
     )
     public CreatedSuccessResponse registration(@Valid @RequestBody final ProfileRequest request) {
-        createProfile.create(request.toProfileDto());
+        createProfile.create(mapperRequest.toProfileDto(request));
         return new CreatedSuccessResponse();
     }
 }

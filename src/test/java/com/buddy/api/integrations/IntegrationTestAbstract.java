@@ -1,9 +1,10 @@
 package com.buddy.api.integrations;
 
+import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.components.PetComponent;
 import com.buddy.api.components.ProfileComponent;
 import com.buddy.api.components.ShelterComponent;
-import com.buddy.api.domains.account.repository.AccountRepository;
+import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.adoption.repositories.AdoptionRequestRepository;
 import com.buddy.api.domains.pet.repositories.PetImageRepository;
 import com.buddy.api.domains.pet.repositories.PetRepository;
@@ -53,8 +54,17 @@ public abstract class IntegrationTestAbstract {
     @Autowired
     protected PasswordEncoder passwordEncoder;
 
+    @Autowired
+    protected JwtUtil jwtUtil;
+
     protected static final String PET_BASE_URL = "/v1/pets";
     protected static final String EMBEDDED_PET_RESPONSES = "$._embedded.petParamsResponseList";
+    protected static final String AUTH_URL = "/v1/auth/login";
+    protected static final String REFRESH_URL = "/v1/auth/refresh";
+    protected static final String ACCESS_TOKEN_NAME = "access_token";
+    protected static final String REFRESH_TOKEN_NAME = "refresh_token";
+    protected static final String ORIGIN = "Origin";
+    protected static final String CREDENTIALS_NAME = "credentials";
 
     protected ShelterEntity shelter;
 

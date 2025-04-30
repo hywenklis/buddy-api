@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.commons.configuration.annotations.Unique;
-import com.buddy.api.commons.configuration.annotations.validators.UniqueValidator;
+import com.buddy.api.commons.configurations.annotations.Unique;
+import com.buddy.api.commons.configurations.annotations.validators.UniqueValidator;
 import com.buddy.api.commons.enums.UniqueType;
 import com.buddy.api.domains.shelter.dtos.ShelterDto;
 import com.buddy.api.domains.shelter.services.FindShelter;
