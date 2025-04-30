@@ -3,7 +3,7 @@ package com.buddy.api.web.shelter.requests;
 import static com.buddy.api.commons.enums.UniqueType.CPF;
 import static com.buddy.api.commons.enums.UniqueType.EMAIL;
 
-import com.buddy.api.commons.configuration.annotations.Unique;
+import com.buddy.api.commons.configurations.annotations.Unique;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;

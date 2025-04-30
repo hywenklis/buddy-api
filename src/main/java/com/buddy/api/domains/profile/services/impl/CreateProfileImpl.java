@@ -43,11 +43,11 @@ public class CreateProfileImpl implements CreateProfile {
             );
         }
 
-        if (!findAccount.existsById(profileDto.accountId())) {
+        if (Boolean.FALSE.equals(findAccount.existsById(profileDto.accountId()))) {
             throw new NotFoundException("accountId", "Account not found");
         }
 
-        if (profileRepository.existsByName(profileDto.name().trim())) {
+        if (Boolean.TRUE.equals(profileRepository.existsByName(profileDto.name().trim()))) {
             throw new ProfileNameAlreadyRegisteredException("Profile name already registered");
         }
     }
