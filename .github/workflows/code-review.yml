@@ -25,27 +25,12 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@v2.12.0
-        with:
-          egress-policy: audit
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Verificar tipo de evento
-        id: check_event
-        run: |
-          if [ "${{ github.event.action }}" == "opened" ]; then
-            echo "IS_NEW_PR=true" >> $GITHUB_ENV
-          else
-            echo "IS_NEW_PR=false" >> $GITHUB_ENV
-          fi
-          echo "PREVIOUS_SHA=${{ github.event.before || github.event.pull_request.base.sha }}" >> $GITHUB_ENV
-
-      - name: Get PR diff
+      - name: Obter diff da PR
         id: diff
         run: |
           git fetch origin --unshallow || true
@@ -57,21 +42,8 @@ jobs:
           else
             echo "SKIP_REVIEW=false" >> $GITHUB_ENV
           fi
-          delimiter=$(openssl rand -hex 8)
-          echo "$DIFF" > diff.txt
-          if [ -z "$DIFF" ] || [ ${#DIFF} -lt 50 ]; then
-            echo "SKIP_REVIEW=true" >> $GITHUB_ENV
-            echo "⚠️ Diff vazio ou muito pequeno, pulando revisão."
-          else
-            echo "SKIP_REVIEW=false" >> $GITHUB_ENV
-          fi
 
-      - name: Debug diff
-        run: |
-          echo "Diff tem $(wc -l < diff.txt) linhas"
-          head -n 100 diff.txt
-
-      - name: Gerar resumo da PR em markdown
+      - name: Gerar resumo com IA
         id: generate_summary
         if: ${{ env.SKIP_REVIEW == 'false' }}
         env:
@@ -85,7 +57,7 @@ jobs:
             "messages": [
               {
                 "role": "system",
-                "content": "Você é um engenheiro de software experiente e revisor de código. Analise o diff de código fornecido e gere um resumo em formato markdown para um comentário de Pull Request. O resumo deve ser claro, organizado e incluir: 1. **Visão Geral**: uma breve descrição do que a PR faz; 2. **Propósito**: o motivo das alterações e o problema que resolve ou funcionalidade adicionada; 3. **Alterações**: uma lista dos arquivos modificados com descrições detalhadas de cada mudança, incluindo trechos de código relevantes em blocos markdown (use a linguagem correta); 4. **Impacto**: como as alterações afetam o código, funcionalidade, desempenho ou manutenção; 5. **Testes**: como as mudanças foram testadas e quaisquer novos testes adicionados; 6. **Notas**: informações adicionais úteis para revisores, como dependências ou próximos passos. Use cabeçalhos, listas e blocos de código para máxima clareza. A resposta deve estar em PORTUGUÊS BRASILEIRO e em formato markdown puro. Mas não traga com \`\`\`markdown\`\`\` apenas o bloco que conteria dentro dele."
+                "content": "Você é um engenheiro de software experiente e revisor de código. Analise o diff de código fornecido e gere um resumo em formato markdown para um comentário de Pull Request. O resumo deve estar em PORTUGUÊS BRASILEIRO, ser claro, técnico e estruturado com os seguintes tópicos:\n\n1. **Visão Geral**: breve descrição do que a PR faz;\n2. **Propósito**: o motivo das alterações e o problema que resolve ou funcionalidade adicionada;\n3. **Alterações**: lista dos arquivos modificados com explicações detalhadas de cada mudança, incluindo trechos relevantes em blocos de código;\n4. **Impacto**: como essas alterações afetam o sistema (funcionalidade, desempenho, manutenção);\n5. **Testes**: como foi testado e se houve adição de novos testes;\n6. **Sugestões de Melhoria**: recomende melhorias técnicas com explicações claras, baseadas em boas práticas (ex: legibilidade, performance, desacoplamento, padrão de projeto, SOLID, etc);\n7. **Notas**: qualquer observação relevante, como dependências ou próximos passos.\n\nA resposta deve estar em Markdown puro, com cabeçalhos, listas e blocos de código bem formatados."
               },
               {
                 "role": "user",
@@ -99,9 +71,9 @@ jobs:
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $OPENROUTER_API_KEY" \
           --data-binary @payload.json)
-          
+        
           SUMMARY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // ""')
-          
+        
           if [ -z "$SUMMARY" ]; then
           echo "⚠️ Resumo não gerado pela IA, usando fallback."
           SUMMARY="# Resumo da PR\n\nNenhuma descrição detalhada gerada. Alterações detectadas no diff, mas sem resumo específico."
@@ -118,29 +90,28 @@ jobs:
           script: |
             const fs = require('fs');
             const summary = fs.readFileSync('summary.md', 'utf8');
-
+            
             if (!summary.trim()) {
               console.log("⚠️ Resumo vazio, não atualizando descrição.");
               return;
             }
-
+            
             const { owner, repo } = context.repo;
             const pull_number = context.payload.pull_request.number;
-
-            // Recupera a descrição atual
+            
             const { data: pr } = await github.rest.pulls.get({
               owner,
               repo,
               pull_number
             });
-
-            const novaDescricao = `### 🤖 Resumo automático da IA\n\n${summary}\n\n---\n${pr.body || ''}`.trim();
-
+            
+            const novaDescricao = `### 🤖 Resumo automático da IA\n\n${summary}\n\n---\n📝 _Este resumo foi gerado automaticamente por IA com base nas alterações da PR. Sugestões e melhorias estão incluídas._\n\n---\n${pr.body || ''}`.trim();
+            
             await github.rest.pulls.update({
               owner,
               repo,
               pull_number,
               body: novaDescricao
             });
-
-            console.log("✅ Descrição da PR atualizada com o resumo da IA.");
+            
+            console.log("✅ Descrição da PR atualizada com sucesso.");
