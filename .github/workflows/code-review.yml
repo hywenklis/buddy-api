@@ -52,7 +52,7 @@ jobs:
           if [ "${{ env.IS_NEW_PR }}" == "false" ]; then
             DIFF=$(git diff ${{ env.PREVIOUS_SHA }}..${{ github.sha }})
           else
-            DIFF=$(git diff origin/${{ github.base_ref }}..${{ github.sha }})
+            DIFF=$(git diff ${{ github.event.pull_request.base.sha }}..${{ github.sha }})
           fi
           delimiter=$(openssl rand -hex 8)
           echo "$DIFF" > diff.txt
@@ -62,6 +62,11 @@ jobs:
           else
             echo "SKIP_REVIEW=false" >> $GITHUB_ENV
           fi
+
+      - name: Debug diff
+        run: |
+          echo "Diff tem $(wc -l < diff.txt) linhas"
+          head -n 100 diff.txt
 
       - name: Gerar resumo da PR em markdown
         id: generate_summary
