@@ -97,7 +97,7 @@ jobs:
           RESPONSE=$(curl -s https://openrouter.ai/api/v1/chat/completions \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-            -d "$JSON_PAYLOAD")
+            --data-binary @payload.json)
           SUMMARY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // ""')
           if [ -z "$SUMMARY" ] || [ "$SUMMARY" = "" ]; then
             echo "⚠️ Resumo não gerado pela IA, usando fallback."
