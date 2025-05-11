@@ -3,6 +3,11 @@ name: Code Review com IA
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+      - 'release/*'
+      - 'hotfix/*'
 
 permissions:
   contents: read
