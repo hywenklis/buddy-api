@@ -78,7 +78,8 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           ESCAPED_DIFF=$(jq -Rs . < diff.txt)
-          JSON_PAYLOAD=$(cat <<EOF
+
+          cat > payload.json <<EOF
           {
             "model": "deepseek/deepseek-chat-v3-0324:free",
             "messages": [
@@ -93,16 +94,19 @@ jobs:
             ]
           }
           EOF
-          )
+      
           RESPONSE=$(curl -s https://openrouter.ai/api/v1/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-            --data-binary @payload.json)
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+          --data-binary @payload.json)
+          
           SUMMARY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // ""')
-          if [ -z "$SUMMARY" ] || [ "$SUMMARY" = "" ]; then
-            echo "⚠️ Resumo não gerado pela IA, usando fallback."
-            SUMMARY="# Resumo da PR\n\nNenhuma descrição detalhada gerada. Alterações detectadas no diff, mas sem resumo específico."
+          
+          if [ -z "$SUMMARY" ]; then
+          echo "⚠️ Resumo não gerado pela IA, usando fallback."
+          SUMMARY="# Resumo da PR\n\nNenhuma descrição detalhada gerada. Alterações detectadas no diff, mas sem resumo específico."
           fi
+          
           echo "$SUMMARY" > summary.md
           echo "has_summary=true" >> $GITHUB_OUTPUT
 
