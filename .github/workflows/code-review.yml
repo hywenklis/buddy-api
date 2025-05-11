@@ -55,9 +55,7 @@ jobs:
             DIFF=$(git diff origin/${{ github.base_ref }}..${{ github.sha }})
           fi
           delimiter=$(openssl rand -hex 8)
-          echo "DIFF<<$delimiter" >> $GITHUB_ENV
-          echo "$DIFF" >> $GITHUB_ENV
-          echo "$delimiter" >> $GITHUB_ENV
+          echo "$DIFF" > diff.txt
           if [ -z "$DIFF" ] || [ ${#DIFF} -lt 50 ]; then
             echo "SKIP_REVIEW=true" >> $GITHUB_ENV
             echo "⚠️ Diff vazio ou muito pequeno, pulando revisão."
@@ -70,10 +68,8 @@ jobs:
         if: ${{ env.SKIP_REVIEW == 'false' }}
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          DIFF: ${{ env.DIFF }}
         run: |
-          echo "$DIFF" > diff.txt
-          ESCAPED_DIFF=$(printf '%s' "$DIFF" | jq -Rs .)
+          ESCAPED_DIFF=$(jq -Rs . < diff.txt)
           JSON_PAYLOAD=$(cat <<EOF
           {
             "model": "deepseek/deepseek-chat-v3-0324:free",
