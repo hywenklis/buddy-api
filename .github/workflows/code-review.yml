@@ -110,7 +110,7 @@ jobs:
           echo "$SUMMARY" > summary.md
           echo "has_summary=true" >> $GITHUB_OUTPUT
 
-      - name: Postar resumo da PR como comentário
+      - name: Atualizar descrição da PR com o resumo
         if: ${{ env.SKIP_REVIEW == 'false' && steps.generate_summary.outputs.has_summary == 'true' }}
         uses: actions/github-script@v7
         with:
@@ -118,20 +118,29 @@ jobs:
           script: |
             const fs = require('fs');
             const summary = fs.readFileSync('summary.md', 'utf8');
+
             if (!summary.trim()) {
-              console.log("⚠️ Resumo vazio, não postando comentário.");
+              console.log("⚠️ Resumo vazio, não atualizando descrição.");
               return;
             }
+
             const { owner, repo } = context.repo;
             const pull_number = context.payload.pull_request.number;
-            const commit_id = context.payload.pull_request.head.sha;
-            await github.rest.pulls.createReview({
+
+            // Recupera a descrição atual
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number
+            });
+
+            const novaDescricao = `### 🤖 Resumo automático da IA\n\n${summary}\n\n---\n${pr.body || ''}`.trim();
+
+            await github.rest.pulls.update({
               owner,
               repo,
               pull_number,
-              commit_id,
-              event: "COMMENT",
-              body: `# Revisão Automática da PR #${pull_number}\n\n${summary}`,
-              comments: []
+              body: novaDescricao
             });
-            console.log("✅ Resumo da PR postado com sucesso.");
+
+            console.log("✅ Descrição da PR atualizada com o resumo da IA.");
