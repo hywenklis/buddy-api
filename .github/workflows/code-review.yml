@@ -123,16 +123,15 @@ jobs:
               return;
             }
             const { owner, repo } = context.repo;
-            const pull_number = context.issue.number;
-            const commit_id = context.payload.pull_request.head.sha;
             const pull_number = context.payload.pull_request.number;
+            const commit_id = context.payload.pull_request.head.sha;
             await github.rest.pulls.createReview({
               owner,
               repo,
               pull_number,
               commit_id,
               event: "COMMENT",
-              body: `# Revisão Automática da PR (Execução #${pull_number})\n\n${summary}`,
+              body: `# Revisão Automática da PR #${pull_number}\n\n${summary}`,
               comments: []
             });
             console.log("✅ Resumo da PR postado com sucesso.");
