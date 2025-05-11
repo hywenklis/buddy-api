@@ -48,11 +48,14 @@ jobs:
       - name: Get PR diff
         id: diff
         run: |
-          git fetch origin ${{ github.base_ref }}
-          if [ "${{ env.IS_NEW_PR }}" == "false" ]; then
-            DIFF=$(git diff ${{ env.PREVIOUS_SHA }}..${{ github.sha }})
+          git fetch origin --unshallow || true
+          DIFF=$(git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+          echo "$DIFF" > diff.txt
+          if [ -z "$DIFF" ] || [ ${#DIFF} -lt 50 ]; then
+            echo "SKIP_REVIEW=true" >> $GITHUB_ENV
+            echo "⚠️ Diff vazio ou muito pequeno, pulando revisão."
           else
-            DIFF=$(git diff ${{ github.event.pull_request.base.sha }}..${{ github.sha }})
+            echo "SKIP_REVIEW=false" >> $GITHUB_ENV
           fi
           delimiter=$(openssl rand -hex 8)
           echo "$DIFF" > diff.txt
@@ -118,13 +121,14 @@ jobs:
             const { owner, repo } = context.repo;
             const pull_number = context.issue.number;
             const commit_id = context.payload.pull_request.head.sha;
+            const pull_number = context.payload.pull_request.number;
             await github.rest.pulls.createReview({
               owner,
               repo,
               pull_number,
               commit_id,
               event: "COMMENT",
-              body: `# Revisão Automática da PR (Execução #${process.env.GITHUB_RUN_NUMBER})\n\n${summary}`,
+              body: `# Revisão Automática da PR (Execução #${pull_number})\n\n${summary}`,
               comments: []
             });
             console.log("✅ Resumo da PR postado com sucesso.");
