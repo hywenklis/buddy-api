@@ -3,7 +3,7 @@ package com.buddy.api.domains.account.services.impl;
 import com.buddy.api.commons.exceptions.EmailAlreadyRegisteredException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.mappers.AccountMapper;
-import com.buddy.api.domains.account.repository.AccountRepository;
+import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.CreateAccount;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import jakarta.transaction.Transactional;
@@ -30,7 +30,7 @@ public class CreateAccountImpl implements CreateAccount {
     }
 
     private void validateEmailIsNotRegistered(final EmailAddress email) {
-        if (accountRepository.existsByEmail(email)) {
+        if (Boolean.TRUE.equals(accountRepository.existsByEmail(email))) {
             throw new EmailAlreadyRegisteredException("Account email already registered", "email");
         }
     }

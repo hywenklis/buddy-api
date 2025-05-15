@@ -21,4 +21,6 @@ public interface AccountMapper {
     @Mapping(target = "isBlocked", constant = "false")
     @Mapping(target = "isDeleted", constant = "false")
     AccountEntity toAccountEntity(final AccountDto accountDto);
+
+    AccountDto toAccountDto(final AccountEntity accountEntity);
 }

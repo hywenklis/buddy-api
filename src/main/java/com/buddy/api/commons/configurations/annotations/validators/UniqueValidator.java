@@ -1,6 +1,6 @@
-package com.buddy.api.commons.configuration.annotations.validators;
+package com.buddy.api.commons.configurations.annotations.validators;
 
-import com.buddy.api.commons.configuration.annotations.Unique;
+import com.buddy.api.commons.configurations.annotations.Unique;
 import com.buddy.api.commons.enums.UniqueType;
 import com.buddy.api.domains.shelter.services.FindShelter;
 import jakarta.validation.ConstraintValidator;
