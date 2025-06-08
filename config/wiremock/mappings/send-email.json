@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/api/emails/send"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "message": "Email enviado com sucesso"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

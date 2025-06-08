@@ -58,6 +58,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
     implementation 'org.springframework.cloud:spring-cloud-config-client'
     implementation 'org.springframework.cloud:spring-cloud-starter'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     // Others
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
@@ -65,6 +66,7 @@ dependencies {
     implementation "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}"
     implementation "io.micrometer:micrometer-tracing-bridge-brave:${micrometerVersion}"
     implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     implementation 'org.flywaydb:flyway-core'
 
