@@ -1,4 +1,4 @@
-package com.buddy.api.web.authetication.responses;
+package com.buddy.api.web.authentication.responses;
 
 import java.util.List;
 
