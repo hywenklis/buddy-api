@@ -66,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 ? Optional.of(userDetails)
                 : Optional.empty();
         } catch (Exception e) {
-            logger.error("Failed to validate JWT: {}", e);
+            log.error("Failed to validate JWT", e);
             return Optional.empty();
         }
     }

@@ -1,4 +1,4 @@
-package com.buddy.api.integrations.web.auth.controller;
+package com.buddy.api.integrations.web.authentication.controller;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
@@ -20,7 +20,7 @@ import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
-import com.buddy.api.web.authetication.requests.AuthRequest;
+import com.buddy.api.web.authentication.requests.AuthRequest;
 import jakarta.servlet.http.Cookie;
 import java.util.Objects;
 import org.apache.commons.lang3.RandomStringUtils;
