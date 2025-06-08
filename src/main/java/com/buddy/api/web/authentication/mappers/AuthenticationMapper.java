@@ -1,8 +1,8 @@
-package com.buddy.api.web.authetication.mappers;
+package com.buddy.api.web.authentication.mappers;
 
 import com.buddy.api.domains.authentication.dtos.AuthDto;
-import com.buddy.api.web.authetication.requests.AuthRequest;
-import com.buddy.api.web.authetication.responses.AuthResponse;
+import com.buddy.api.web.authentication.requests.AuthRequest;
+import com.buddy.api.web.authentication.responses.AuthResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -1,11 +1,11 @@
-package com.buddy.api.web.authetication.controllers;
+package com.buddy.api.web.authentication.controllers;
 
 import com.buddy.api.commons.configurations.security.cookies.CookieManager;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
-import com.buddy.api.web.authetication.mappers.AuthenticationMapper;
-import com.buddy.api.web.authetication.requests.AuthRequest;
-import com.buddy.api.web.authetication.responses.AuthResponse;
+import com.buddy.api.web.authentication.mappers.AuthenticationMapper;
+import com.buddy.api.web.authentication.requests.AuthRequest;
+import com.buddy.api.web.authentication.responses.AuthResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
