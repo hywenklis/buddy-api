@@ -1,8 +1,8 @@
-package com.buddy.api.web.authetication.controllers;
+package com.buddy.api.web.authentication.controllers;
 
 import com.buddy.api.web.advice.error.ErrorResponse;
-import com.buddy.api.web.authetication.requests.AuthRequest;
-import com.buddy.api.web.authetication.responses.AuthResponse;
+import com.buddy.api.web.authentication.requests.AuthRequest;
+import com.buddy.api.web.authentication.responses.AuthResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
