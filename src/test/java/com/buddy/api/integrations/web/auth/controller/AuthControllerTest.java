@@ -210,7 +210,7 @@ class AuthControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not authenticate when email exceeds maximum length")
     void should_not_authenticate_with_email_too_long() throws Exception {
-        String longEmail = "a".repeat(101) + "@example.com";
+        String longEmail = "a".repeat(60) + "@" + "b".repeat(40) + ".com";
         var req = AuthRequest.builder()
             .email(longEmail)
             .password(RandomStringUtils.secure().nextAlphanumeric(10))
