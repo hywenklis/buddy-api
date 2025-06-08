@@ -1,4 +1,4 @@
-package com.buddy.api.web.authetication.requests;
+package com.buddy.api.web.authentication.requests;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
