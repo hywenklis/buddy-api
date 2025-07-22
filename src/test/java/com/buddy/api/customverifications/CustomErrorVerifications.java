@@ -1,5 +1,6 @@
 package com.buddy.api.customverifications;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +46,13 @@ public class CustomErrorVerifications {
         resultActions.andExpectAll(
             jsonPath(ERROR_FIELD_PATH).value(field),
             jsonPath(ERROR_MESSAGE_PATH).value(message)
+        );
+    }
+
+    public void forFieldContains(final String field, final String message) throws Exception {
+        resultActions.andExpectAll(
+            jsonPath(ERROR_FIELD_PATH).value(field),
+            jsonPath(ERROR_MESSAGE_PATH).value(containsString(message))
         );
     }
 }
