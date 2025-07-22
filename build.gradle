@@ -32,10 +32,10 @@ configurations {
 }
 
 ext {
-    set('springCloudVersion', "2024.0.0")
+    set('springCloudVersion', "2025.0.0")
     set('mapstructVersion', "1.6.3")
-    set('springdocOpenApiVersion', "2.7.0")
-    set('springHateoasVersion', "2.4.1")
+    set('springdocOpenApiVersion', "2.8.9")
+    set('springHateoasVersion', "2.5.1")
     set('commonsLang3Version', "3.17.0")
     set('lombokVersion', "1.18.36")
     set('postgresqlVersion', "42.7.4")

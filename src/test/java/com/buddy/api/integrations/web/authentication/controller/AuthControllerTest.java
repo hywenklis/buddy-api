@@ -217,7 +217,7 @@ class AuthControllerTest extends IntegrationTestAbstract {
             .build();
 
         expectBadRequestFrom(performAuthRequest(req))
-            .forField("email", "Account email must be at most 100 characters");
+            .forField("email", "Account email must be a valid email address");
     }
 
     private ResultActions performAuthRequest(final AuthRequest req) throws Exception {
