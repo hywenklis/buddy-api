@@ -10,8 +10,8 @@ import lombok.Builder;
 public record AuthRequest(
     @Schema(description = "Account email", example = "account@email.com")
     @NotBlank(message = "Account email is mandatory")
-    @Email(message = "Account email must be a valid email address")
     @Size(max = 100, message = "Account email must be at most 100 characters")
+    @Email(message = "Account email must be a valid email address")
     String email,
 
     @Schema(description = "Account password", example = "password")
