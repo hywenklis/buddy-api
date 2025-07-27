@@ -9,7 +9,7 @@ public class TooManyRequestsException extends DomainException {
     private static final long serialVersionUID = 2702355471027463717L;
 
     public TooManyRequestsException(final String message) {
-        super(message, "rateLimit", HttpStatus.TOO_MANY_REQUESTS);
+        super(message, "rateLimit", HttpStatus.TOO_MANY_REQUESTS, null);
     }
 
 }

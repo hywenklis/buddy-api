@@ -1,54 +1,121 @@
 package com.buddy.api.domains.account.services.impl;
 
-import com.buddy.api.commons.exceptions.AuthenticationException;
+import com.buddy.api.commons.configurations.properties.EmailProperties;
+import com.buddy.api.commons.exceptions.DomainException;
+import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
-import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.account.repositories.AccountRepository;
-import com.buddy.api.integrations.clients.email.EmailService;
+import com.buddy.api.domains.account.services.EmailVerificationService;
+import com.buddy.api.domains.valueobjects.EmailAddress;
+import com.buddy.api.integrations.clients.notification.EmailNotificationService;
+import jakarta.annotation.PostConstruct;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class EmailVerificationServiceImpl {
+@RequiredArgsConstructor
+public class EmailVerificationServiceImpl implements EmailVerificationService {
+    private static final String VERIFICATION_TOKEN_CACHE_NAME = "emailVerificationToken";
+    private static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
 
     private final AccountRepository accountRepository;
-    private final EmailService emailService;
-    private final EmailVerificationCacheService cache;
+    private final EmailNotificationService emailNotificationService;
+    private final CacheManager cacheManager;
+    private final EmailProperties emailProperties;
 
-    public void requestVerificationEmail(final AccountDto account) {
-        UUID accountId = account.accountId();
+    private Cache verificationTokenCache;
+    private Cache rateLimitCache;
 
-        if (Boolean.TRUE.equals(cache.isRateLimited(accountId))) {
-            throw new TooManyRequestsException("Please wait before requesting another code");
-        }
-
-        String token = UUID.randomUUID().toString();
-        cache.storeToken(token, accountId);
-        cache.setRateLimit(accountId);
-
-        log.info("Sending verification email to {} (token={})", account.email().value(), token);
-        emailService.sendVerificationEmail(account.email().value(), token);
+    @PostConstruct
+    public void init() {
+        this.verificationTokenCache = Objects.requireNonNull(
+            cacheManager.getCache(VERIFICATION_TOKEN_CACHE_NAME),
+            "Cache 'emailVerificationToken' not found."
+        );
+        this.rateLimitCache = Objects.requireNonNull(
+            cacheManager.getCache(RATE_LIMIT_CACHE_NAME),
+            "Cache 'emailVerificationRateLimit' not found."
+        );
     }
 
-    public void confirmEmail(final String token) {
-        UUID accountId = cache.getAccountIdByToken(token);
+    @Override
+    public void requestVerificationEmail(final AccountDto account) {
+        final String userEmail = account.email().value();
+        log.info("Received request for email verification for: {}", userEmail);
 
-        if (accountId == null) {
-            throw new AuthenticationException("Invalid or expired token", "token");
+        if (Boolean.TRUE.equals(account.isVerified())) {
+            throw new DomainException(
+                "This account is already verified.",
+                "account.status",
+                HttpStatus.BAD_REQUEST,
+                null
+            );
         }
 
-        AccountEntity account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new RuntimeException("Account not found"));
+        checkRateLimit(userEmail);
 
-        account.setIsVerified(true);
-        accountRepository.save(account);
+        final String token = UUID.randomUUID().toString();
+        verificationTokenCache.put(token, userEmail);
+        rateLimitCache.put(userEmail, "rate-limited");
 
-        cache.invalidateToken(token);
-        log.info("Account {} marked as verified", accountId);
+        final String verificationUrl = emailProperties.templates().url() + token;
+        final String subject = emailProperties.templates().subject();
+        final String htmlBody = buildConfirmationEmailBody(verificationUrl);
+
+        emailNotificationService.sendEmail(List.of(userEmail), subject, htmlBody);
+
+        log.info("Verification email request processed for: {}", userEmail);
+    }
+
+    @Override
+    @Transactional
+    public void confirmEmail(final String token) {
+        log.info("Attempting to confirm email with token.");
+
+        Cache.ValueWrapper valueWrapper = verificationTokenCache.get(token);
+        if (valueWrapper == null || valueWrapper.get() == null) {
+            throw new NotFoundException("token", "Invalid or expired verification token.");
+        }
+
+        final String email = (String) valueWrapper.get();
+        final var accountEntity = accountRepository.findByEmail(new EmailAddress(email))
+            .orElseThrow(
+                () -> new NotFoundException("account", "Account not found for this token."));
+
+        if (Boolean.TRUE.equals(accountEntity.getIsVerified())) {
+            log.warn("Account {} is already verified. Ignoring confirmation request.", email);
+            verificationTokenCache.evict(token);
+            return;
+        }
+
+        accountEntity.setIsVerified(true);
+        accountRepository.save(accountEntity);
+        verificationTokenCache.evict(token);
+
+        log.info("Email successfully verified for account: {}", email);
+    }
+
+    private void checkRateLimit(final String email) {
+        if (rateLimitCache.get(email) != null) {
+            log.warn("Rate limit exceeded for email verification request: {}", email);
+            throw new TooManyRequestsException(
+                "You have requested a verification email recently. "
+                    + "Please wait a minute before trying again."
+            );
+        }
+    }
+
+    private String buildConfirmationEmailBody(final String verificationUrl) {
+        return emailProperties.templates().verification().replace("%s", verificationUrl);
     }
 }

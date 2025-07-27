@@ -1,9 +1,14 @@
 package com.buddy.api.web.accounts.controllers;
 
 import com.buddy.api.domains.account.dtos.AccountDto;
+import com.buddy.api.domains.account.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.account.services.impl.EmailVerificationServiceImpl;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
+import com.buddy.api.web.accounts.requests.ConfirmEmailRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -19,26 +24,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class EmailVerificationController {
 
-    private final EmailVerificationServiceImpl emailVerificationService;
+    private final EmailVerificationService emailVerificationService;
     private final FindAccount accountService;
 
     @PostMapping("/request")
-    public ResponseEntity<Void> requestVerification(final @AuthenticationPrincipal AuthenticatedUser user) {
+    public ResponseEntity<Void> requestVerification(
+        final @AuthenticationPrincipal AuthenticatedUser user
+    ) {
         AccountDto account = accountService.findByEmail(user.getEmail());
         emailVerificationService.requestVerificationEmail(account);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<Void> confirm(final @RequestBody ConfirmEmailRequest request) {
-        emailVerificationService.confirmEmail(request.getToken());
-        return ResponseEntity.noContent().build();
-    }
-
-    @Setter
-    @Getter
-    public static class ConfirmEmailRequest {
-        private String token;
+    public ResponseEntity<Void> confirm(final @RequestBody @Valid ConfirmEmailRequest request) {
+        emailVerificationService.confirmEmail(request.token());
+        return ResponseEntity.ok().build();
     }
 }
-

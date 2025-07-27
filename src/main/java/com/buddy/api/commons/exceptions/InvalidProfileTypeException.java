@@ -9,6 +9,6 @@ public class InvalidProfileTypeException extends DomainException {
     private static final long serialVersionUID = 8182926263647923997L;
 
     public InvalidProfileTypeException(final String message) {
-        super(message, "profileType", HttpStatus.FORBIDDEN);
+        super(message, "profileType", HttpStatus.FORBIDDEN, null);
     }
 }

@@ -87,6 +87,23 @@ auth:
     - type: "TOOLS"
       code: "6ba7b810-9dad-11d1-80b4-00c04fd430c8" # changes in production environment
 
-email:
+notification:
   api:
-    base-url: http://localhost:8089
+    base-url: ""
+    x-user: ""
+
+manager:
+  api:
+    base-url: ""
+    content-type: "application/json"
+    user-agent: ""
+    ip-address: ""
+    username: ""
+    password: ""
+
+buddy:
+  email:
+    templates:
+      url: https://buddyclient.vercel.app/confirm-email?token=
+      subject: "Confirmação de e-mail Buddy"
+      verification: <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Confirme seu E-mail</title><style>body{margin:0;padding:0;background-color:#f6faf6}table{border-spacing:0}td{padding:0}img{border:0}.wrapper{width:100%;table-layout:fixed;background-color:#f6faf6;padding-bottom:60px}.main{background-color:#fff;margin:0 auto;width:100%;max-width:500px;border-spacing:0;font-family:Inter,Arial,sans-serif;color:#23272f;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07)}.two-columns{text-align:center;font-size:0}.two-columns .column{width:100%;max-width:250px;display:inline-block;vertical-align:top}</style></head><body><div class="wrapper"><table class="main"><tr><td style="padding:38px 32px 24px"><p style="margin:0;font-size:18px;font-weight:700"><img src="https://em-content.zobj.net/source/microsoft-teams/337/paw-prints_1f43e.png" alt="Ícone de pata" width="22" style="vertical-align:middle;margin-right:4px"> Bem-vindo(a) ao Buddy!</p></td></tr><tr><td style="padding:0 32px 32px"><p style="margin:0;font-size:17px;line-height:1.5">Falta só um passo para concluir seu cadastro. Por favor, clique no botão abaixo para confirmar seu endereço de e-mail e ativar sua conta.</p></td></tr><tr><td style="padding:0 32px 32px"><div style="text-align:center"><a href="%s" style="background-color:#3b82f6;color:#fff;padding:15px 38px;border-radius:6px;text-decoration:none;font-weight:600;font-size:16px;display:inline-block;box-shadow:0 2px 6px rgba(59,130,246,.1)">Confirmar meu e-mail</a></div></td></tr><tr><td style="padding:0 32px 32px"><p style="color:#738394;font-size:14px;margin:0">Se você não solicitou este cadastro, pode ignorar esta mensagem com segurança.</p></td></tr><tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #e7e7e7"><p style="color:#999;font-size:13px;margin:0;line-height:1.5">Dúvidas? <a href="mailto:buddy.contato.app@gmail.com" style="color:#3b82f6;text-decoration:none">Fale com a equipe Buddy</a><br><br><span style="color:#b0b0b0">© Buddy | Por um mundo com mais lares e mais amor.</span></p></td></tr></table></div></body></html>
