@@ -49,7 +49,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     @Override
-    public void requestVerificationEmail(final AccountDto account) {
+    public void requestEmail(final AccountDto account) {
         final String userEmail = account.email().value();
         log.info("Received request for email verification for: {}", userEmail);
 

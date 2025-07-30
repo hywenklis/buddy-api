@@ -3,15 +3,10 @@ package com.buddy.api.web.accounts.controllers;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.FindAccount;
-import com.buddy.api.domains.account.services.impl.EmailVerificationServiceImpl;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.web.accounts.requests.ConfirmEmailRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +27,7 @@ public class EmailVerificationController {
         final @AuthenticationPrincipal AuthenticatedUser user
     ) {
         AccountDto account = accountService.findByEmail(user.getEmail());
-        emailVerificationService.requestVerificationEmail(account);
+        emailVerificationService.requestEmail(account);
         return ResponseEntity.ok().build();
     }
 
