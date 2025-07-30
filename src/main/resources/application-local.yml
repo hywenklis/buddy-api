@@ -89,17 +89,17 @@ auth:
 
 notification:
   api:
-    base-url: ""
-    x-user: ""
+    base-url: "http://localhost:8089"
+    x-user: "x-user"
 
 manager:
   api:
-    base-url: ""
+    base-url: "http://localhost:8089"
     content-type: "application/json"
-    user-agent: ""
-    ip-address: ""
-    username: ""
-    password: ""
+    user-agent: "user-agent"
+    ip-address: "Ajfakjd=="
+    username: "buddy@email.com"
+    password: "password"
 
 buddy:
   email:
