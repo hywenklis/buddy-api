@@ -24,4 +24,12 @@ public class UpdateAccountImpl implements UpdateAccount {
         account.setLastLogin(lastLogin);
         accountRepository.save(account);
     }
+
+    @Override
+    public void updateIsVerified(final String email, final Boolean isVerified) {
+        AccountEntity account = accountRepository.findByEmail(new EmailAddress(email))
+            .orElseThrow(() -> new NotFoundException("accountId", "Account not found"));
+        account.setIsVerified(isVerified);
+        accountRepository.save(account);
+    }
 }

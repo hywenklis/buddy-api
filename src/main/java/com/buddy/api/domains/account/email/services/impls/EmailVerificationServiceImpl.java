@@ -1,13 +1,12 @@
-package com.buddy.api.domains.account.services.impl;
+package com.buddy.api.domains.account.email.services.impls;
 
 import com.buddy.api.commons.configurations.properties.EmailProperties;
-import com.buddy.api.commons.exceptions.DomainException;
+import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
-import com.buddy.api.domains.account.repositories.AccountRepository;
-import com.buddy.api.domains.account.services.EmailVerificationService;
-import com.buddy.api.domains.valueobjects.EmailAddress;
+import com.buddy.api.domains.account.email.services.EmailVerificationService;
+import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.integrations.clients.notification.EmailNotificationService;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
@@ -17,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +26,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private static final String VERIFICATION_TOKEN_CACHE_NAME = "emailVerificationToken";
     private static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
 
-    private final AccountRepository accountRepository;
+    private final UpdateAccount updateAccount;
     private final EmailNotificationService emailNotificationService;
     private final CacheManager cacheManager;
     private final EmailProperties emailProperties;
@@ -54,11 +52,9 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         log.info("Received request for email verification for: {}", userEmail);
 
         if (Boolean.TRUE.equals(account.isVerified())) {
-            throw new DomainException(
-                "This account is already verified.",
+            throw new AccountAlreadyVerifiedException(
                 "account.status",
-                HttpStatus.BAD_REQUEST,
-                null
+                "This account is already verified."
             );
         }
 
@@ -79,7 +75,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     @Override
     @Transactional
-    public void confirmEmail(final String token) {
+    public void confirmEmail(final String token, final AccountDto account) {
         log.info("Attempting to confirm email with token.");
 
         Cache.ValueWrapper valueWrapper = verificationTokenCache.get(token);
@@ -88,18 +84,14 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         }
 
         final String email = (String) valueWrapper.get();
-        final var accountEntity = accountRepository.findByEmail(new EmailAddress(email))
-            .orElseThrow(
-                () -> new NotFoundException("account", "Account not found for this token."));
 
-        if (Boolean.TRUE.equals(accountEntity.getIsVerified())) {
+        if (Boolean.TRUE.equals(account.isVerified())) {
             log.warn("Account {} is already verified. Ignoring confirmation request.", email);
             verificationTokenCache.evict(token);
             return;
         }
 
-        accountEntity.setIsVerified(true);
-        accountRepository.save(accountEntity);
+        updateAccount.updateIsVerified(account.email().value(), true);
         verificationTokenCache.evict(token);
 
         log.info("Email successfully verified for account: {}", email);

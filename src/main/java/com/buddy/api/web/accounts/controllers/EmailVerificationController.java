@@ -1,7 +1,7 @@
 package com.buddy.api.web.accounts.controllers;
 
 import com.buddy.api.domains.account.dtos.AccountDto;
-import com.buddy.api.domains.account.services.EmailVerificationService;
+import com.buddy.api.domains.account.email.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.web.accounts.requests.ConfirmEmailRequest;
@@ -32,8 +32,12 @@ public class EmailVerificationController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<Void> confirm(final @RequestBody @Valid ConfirmEmailRequest request) {
-        emailVerificationService.confirmEmail(request.token());
+    public ResponseEntity<Void> confirm(
+        final @RequestBody @Valid ConfirmEmailRequest request,
+        final @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        AccountDto account = accountService.findByEmail(user.getEmail());
+        emailVerificationService.confirmEmail(request.token(), account);
         return ResponseEntity.ok().build();
     }
 }
