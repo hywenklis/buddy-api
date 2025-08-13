@@ -6,7 +6,8 @@ public class ClientNotFoundException extends GenericClientException {
     @Serial
     private static final long serialVersionUID = -4020737471454521988L;
 
-    public ClientNotFoundException(final String message, final String errorBody, final Integer httpStatusCode) {
+    public ClientNotFoundException(final String message, final String errorBody,
+                                   final Integer httpStatusCode) {
         super(message, errorBody, httpStatusCode);
     }
 }

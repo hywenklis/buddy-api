@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
+import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
@@ -54,6 +56,9 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
     @Captor
     private ArgumentCaptor<String> tokenCaptor;
 
+    @Captor
+    private ArgumentCaptor<String> emailBodyCaptor;
+
     private AccountDto unverifiedAccount;
     private AccountDto verifiedAccount;
     private String userEmail;
@@ -91,8 +96,10 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
             verify(emailNotificationService, times(1)).sendEmail(
                 eq(List.of(userEmail)),
                 eq("Confirm your email"),
-                eq("Click here: http://buddy.app/confirm?token=" + generatedToken)
+                emailBodyCaptor.capture()
             );
+            assertThat(emailBodyCaptor.getValue()).contains(
+                "http://buddy.app/confirm?token=" + generatedToken);
         }
 
         @Test
@@ -125,7 +132,7 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should verify email with a valid token")
         void confirmEmail_withValidToken_shouldSucceed() {
-            setupValidToken();
+            setupValidTokenForEmail(userEmail);
 
             emailVerificationService.confirmEmail(TOKEN, unverifiedAccount);
 
@@ -136,7 +143,7 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should ignore request if account is already verified")
         void confirmEmail_whenAccountIsAlreadyVerified_shouldDoNothing() {
-            setupValidToken();
+            setupValidTokenForEmail(verifiedAccount.email().value());
 
             emailVerificationService.confirmEmail(TOKEN, verifiedAccount);
 
@@ -162,6 +169,22 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
             assertNotFoundException(unverifiedAccount);
         }
 
+        @Test
+        @DisplayName("Should throw AuthenticationException when token to another user")
+        void confirmEmail_whenTokenBelongsToAnotherUser_shouldThrowAuthenticationException() {
+            Cache.ValueWrapper valueWrapper = mock(Cache.ValueWrapper.class);
+            when(valueWrapper.get()).thenReturn("another.user@example.com");
+            when(verificationTokenCache.get(TOKEN)).thenReturn(valueWrapper);
+
+            assertThatThrownBy(
+                () -> emailVerificationService.confirmEmail(TOKEN, unverifiedAccount))
+                .isInstanceOf(AuthenticationException.class)
+                .hasMessage("Token does not belong to the authenticated user");
+
+            verify(updateAccount, never()).updateIsVerified(userEmail, true);
+            verify(verificationTokenCache, never()).evict(TOKEN);
+        }
+
         private void assertNotFoundException(final AccountDto account) {
             assertThatThrownBy(() ->
                 emailVerificationService.confirmEmail(UnitTestAbstract.TOKEN, account))
@@ -172,9 +195,9 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
         }
     }
 
-    private void setupValidToken() {
+    private void setupValidTokenForEmail(final String email) {
         Cache.ValueWrapper valueWrapper = mock(Cache.ValueWrapper.class);
-        when(valueWrapper.get()).thenReturn(userEmail);
+        when(valueWrapper.get()).thenReturn(email);
         when(verificationTokenCache.get(TOKEN)).thenReturn(valueWrapper);
     }
 

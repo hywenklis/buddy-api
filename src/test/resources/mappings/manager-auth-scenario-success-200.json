@@ -1,0 +1,26 @@
+{
+  "scenarioName": "MANAGER_AUTH_SCENARIO",
+  "requiredScenarioState": "SUCCESS_STATE",
+  "request": {
+    "method": "POST",
+    "url": "/manager/v1/auth/login",
+    "headers": {
+      "Content-Type": {
+        "equalTo": "application/json"
+      },
+      "Ip-Address": {
+        "equalTo": "Ajfakjd=="
+      },
+      "User-Agent": {
+        "equalTo": "user-agent"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "manager-auth-login-response-200.json"
+  }
+}

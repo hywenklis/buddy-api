@@ -2,6 +2,7 @@ package com.buddy.api.domains.account.email.services.impls;
 
 import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
+import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
@@ -83,10 +84,19 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
             throw new NotFoundException("token", "Invalid or expired verification token.");
         }
 
-        final String email = (String) valueWrapper.get();
+        final String emailFromToken = (String) valueWrapper.get();
+
+        if (!account.email().value().equals(emailFromToken)) {
+            log.error("Token email [{}] does not match authenticated user email [{}]",
+                emailFromToken, account.email().value());
+            throw new AuthenticationException("Token does not belong to the authenticated user",
+                "token");
+        }
 
         if (Boolean.TRUE.equals(account.isVerified())) {
-            log.warn("Account {} is already verified. Ignoring confirmation request.", email);
+            log.warn("Account {} is already verified. Ignoring confirmation request.",
+                emailFromToken);
+
             verificationTokenCache.evict(token);
             return;
         }
@@ -94,7 +104,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         updateAccount.updateIsVerified(account.email().value(), true);
         verificationTokenCache.evict(token);
 
-        log.info("Email successfully verified for account: {}", email);
+        log.info("Email successfully verified for account: {}", emailFromToken);
     }
 
     private void checkRateLimit(final String email) {

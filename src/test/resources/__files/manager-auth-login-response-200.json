@@ -1,0 +1,5 @@
+{
+  "token": "token",
+  "type": "Bearer",
+  "expiresIn": 2700000
+}

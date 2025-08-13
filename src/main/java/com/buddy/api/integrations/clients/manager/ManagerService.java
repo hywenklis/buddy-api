@@ -47,7 +47,7 @@ public class ManagerService {
             false
         );
 
-        final String integrationName = "Manager API Authentication";
+        final String integrationName = "Manager API - Authentication";
 
         ManagerAuthResponse response = apiClientExecutor.executeClientCall(integrationName, () ->
             managerClient.login(

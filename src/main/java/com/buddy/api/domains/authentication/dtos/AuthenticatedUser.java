@@ -2,7 +2,6 @@ package com.buddy.api.domains.authentication.dtos;
 
 import java.io.Serial;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;

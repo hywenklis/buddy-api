@@ -1,11 +1,17 @@
 server:
   forward-headers-strategy: framework
+  compression:
+    enabled: true
+    mime-types: [ "application/json", "application/xml", "text/xml", "text/html", "text/plain" ]
+    min-response-size: 1024
   error:
     include-message: always
   servlet:
     context-path: /api
 
 spring:
+  application:
+    name: buddy
   main:
     allow-bean-definition-overriding: true
   cache:
@@ -45,12 +51,12 @@ auth:
 
 notification:
   api:
-    base-url: "http://localhost:8089"
-    x-user: "x-user"
+    base-url: "http://localhost:${wiremock.server.port}/notification"
+    user: "x-user"
 
 manager:
   api:
-    base-url: "http://localhost:8089"
+    base-url: "http://localhost:${wiremock.server.port}/manager"
     content-type: "application/json"
     user-agent: "user-agent"
     ip-address: "Ajfakjd=="

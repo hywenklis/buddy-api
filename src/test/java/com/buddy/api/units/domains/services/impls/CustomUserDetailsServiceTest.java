@@ -32,7 +32,12 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should load user details successfully when account and profiles are found")
     void should_load_user_details_successfully() {
-        AccountDto accountDto = AccountBuilder.validAccountDto().build();
+        AccountDto accountDto = AccountBuilder.validAccountDto()
+            .isBlocked(false)
+            .isDeleted(false)
+            .isVerified(true)
+            .build();
+
         ProfileDto activeProfile = ProfileBuilder.profileDto().isDeleted(false).build();
         ProfileDto deletedProfile = ProfileBuilder.profileDto().isDeleted(true).build();
 
@@ -50,14 +55,18 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
         assertThat(result.getPassword()).isEqualTo(accountDto.password());
         assertThat(result.getAuthorities().size() == 1).isSameAs(true);
         assertThat(result.getAuthorities().iterator().next().getAuthority())
-            .isEqualTo(activeProfile.profileType().name());
+            .isEqualTo("ROLE_" + activeProfile.profileType().name());
         assertThat(result.isEnabled()).isTrue();
     }
 
     @Test
     @DisplayName("Should return user with no authorities when all profiles are deleted")
     void should_return_user_with_no_authorities_when_all_profiles_are_deleted() {
-        AccountDto accountDto = AccountBuilder.validAccountDto().build();
+        AccountDto accountDto = AccountBuilder.validAccountDto()
+            .isDeleted(false)
+            .isBlocked(false)
+            .build();
+
         ProfileDto deletedProfile = ProfileBuilder.profileDto().isDeleted(true).build();
         List<ProfileDto> profiles = List.of(deletedProfile);
 

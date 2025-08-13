@@ -1,0 +1,19 @@
+{
+  "scenarioName": "NOTIFICATION_EMAIL_SCENARIO",
+  "requiredScenarioState": "INTERNAL_SERVER_ERROR_STATE",
+  "request": {
+    "method": "POST",
+    "url": "/notification/v1/emails",
+    "headers": {
+      "X-User": {
+        "equalTo": "x-user"
+      },
+      "Content-Type": {
+        "contains": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 500
+  }
+}

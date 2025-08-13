@@ -22,5 +22,9 @@ public interface AccountMapper {
     @Mapping(target = "isDeleted", constant = "false")
     AccountEntity toAccountEntity(final AccountDto accountDto);
 
+    @Mapping(target = "creationDate", ignore = true)
+    @Mapping(target = "updatedDate", ignore = true)
+    AccountEntity toAccountEntityForUpdate(final AccountDto accountDto);
+
     AccountDto toAccountDto(final AccountEntity accountEntity);
 }

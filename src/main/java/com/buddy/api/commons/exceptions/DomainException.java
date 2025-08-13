@@ -17,11 +17,8 @@ public class DomainException extends RuntimeException {
                            final String fieldName,
                            final HttpStatus httpStatus,
                            final Throwable cause) {
-        super(message);
+        super(message, cause);
         this.fieldName = fieldName;
         this.httpStatus = httpStatus;
-        if (cause != null) {
-            initCause(cause);
-        }
     }
 }

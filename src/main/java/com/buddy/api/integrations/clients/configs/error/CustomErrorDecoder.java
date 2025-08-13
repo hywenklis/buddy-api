@@ -1,6 +1,6 @@
 package com.buddy.api.integrations.clients.configs.error;
 
-import com.buddy.api.commons.exceptions.ReadBodyIOException;
+import com.buddy.api.commons.exceptions.ReadBodyIoException;
 import com.buddy.api.integrations.clients.configs.exceptions.ClientBadRequestException;
 import com.buddy.api.integrations.clients.configs.exceptions.ClientNotFoundException;
 import com.buddy.api.integrations.clients.configs.exceptions.ClientUnauthorizedException;
@@ -21,7 +21,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
         try {
             responseBody = readErrorBody(response);
         } catch (IOException e) {
-            return new ReadBodyIOException(
+            return new ReadBodyIoException(
                 "Failed to read error response body for method: " + methodKey,
                 "responseBody",
                 e.getCause()

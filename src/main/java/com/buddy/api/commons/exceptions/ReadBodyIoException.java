@@ -1,10 +1,14 @@
 package com.buddy.api.commons.exceptions;
 
+import java.io.Serial;
 import org.springframework.http.HttpStatus;
 
-public class ReadBodyIOException extends DomainException {
+public class ReadBodyIoException extends DomainException {
 
-    public ReadBodyIOException(final String message,
+    @Serial
+    private static final long serialVersionUID = 6262472518759187165L;
+
+    public ReadBodyIoException(final String message,
                                final String field,
                                final Throwable throwable
     ) {
