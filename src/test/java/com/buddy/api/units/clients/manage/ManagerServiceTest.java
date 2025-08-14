@@ -86,40 +86,7 @@ class ManagerServiceTest extends UnitTestAbstract {
                 + " when getting a token, "
                 + "then it should authenticate and cache the new token"
         )
-        void givenCacheIsEmpty_whenGetValidToken_thenAuthenticatesAndCachesToken() {
-            final var authResponse = buildValidAuthResponse();
-            givenCacheIsEmpty();
-            givenAuthenticationSucceeds(authResponse);
-
-            final var resultToken = managerService.getValidToken();
-
-            assertThat(resultToken).isEqualTo(authResponse.token());
-            thenAssertNewTokenWasCached(authResponse.token(), authResponse.expiresIn());
-        }
-
-        @Test
-        @DisplayName(
-            "Given a thread is authenticating, "
-                + "when another thread requests a token, "
-                + "then it should use the value from the first thread"
-        )
-        void givenThreadIsAuthenticating_whenAnotherThreadRequestsToken_thenItUsesCachedValue() {
-            final var newToken = UUID.randomUUID().toString();
-            givenCacheIsPopulatedDuringLock(newToken);
-
-            final var resultToken = managerService.getValidToken();
-
-            assertThat(resultToken).isEqualTo(newToken);
-            thenAssertNoApiCallWasMade();
-        }
-
-        @Test
-        @DisplayName(
-            "Given the cache is empty, "
-                + "when getting a token, "
-                + "then it should call login with correct parameters and cache the result"
-        )
-        void givenCacheIsEmpty_whenGetValidToken_thenCallsLoginWithCorrectParamsAndCachesResult() {
+        void givenCacheIsEmpty_whenGetValidToken_thenCallsLoginAndCachesResult() {
             final var expectedUsername = UUID.randomUUID().toString();
             final var expectedPassword = UUID.randomUUID().toString();
             final var expectedUserAgent = UUID.randomUUID().toString();
@@ -157,6 +124,22 @@ class ManagerServiceTest extends UnitTestAbstract {
             assertThat(capturedRequest.password()).isEqualTo(expectedPassword);
             assertThat(capturedRequest.encryptedPassword()).isFalse();
         }
+
+        @Test
+        @DisplayName(
+            "Given a thread is authenticating,"
+                + " when another thread requests token,"
+                + " then it should use the value from the first thread"
+        )
+        void givenThreadIsAuthenticating_whenAnotherThreadRequestsToken_thenItUsesCachedValue() {
+            final var newToken = UUID.randomUUID().toString();
+            givenCacheIsPopulatedDuringLock(newToken);
+
+            final var resultToken = managerService.getValidToken();
+
+            assertThat(resultToken).isEqualTo(newToken);
+            thenAssertNoApiCallWasMade();
+        }
     }
 
     @Nested
@@ -170,38 +153,13 @@ class ManagerServiceTest extends UnitTestAbstract {
                 + "then it should return null"
         )
         void givenAuthReturnsNullToken_whenGetValidToken_thenReturnsNull() {
-            final var responseWithNullToken = ManagerAuthResponse.builder()
-                .token(null)
-                .expiresIn(3600)
-                .build();
-
-            givenCacheIsEmpty();
-            givenAuthenticationSucceeds(responseWithNullToken);
+            final var responseWithNullToken =
+                ManagerAuthResponse.builder().token(null).expiresIn(3600).build();
+            setupAuthenticationFlow(responseWithNullToken);
 
             final var resultToken = managerService.getValidToken();
 
             assertThat(resultToken).isNull();
-            thenAssertNothingWasCached();
-        }
-
-        @Test
-        @DisplayName(
-            "Given authentication returns an invalid expiration, "
-                + "when getting a token, "
-                + "then it should return the token but not cache it"
-        )
-        void givenAuthReturnsInvalidExpiration_whenGetValidToken_thenReturnsTokenButDoesNotCache() {
-            final var responseWithInvalidExp = ManagerAuthResponse.builder()
-                .token(UUID.randomUUID().toString())
-                .expiresIn(0)
-                .build();
-
-            givenCacheIsEmpty();
-            givenAuthenticationSucceeds(responseWithInvalidExp);
-
-            final var resultToken = managerService.getValidToken();
-
-            assertThat(resultToken).isEqualTo(responseWithInvalidExp.token());
             thenAssertNothingWasCached();
         }
 
@@ -214,13 +172,31 @@ class ManagerServiceTest extends UnitTestAbstract {
         void givenApiExecutorThrowsException_whenGetValidToken_thenPropagatesException() {
             final var expectedException = new RuntimeException("API is down");
             givenCacheIsEmpty();
-
-            when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME),
-                any(Supplier.class))).thenThrow(expectedException);
+            when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME), any(Supplier.class)))
+                .thenThrow(expectedException);
 
             assertThatThrownBy(() -> managerService.getValidToken())
                 .isInstanceOf(RuntimeException.class)
                 .isEqualTo(expectedException);
+        }
+
+        @Test
+        @DisplayName(
+            "Given auth returns an invalid expiration, "
+                + "when getting token, "
+                + "then it should return token but not cache it")
+        void givenAuthReturnsInvalidExpiration_whenGetValidToken_thenReturnsTokenButDoesNotCache() {
+            final var responseWithInvalidExp = ManagerAuthResponse.builder()
+                .token(UUID.randomUUID().toString())
+                .expiresIn(0)
+                .build();
+
+            setupAuthenticationFlow(responseWithInvalidExp);
+
+            final var resultToken = managerService.getValidToken();
+
+            assertThat(resultToken).isEqualTo(responseWithInvalidExp.token());
+            thenAssertNothingWasCached();
         }
     }
 
@@ -238,17 +214,39 @@ class ManagerServiceTest extends UnitTestAbstract {
             .thenReturn(newToken);
     }
 
-    private void givenAuthenticationSucceeds(final ManagerAuthResponse response) {
-        when(managerApiProperties.username()).thenReturn(UUID.randomUUID().toString());
-        when(managerApiProperties.password()).thenReturn(UUID.randomUUID().toString());
-        when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME),
-            any(Supplier.class))).thenReturn(response);
+    private void setupAuthenticationFlow(final ManagerAuthResponse responseToReturn) {
+        final var authRequest = buildValidAuthRequest();
+        givenCacheIsEmpty();
+
+        when(managerApiProperties.username()).thenReturn(authRequest.username());
+        when(managerApiProperties.password()).thenReturn(authRequest.password());
+        when(managerApiProperties.userAgent()).thenReturn(UUID.randomUUID().toString());
+        when(managerApiProperties.ipAddress()).thenReturn(UUID.randomUUID().toString());
+
+        when(managerClient.login(
+            authRequest,
+            managerApiProperties.userAgent(),
+            managerApiProperties.ipAddress())
+        ).thenReturn(responseToReturn);
+
+        when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME), any(Supplier.class)))
+            .thenAnswer(invocation ->
+                invocation.<Supplier<ManagerAuthResponse>>getArgument(1).get()
+            );
     }
 
     private ManagerAuthResponse buildValidAuthResponse() {
         return ManagerAuthResponse.builder()
             .token(UUID.randomUUID().toString())
             .expiresIn(3600000)
+            .build();
+    }
+
+    private ManagerAuthRequest buildValidAuthRequest() {
+        return ManagerAuthRequest.builder()
+            .username(UUID.randomUUID().toString())
+            .password(UUID.randomUUID().toString())
+            .encryptedPassword(false)
             .build();
     }
 
@@ -262,8 +260,7 @@ class ManagerServiceTest extends UnitTestAbstract {
     }
 
     private void thenAssertNewTokenWasCached(final String expectedToken,
-                                             final long expectedExpiration
-    ) {
+                                             final long expectedExpiration) {
         ArgumentCaptor<Long> expirationCaptor = ArgumentCaptor.forClass(Long.class);
         verify(valueOperations, times(1)).set(
             eq(CACHE_KEY),
