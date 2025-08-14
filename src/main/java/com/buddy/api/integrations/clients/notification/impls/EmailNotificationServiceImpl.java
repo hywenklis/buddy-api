@@ -42,7 +42,7 @@ public class EmailNotificationServiceImpl implements EmailNotificationService {
             .build();
 
         final String integrationName = "Notification API - Send Email";
-        apiClientExecutor.executeClientCall(integrationName, () -> {
+        apiClientExecutor.execute(integrationName, () -> {
             notificationClient.sendEmail(properties.user(), token, request);
             return null;
         });

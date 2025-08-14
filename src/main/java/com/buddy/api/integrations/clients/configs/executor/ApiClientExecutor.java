@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApiClientExecutor {
 
-    public <T> T executeClientCall(final String integrationName, final Supplier<T> action) {
+    public <T> T execute(final String integrationName, final Supplier<T> action) {
         try {
             return action.get();
         } catch (final ClientUnauthorizedException e) {

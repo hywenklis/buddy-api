@@ -14,6 +14,8 @@ import com.buddy.api.units.UnitTestAbstract;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -81,5 +83,27 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
         assertThat(result.getUsername()).isEqualTo(accountDto.email().value());
         assertThat(result.getPassword()).isEqualTo(accountDto.password());
         assertThat(result.getAuthorities().size()).isZero();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "true, false",
+        "false, true",
+        "true, true"
+    })
+    @DisplayName("then it should return disabled UserDetails if account is deleted or blocked")
+    void thenShouldReturnDisabledUserDetails(final Boolean isDeleted, final Boolean isBlocked) {
+        final var accountDto = AccountBuilder.validAccountDto()
+            .isDeleted(isDeleted)
+            .isBlocked(isBlocked)
+            .build();
+
+        when(findAccount.findByEmail(accountDto.email().value())).thenReturn(accountDto);
+        when(findProfile.findByAccountEmail(accountDto.email().value())).thenReturn(List.of());
+
+        final var result = customUserDetailsService.loadUserByUsername(accountDto.email().value());
+
+        assertThat(result).isNotNull();
+        assertThat(result.isEnabled()).isFalse();
     }
 }

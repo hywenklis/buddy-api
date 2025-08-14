@@ -49,7 +49,7 @@ public class ManagerService {
 
         final String integrationName = "Manager API - Authentication";
 
-        ManagerAuthResponse response = apiClientExecutor.executeClientCall(integrationName, () ->
+        ManagerAuthResponse response = apiClientExecutor.execute(integrationName, () ->
             managerClient.login(
                 request,
                 managerApiProperties.userAgent(),

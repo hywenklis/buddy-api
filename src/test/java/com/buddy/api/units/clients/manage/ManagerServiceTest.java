@@ -104,7 +104,7 @@ class ManagerServiceTest extends UnitTestAbstract {
                 eq(expectedIpAddress)))
                 .thenReturn(authResponse);
 
-            when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME), any(Supplier.class)))
+            when(apiClientExecutor.execute(eq(INTEGRATION_NAME), any(Supplier.class)))
                 .thenAnswer(invocation -> {
                     Supplier<ManagerAuthResponse> supplier = invocation.getArgument(1);
                     return supplier.get();
@@ -172,7 +172,7 @@ class ManagerServiceTest extends UnitTestAbstract {
         void givenApiExecutorThrowsException_whenGetValidToken_thenPropagatesException() {
             final var expectedException = new RuntimeException("API is down");
             givenCacheIsEmpty();
-            when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME), any(Supplier.class)))
+            when(apiClientExecutor.execute(eq(INTEGRATION_NAME), any(Supplier.class)))
                 .thenThrow(expectedException);
 
             assertThatThrownBy(() -> managerService.getValidToken())
@@ -229,7 +229,7 @@ class ManagerServiceTest extends UnitTestAbstract {
             managerApiProperties.ipAddress())
         ).thenReturn(responseToReturn);
 
-        when(apiClientExecutor.executeClientCall(eq(INTEGRATION_NAME), any(Supplier.class)))
+        when(apiClientExecutor.execute(eq(INTEGRATION_NAME), any(Supplier.class)))
             .thenAnswer(invocation ->
                 invocation.<Supplier<ManagerAuthResponse>>getArgument(1).get()
             );
@@ -251,7 +251,7 @@ class ManagerServiceTest extends UnitTestAbstract {
     }
 
     private void thenAssertNoApiCallWasMade() {
-        verify(apiClientExecutor, never()).executeClientCall(anyString(), any(Supplier.class));
+        verify(apiClientExecutor, never()).execute(anyString(), any(Supplier.class));
     }
 
     private void thenAssertNothingWasCached() {
