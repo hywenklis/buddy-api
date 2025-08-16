@@ -17,9 +17,10 @@ import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
+import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.impls.EmailVerificationServiceImpl;
 import com.buddy.api.domains.account.services.UpdateAccount;
-import com.buddy.api.integrations.clients.notification.EmailNotificationService;
+import com.buddy.api.integrations.clients.manager.ManagerService;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,16 +38,25 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
 
     @Mock
     private UpdateAccount updateAccount;
+
     @Mock
-    private EmailNotificationService emailNotificationService;
+    private ManagerService managerService;
+
+    @Mock
+    private EmailTemplateLoaderService emailTemplateLoader;
+
     @Mock
     private CacheManager cacheManager;
+
     @Mock
     private EmailProperties emailProperties;
+
     @Mock
     private EmailProperties.Templates templateProperties;
+
     @Mock
     private Cache verificationTokenCache;
+
     @Mock
     private Cache rateLimitCache;
 
@@ -83,9 +93,12 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should send verification email for a valid account")
         void requestEmail_whenAccountIsValid_shouldSendVerificationEmail() {
+            final String fakeTemplate = "Click here: %s";
+            final String fakeTemplatePath = "templates/fake-template.html";
             setupEmailProperties();
             when(rateLimitCache.get(userEmail)).thenReturn(null);
-
+            when(templateProperties.templatePath()).thenReturn(fakeTemplatePath);
+            when(emailTemplateLoader.load(fakeTemplatePath)).thenReturn(fakeTemplate);
             emailVerificationService.requestEmail(unverifiedAccount);
 
             verify(verificationTokenCache).put(tokenCaptor.capture(), eq(userEmail));
@@ -93,13 +106,16 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
             assertThat(generatedToken).isNotNull();
 
             verify(rateLimitCache, times(1)).put(userEmail, "rate-limited");
-            verify(emailNotificationService, times(1)).sendEmail(
+
+            verify(managerService, times(1)).sendEmailNotification(
                 eq(List.of(userEmail)),
+                eq("buddy.contato.app@gmail.com"),
                 eq("Confirm your email"),
                 emailBodyCaptor.capture()
             );
-            assertThat(emailBodyCaptor.getValue()).contains(
-                "http://buddy.app/confirm?token=" + generatedToken);
+
+            String expectedUrl = "http://buddy.app/confirm?token=" + generatedToken;
+            assertThat(emailBodyCaptor.getValue()).isEqualTo("Click here: " + expectedUrl);
         }
 
         @Test
@@ -109,7 +125,7 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
                 .isInstanceOf(AccountAlreadyVerifiedException.class)
                 .hasMessage("This account is already verified.");
 
-            verifyNoInteractions(verificationTokenCache, rateLimitCache, emailNotificationService);
+            verifyNoInteractions(verificationTokenCache, rateLimitCache, managerService);
         }
 
         @Test
@@ -121,7 +137,7 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
                 .isInstanceOf(TooManyRequestsException.class)
                 .hasMessageContaining("You have requested a verification email recently.");
 
-            verifyNoInteractions(verificationTokenCache, emailNotificationService);
+            verifyNoInteractions(verificationTokenCache, managerService);
         }
     }
 
@@ -204,7 +220,8 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
     private void setupEmailProperties() {
         when(emailProperties.templates()).thenReturn(templateProperties);
         when(templateProperties.url()).thenReturn("http://buddy.app/confirm?token=");
+        when(templateProperties.from()).thenReturn("buddy.contato.app@gmail.com");
         when(templateProperties.subject()).thenReturn("Confirm your email");
-        when(templateProperties.verification()).thenReturn("Click here: %s");
+        when(templateProperties.templatePath()).thenReturn("templates/fake-template.html");
     }
 }

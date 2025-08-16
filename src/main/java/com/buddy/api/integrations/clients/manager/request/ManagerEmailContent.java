@@ -1,10 +1,10 @@
-package com.buddy.api.integrations.clients.notification.request;
+package com.buddy.api.integrations.clients.manager.request;
 
 import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record EmailNotificationRequest(
+public record ManagerEmailContent(
     List<String> recipients,
     String emailFrom,
     String subject,
@@ -12,4 +12,4 @@ public record EmailNotificationRequest(
     Boolean isHtml,
     List<String> attachments,
     String senderEmailNotification
-) {}
+) { }

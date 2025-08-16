@@ -35,7 +35,7 @@ import org.springframework.data.redis.core.ValueOperations;
 class ManagerServiceTest extends UnitTestAbstract {
 
     private static final String CACHE_KEY = "manager-api:token";
-    private static final String INTEGRATION_NAME = "Manager API - Authentication";
+    private static final String INTEGRATION_NAME = "manager-api";
 
     @Mock
     private ManagerClient managerClient;

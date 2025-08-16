@@ -47,6 +47,8 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
         rateLimitCache = cacheManager.getCache("emailVerificationRateLimit");
         assertThat(verificationTokenCache).isNotNull();
         assertThat(rateLimitCache).isNotNull();
+        WireMock.resetAllScenarios();
+        WireMock.resetAllRequests();
     }
 
     @Nested
@@ -63,7 +65,7 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
                 .andExpect(status().isOk());
 
             verify(1, postRequestedFor(urlEqualTo(MANAGER_API_URL)));
-            verify(1, postRequestedFor(urlEqualTo(NOTIFICATION_API_URL)));
+            verify(1, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
 
             String token = getTokenFromCacheByEmail(testUser.getEmail().value());
             assertThat(token).isNotNull();
@@ -83,7 +85,7 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
             ).forField("account.status", "This account is already verified.");
 
             verify(0, postRequestedFor(urlEqualTo(MANAGER_API_URL)));
-            verify(0, postRequestedFor(urlEqualTo(NOTIFICATION_API_URL)));
+            verify(0, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
             assertThat(verificationTokenCache.get(testUser.getEmail().value())).isNull();
         }
 
@@ -104,7 +106,7 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
                     + "Please wait a minute before trying again.");
 
             verify(1, postRequestedFor(urlEqualTo(MANAGER_API_URL)));
-            verify(1, postRequestedFor(urlEqualTo(NOTIFICATION_API_URL)));
+            verify(1, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
         }
 
         @Test
@@ -116,27 +118,32 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
                 mockMvc.perform(post(VERIFICATION_URL + PATH_EMAIL_VERIFICATION_REQUEST)
                     .header(HttpHeaders.AUTHORIZATION, BEARER + userJwt))
             ).forField("integration.error",
-                "Error in external service: Manager API - Authentication");
+                "Error in external service: manager-api");
 
             verify(1, postRequestedFor(urlEqualTo(MANAGER_API_URL)));
-            verify(0, postRequestedFor(urlEqualTo(NOTIFICATION_API_URL)));
+            verify(0, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
             assertThat(verificationTokenCache.get(testUser.getEmail().value())).isNull();
         }
 
         @Test
-        @DisplayName("Should return 500 if Notification API fails")
-        void requestVerification_whenNotificationFails_shouldReturn500() throws Exception {
+        @DisplayName("Should return 500 if Manager API notification fails")
+        void requestVerification_whenManagerApiNotificationFails_shouldReturn500()
+            throws Exception {
+
             WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
-            WireMock.setScenarioState("NOTIFICATION_EMAIL_SCENARIO", "INTERNAL_SERVER_ERROR_STATE");
+            WireMock.setScenarioState(
+                "MANAGER_NOTIFICATION_EMAIL_SCENARIO",
+                "INTERNAL_SERVER_ERROR_STATE"
+            );
 
             expectInternalServerErrorFrom(
                 mockMvc.perform(post(VERIFICATION_URL + PATH_EMAIL_VERIFICATION_REQUEST)
                     .header(HttpHeaders.AUTHORIZATION, BEARER + userJwt))
             ).forField("integration.error",
-                "Error in external service: Notification API - Send Email");
+                "Error in external service: manager-api");
 
             verify(1, postRequestedFor(urlEqualTo(MANAGER_API_URL)));
-            verify(1, postRequestedFor(urlEqualTo(NOTIFICATION_API_URL)));
+            verify(1, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
         }
     }
 
@@ -236,7 +243,7 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
 
     private void setupSuccessScenario() {
         WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
-        WireMock.setScenarioState("NOTIFICATION_EMAIL_SCENARIO", "SUCCESS_STATE");
+        WireMock.setScenarioState("MANAGER_NOTIFICATION_EMAIL_SCENARIO", "SUCCESS_STATE");
     }
 
     private String getTokenFromCacheByEmail(final String email) {

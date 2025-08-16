@@ -9,10 +9,10 @@
         "equalTo": "application/json"
       },
       "Ip-Address": {
-        "equalTo": "Ajfakjd=="
+        "equalTo": "HD5cMkRuMQ=="
       },
       "User-Agent": {
-        "equalTo": "user-agent"
+        "equalTo": "buddy"
       }
     }
   },

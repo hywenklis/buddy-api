@@ -6,9 +6,10 @@ import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
+import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.UpdateAccount;
-import com.buddy.api.integrations.clients.notification.EmailNotificationService;
+import com.buddy.api.integrations.clients.manager.ManagerService;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
@@ -28,9 +29,10 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
 
     private final UpdateAccount updateAccount;
-    private final EmailNotificationService emailNotificationService;
+    private final ManagerService managerService;
     private final CacheManager cacheManager;
     private final EmailProperties emailProperties;
+    private final EmailTemplateLoaderService emailTemplateLoader;
 
     private Cache verificationTokenCache;
     private Cache rateLimitCache;
@@ -66,10 +68,14 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         rateLimitCache.put(userEmail, "rate-limited");
 
         final String verificationUrl = emailProperties.templates().url() + token;
-        final String subject = emailProperties.templates().subject();
         final String htmlBody = buildConfirmationEmailBody(verificationUrl);
 
-        emailNotificationService.sendEmail(List.of(userEmail), subject, htmlBody);
+        managerService.sendEmailNotification(
+            List.of(userEmail),
+            emailProperties.templates().from(),
+            emailProperties.templates().subject(),
+            htmlBody
+        );
 
         log.info("Verification email request processed for: {}", userEmail);
     }
@@ -118,6 +124,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     private String buildConfirmationEmailBody(final String verificationUrl) {
-        return emailProperties.templates().verification().replace("%s", verificationUrl);
+        String template = emailTemplateLoader.load(emailProperties.templates().templatePath());
+        return template.replace("%s", verificationUrl);
     }
 }

@@ -13,5 +13,6 @@ public record ManagerApiProperties(
     @NotBlank(message = "userAgent is required") String userAgent,
     @NotBlank(message = "ipAddress is required") String ipAddress,
     @NotBlank(message = "username is required") String username,
-    @NotBlank(message = "password is required") String password
+    @NotBlank(message = "password is required") String password,
+    @NotBlank(message = "appId is required") String appId
 ) {}

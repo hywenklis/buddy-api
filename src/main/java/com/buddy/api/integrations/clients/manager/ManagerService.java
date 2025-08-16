@@ -3,7 +3,10 @@ package com.buddy.api.integrations.clients.manager;
 import com.buddy.api.commons.configurations.properties.ManagerApiProperties;
 import com.buddy.api.integrations.clients.configs.executor.ApiClientExecutor;
 import com.buddy.api.integrations.clients.manager.request.ManagerAuthRequest;
+import com.buddy.api.integrations.clients.manager.request.ManagerEmailContent;
+import com.buddy.api.integrations.clients.manager.request.ManagerGatewayRequest;
 import com.buddy.api.integrations.clients.manager.response.ManagerAuthResponse;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ManagerService {
     private static final String MANAGER_API_TOKEN_CACHE_KEY = "manager-api:token";
+    private static final String INTEGRATION_NAME = "manager-api";
 
     private final ManagerClient managerClient;
     private final ManagerApiProperties managerApiProperties;
@@ -34,6 +38,41 @@ public class ManagerService {
         }
     }
 
+    public void sendEmailNotification(final List<String> recipients,
+                                      final String from,
+                                      final String subject,
+                                      final String body
+    ) {
+        log.info("Preparing to send email notification to Manager API - Gateway");
+        final String token = getValidToken();
+
+        final var emailContent = new ManagerEmailContent(
+            recipients,
+            from,
+            subject,
+            body,
+            true,
+            List.of(),
+            "buddy"
+        );
+
+        final var gatewayRequest = new ManagerGatewayRequest<>(
+            managerApiProperties.appId(),
+            "/api/v1/emails",
+            "POST",
+            emailContent
+        );
+
+        apiClientExecutor.execute(INTEGRATION_NAME, () ->
+            managerClient.sendNotification(
+                "Bearer " + token,
+                gatewayRequest
+            )
+        );
+
+        log.info("Email dispatch instruction sent successfuly to recipients: {}", recipients);
+    }
+
     private Optional<String> findTokenInCache() {
         return Optional.ofNullable(redisTemplate.opsForValue().get(MANAGER_API_TOKEN_CACHE_KEY));
     }
@@ -47,9 +86,7 @@ public class ManagerService {
             false
         );
 
-        final String integrationName = "Manager API - Authentication";
-
-        ManagerAuthResponse response = apiClientExecutor.execute(integrationName, () ->
+        ManagerAuthResponse response = apiClientExecutor.execute(INTEGRATION_NAME, () ->
             managerClient.login(
                 request,
                 managerApiProperties.userAgent(),

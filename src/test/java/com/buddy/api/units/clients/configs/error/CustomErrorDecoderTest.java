@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.commons.exceptions.ReadBodyIoException;
+import com.buddy.api.commons.exceptions.ReadyIoException;
 import com.buddy.api.integrations.clients.configs.error.CustomErrorDecoder;
 import com.buddy.api.integrations.clients.configs.exceptions.ClientBadRequestException;
 import com.buddy.api.integrations.clients.configs.exceptions.ClientNotFoundException;
@@ -96,7 +96,7 @@ class CustomErrorDecoderTest {
         final Exception exception = errorDecoder.decode(methodKey, response);
 
         assertThat(exception)
-            .isInstanceOf(ReadBodyIoException.class)
+            .isInstanceOf(ReadyIoException.class)
             .hasMessageContaining("Failed to read error response body");
     }
 

@@ -88,7 +88,7 @@ public abstract class IntegrationTestAbstract {
     protected static final String ORIGIN = "Origin";
     protected static final String CREDENTIALS_NAME = "credentials";
     protected static final String VERIFICATION_URL = "/v1/accounts/verifications";
-    protected static final String NOTIFICATION_API_URL = "/notification/v1/emails";
+    protected static final String MANAGER_NOTIFICATION_API_URL = "/manager/v1/gateway";
     protected static final String MANAGER_API_URL = "/manager/v1/auth/login";
     protected static final String PATH_EMAIL_VERIFICATION_REQUEST = "/request";
     protected static final String PATH_EMAIL_VERIFICATION_CONFIRM = "/confirm";

@@ -2,6 +2,7 @@ package com.buddy.api.integrations.clients.manager;
 
 import com.buddy.api.integrations.clients.configs.FeignConfig;
 import com.buddy.api.integrations.clients.manager.request.ManagerAuthRequest;
+import com.buddy.api.integrations.clients.manager.request.ManagerGatewayRequest;
 import com.buddy.api.integrations.clients.manager.response.ManagerAuthResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,5 +20,11 @@ public interface ManagerClient {
         @RequestBody ManagerAuthRequest request,
         @RequestHeader("User-Agent") String userAgent,
         @RequestHeader("Ip-Address") String ipAddress
+    );
+
+    @PostMapping("/v1/gateway")
+    Void sendNotification(
+        @RequestHeader("Authorization") final String bearerToken,
+        @RequestBody final ManagerGatewayRequest<?> request
     );
 }

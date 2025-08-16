@@ -14,8 +14,9 @@ public record EmailProperties(
     @NotNull(message = "templates is required") @Valid Templates templates
 ) {
     public record Templates(
-        @NotBlank(message = "verification is required") String verification,
-        @NotBlank(message = "url is required") String url,
-        @NotBlank(message = "subject is required") String subject
+        @NotBlank(message = "from is required") String from,
+        @NotBlank(message = "subject is required") String subject,
+        @NotBlank(message = "templatePath is required") String templatePath,
+        @NotBlank(message = "url is required") String url
     ) {}
 }
