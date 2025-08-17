@@ -24,7 +24,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
             return new ReadyIoException(
                 "Failed to read error response body for method: " + methodKey,
                 "responseBody",
-                e.getCause()
+                e
             );
         }
 

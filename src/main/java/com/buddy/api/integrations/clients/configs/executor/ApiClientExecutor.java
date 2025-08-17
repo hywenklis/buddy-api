@@ -22,7 +22,7 @@ public class ApiClientExecutor {
             throw new ManagerApiException(
                 "Authentication failed for external service: " + integrationName,
                 "integration.credentials",
-                HttpStatus.valueOf(e.getStatus()), e.getCause()
+                HttpStatus.valueOf(e.getStatus()), e
             );
 
         } catch (final ClientBadRequestException e) {
