@@ -237,7 +237,7 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
                     .header(HttpHeaders.AUTHORIZATION, BEARER + userJwt)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))))
-                .forField("token", "token must be 36 characters long");
+                .forField("token", "token must be a valid UUID format");
         }
     }
 

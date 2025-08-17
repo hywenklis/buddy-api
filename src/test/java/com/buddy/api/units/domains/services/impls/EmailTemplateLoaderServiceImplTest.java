@@ -34,6 +34,7 @@ class EmailTemplateLoaderServiceImplTest extends UnitTestAbstract {
         final String expectedContent = "<html><body><h1>test template buddy 🐾</h1></body></html>";
 
         when(resourceLoader.getResource("classpath:" + templatePath)).thenReturn(resource);
+        when(resource.isReadable()).thenReturn(true);
         when(resource.getContentAsString(StandardCharsets.UTF_8)).thenReturn(expectedContent);
 
         final String actualContent = emailTemplateLoaderService.load(templatePath);
@@ -47,11 +48,25 @@ class EmailTemplateLoaderServiceImplTest extends UnitTestAbstract {
         final String nonExistentPath = "templates/non-existent-template.html";
 
         when(resourceLoader.getResource("classpath:" + nonExistentPath)).thenReturn(resource);
+        when(resource.isReadable()).thenReturn(true);
         when(resource.getContentAsString(StandardCharsets.UTF_8))
             .thenThrow(new IOException("Disk read error"));
 
         assertThatThrownBy(() -> emailTemplateLoaderService.load(nonExistentPath))
             .isInstanceOf(ReadyIoException.class)
             .hasMessageContaining("Failed to load email template.");
+    }
+
+    @Test
+    @DisplayName("Should throw ReadyIoException when resource is not readable")
+    void load_whenResourceIsNotReadable_shouldThrowReadyIoException() {
+        final String unreadablePath = "templates/unreadable-template.html";
+
+        when(resourceLoader.getResource("classpath:" + unreadablePath)).thenReturn(resource);
+        when(resource.isReadable()).thenReturn(false);
+
+        assertThatThrownBy(() -> emailTemplateLoaderService.load(unreadablePath))
+            .isInstanceOf(ReadyIoException.class)
+            .hasMessageContaining("Email template not found or not readable");
     }
 }

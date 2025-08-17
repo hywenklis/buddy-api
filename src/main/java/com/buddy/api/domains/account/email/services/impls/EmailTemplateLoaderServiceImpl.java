@@ -21,7 +21,15 @@ public class EmailTemplateLoaderServiceImpl implements EmailTemplateLoaderServic
     public String load(final String templatePath) {
         final Resource resource = resourceLoader.getResource("classpath:" + templatePath);
         try {
-            return resource.getContentAsString(StandardCharsets.UTF_8);
+            if (resource.isReadable()) {
+                return resource.getContentAsString(StandardCharsets.UTF_8);
+            }
+
+            throw new ReadyIoException(
+                "Email template not found or not readable.",
+                templatePath,
+                null
+            );
         } catch (IOException e) {
             log.error("Failed to load email template from path: {}", templatePath, e);
             throw new ReadyIoException(

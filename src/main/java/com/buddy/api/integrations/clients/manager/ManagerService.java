@@ -25,15 +25,16 @@ public class ManagerService {
     private final ManagerApiProperties managerApiProperties;
     private final ApiClientExecutor apiClientExecutor;
     private final RedisTemplate<String, String> redisTemplate;
+    private final Object tokenLock = new Object();
 
     public String getValidToken() {
-        Optional<String> cachedToken = findTokenInCache();
+        final Optional<String> cachedToken = findTokenInCache();
         if (cachedToken.isPresent()) {
             log.debug("Using cached Manager API token from Redis.");
             return cachedToken.get();
         }
 
-        synchronized (this) {
+        synchronized (tokenLock) {
             return findTokenInCache().orElseGet(this::authenticateAndCacheToken);
         }
     }

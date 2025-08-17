@@ -2,12 +2,12 @@
 pr_commands = [
     "/review",
     "/improve",
+    "/update_changelog",
     "/update_changelog --pr_update_changelog.push_changelog_changes=true"
 ]
 
 push_commands = [
-    "/review",
-    "/improve",
+    "/update_changelog",
     "/update_changelog --pr_update_changelog.push_changelog_changes=true"
 ]
 

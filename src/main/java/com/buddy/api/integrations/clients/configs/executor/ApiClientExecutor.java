@@ -31,7 +31,7 @@ public class ApiClientExecutor {
             throw new ManagerApiException(
                 "Invalid request for external service: " + integrationName,
                 "integration.request",
-                HttpStatus.valueOf(e.getStatus()), e.getCause()
+                HttpStatus.valueOf(e.getStatus()), e
             );
 
         } catch (final GenericClientException e) {
@@ -40,7 +40,7 @@ public class ApiClientExecutor {
             throw new ManagerApiException(
                 "Error in external service: " + integrationName,
                 "integration.error",
-                HttpStatus.valueOf(e.getStatus()), e.getCause()
+                HttpStatus.valueOf(e.getStatus()), e
             );
 
         } catch (final Exception e) {
@@ -48,7 +48,7 @@ public class ApiClientExecutor {
             throw new ManagerApiException(
                 "Unexpected error while communicating with external service: " + integrationName,
                 "integration.unexpected",
-                HttpStatus.INTERNAL_SERVER_ERROR, e.getCause()
+                HttpStatus.INTERNAL_SERVER_ERROR, e
             );
         }
     }
