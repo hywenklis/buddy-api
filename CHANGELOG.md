@@ -1,8 +1,3 @@
-### Fixed
-- Minor test and configuration adjustments for email verification and external integration
-
-
-
 ## 2025-08-17 [*](https://github.com/hywenklis/buddy-api/pull/188)
 
 ### Added
@@ -15,3 +10,4 @@
 
 ### Fixed
 - Standardized domain exceptions to preserve original causes
+- Minor test and configuration adjustments for email verification and external integration
