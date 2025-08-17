@@ -1,3 +1,5 @@
+
+
 ## 2025-08-17 [*](https://github.com/hywenklis/buddy-api/pull/188)
 
 ### Added
