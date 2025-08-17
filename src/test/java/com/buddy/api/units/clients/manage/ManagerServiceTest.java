@@ -154,7 +154,7 @@ class ManagerServiceTest extends UnitTestAbstract {
         )
         void givenAuthReturnsNullToken_whenGetValidToken_thenReturnsNull() {
             final var responseWithNullToken =
-                ManagerAuthResponse.builder().token(null).expiresIn(3600).build();
+                ManagerAuthResponse.builder().token(null).expiresIn(3600L).build();
             setupAuthenticationFlow(responseWithNullToken);
 
             final var resultToken = managerService.getValidToken();
@@ -188,7 +188,7 @@ class ManagerServiceTest extends UnitTestAbstract {
         void givenAuthReturnsInvalidExpiration_whenGetValidToken_thenReturnsTokenButDoesNotCache() {
             final var responseWithInvalidExp = ManagerAuthResponse.builder()
                 .token(UUID.randomUUID().toString())
-                .expiresIn(0)
+                .expiresIn(0L)
                 .build();
 
             setupAuthenticationFlow(responseWithInvalidExp);
@@ -238,7 +238,7 @@ class ManagerServiceTest extends UnitTestAbstract {
     private ManagerAuthResponse buildValidAuthResponse() {
         return ManagerAuthResponse.builder()
             .token(UUID.randomUUID().toString())
-            .expiresIn(3600000)
+            .expiresIn(3600000L)
             .build();
     }
 

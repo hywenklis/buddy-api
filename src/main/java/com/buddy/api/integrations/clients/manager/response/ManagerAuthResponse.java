@@ -5,6 +5,6 @@ import lombok.Builder;
 @Builder
 public record ManagerAuthResponse(
     String token,
-    Integer expiresIn
+    Long expiresIn
 ) { }
 
