@@ -27,7 +27,7 @@ public class EmailTemplateLoaderServiceImpl implements EmailTemplateLoaderServic
             throw new ReadyIoException(
                 "Failed to load email template.",
                 "email template",
-                e.getCause()
+                e
             );
         }
     }

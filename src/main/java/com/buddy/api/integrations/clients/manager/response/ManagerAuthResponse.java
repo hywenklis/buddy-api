@@ -7,4 +7,3 @@ public record ManagerAuthResponse(
     String token,
     Long expiresIn
 ) { }
-
