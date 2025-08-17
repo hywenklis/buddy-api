@@ -11,6 +11,6 @@ public class EmailAlreadyRegisteredException extends DomainException {
     private static final long serialVersionUID = 4067260310533491061L;
 
     public EmailAlreadyRegisteredException(final String message, final String fieldName) {
-        super(message, fieldName, HttpStatus.BAD_REQUEST);
+        super(message, fieldName, HttpStatus.BAD_REQUEST, null);
     }
 }

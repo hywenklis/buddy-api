@@ -11,6 +11,6 @@ public class ProfileNameAlreadyRegisteredException extends DomainException {
     private static final long serialVersionUID = 1157465843980513596L;
 
     public ProfileNameAlreadyRegisteredException(final String message) {
-        super(message, "name", HttpStatus.BAD_REQUEST);
+        super(message, "name", HttpStatus.BAD_REQUEST, null);
     }
 }

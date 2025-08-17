@@ -1,7 +1,7 @@
 services:
   postgres:
-    image: "postgres:latest"
-    container_name: "buddy"
+    image: postgres:latest
+    container_name: buddy-postgres
     environment:
       - "POSTGRES_DB=buddydb"
       - "POSTGRES_PASSWORD=buddypassword"
@@ -10,7 +10,25 @@ services:
       - "5432:5432"
     volumes:
       - buddy-pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:latest
+    container_name: buddy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: buddy-wiremock
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./config/wiremock/mappings:/home/wiremock/mappings
+    entrypoint: [ "/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose" ]
 
 volumes:
   buddy-pgdata:
+    driver: local
+  redis-data:
     driver: local

@@ -1,0 +1,28 @@
+[github_app]
+pr_commands = [
+    "/review",
+    "/improve",
+    "/update_changelog --pr_update_changelog.push_changelog_changes=true"
+]
+
+push_commands = [
+    "/review",
+    "/improve",
+    "/update_changelog --pr_update_changelog.push_changelog_changes=true"
+]
+
+[config]
+enable_auto_best_practices = true
+handle_push_trigger = true
+
+[pr_description]
+extra_instructions = "Responda em português do Brasil, mas mantenha o código no idioma padrão inglês"
+
+[pr_reviewer]
+extra_instructions = "Responda em português do Brasil, mas mantenha o código no idioma padrão inglês"
+
+[pr_code_suggestions]
+extra_instructions = "Responda em português do Brasil, mas mantenha o código no idioma padrão inglês"
+
+[pr_ask]
+extra_instructions = "Responda em português do Brasil, mas mantenha o código no idioma padrão inglês"

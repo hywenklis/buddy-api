@@ -1,0 +1,16 @@
+{
+  "scenarioName": "MANAGER_NOTIFICATION_EMAIL_SCENARIO",
+  "requiredScenarioState": "INTERNAL_SERVER_ERROR_STATE",
+  "request": {
+    "method": "POST",
+    "url": "/manager/v1/gateway",
+    "headers": {
+      "Content-Type": {
+        "equalTo": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 500
+  }
+}

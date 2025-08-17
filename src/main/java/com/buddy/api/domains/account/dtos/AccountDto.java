@@ -13,5 +13,6 @@ public record AccountDto(UUID accountId,
                          Boolean termsOfUserConsent,
                          Boolean isDeleted,
                          Boolean isBlocked,
+                         Boolean isVerified,
                          LocalDateTime lastLogin) {
 }

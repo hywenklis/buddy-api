@@ -23,7 +23,7 @@ public class CreateAccountImpl implements CreateAccount {
     public void create(final AccountDto accountDto) {
         validateEmailIsNotRegistered(accountDto.email());
 
-        var accountEntity = accountMapper.toAccountEntity(accountDto);
+        final var accountEntity = accountMapper.toAccountEntity(accountDto);
 
         accountEntity.setPassword(passwordEncoder.encode(accountDto.password()));
         accountRepository.save(accountEntity);

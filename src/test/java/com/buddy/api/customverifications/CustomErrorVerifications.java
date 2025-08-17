@@ -37,10 +37,26 @@ public class CustomErrorVerifications {
         return expectErrorStatusFrom(result, HttpStatus.BAD_REQUEST);
     }
 
+    public static CustomErrorVerifications expectConflictFrom(final ResultActions result)
+        throws Exception {
+        return expectErrorStatusFrom(result, HttpStatus.CONFLICT);
+    }
+
     public static CustomErrorVerifications expectNotFoundFrom(final ResultActions result)
         throws Exception {
         return expectErrorStatusFrom(result, HttpStatus.NOT_FOUND);
     }
+
+    public static CustomErrorVerifications expectManyRequestFrom(final ResultActions result)
+        throws Exception {
+        return expectErrorStatusFrom(result, HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    public static CustomErrorVerifications expectInternalServerErrorFrom(final ResultActions result)
+        throws Exception {
+        return expectErrorStatusFrom(result, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
     public void forField(final String field, final String message) throws Exception {
         resultActions.andExpectAll(

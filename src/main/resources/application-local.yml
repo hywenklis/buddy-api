@@ -16,6 +16,14 @@ spring:
     allow-bean-definition-overriding: true
   lifecycle:
     timeout-per-shutdown-phase: 5s
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000
+      database: 0
   jpa:
     show-sql: true
     generate-ddl: false
@@ -78,3 +86,21 @@ auth:
       code: "123e4567-e89b-12d3-a456-426614174000" # changes in production environment
     - type: "TOOLS"
       code: "6ba7b810-9dad-11d1-80b4-00c04fd430c8" # changes in production environment
+
+manager:
+  api:
+    base-url: "http://localhost:8089"
+    content-type: "application/json"
+    user-agent: "buddy"
+    ip-address: "HD5cMkRuMQ=="
+    username: "hywenklis@email.com"
+    password: "12345678"
+    app-id: "5a5192be-c4bf-4ebb-924d-731ba927a0fd"
+
+buddy:
+  email:
+    templates:
+      from: "buddy.contato.app@gmail.com"
+      subject: "Confirme seu e-mail no Buddy"
+      template-path: "templates/email-verification.html"
+      url: https://buddyclient.vercel.app/confirm-email?token=

@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.RandomStringUtils.secure;
 
 import com.buddy.api.utils.RandomEmailUtils;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -36,4 +37,7 @@ public abstract class UnitTestAbstract {
         SHELTER.name()
     );
     protected static final String ORIGIN_NAME = "Origin";
+    protected static final String VERIFICATION_TOKEN_CACHE_NAME = "emailVerificationToken";
+    protected static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
+    protected static final String TOKEN = UUID.randomUUID().toString();
 }

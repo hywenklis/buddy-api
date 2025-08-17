@@ -9,6 +9,6 @@ public class InvalidClientOriginException extends DomainException {
     private static final long serialVersionUID = -8514329596334599650L;
 
     public InvalidClientOriginException(final String message) {
-        super(message, "origin", HttpStatus.BAD_REQUEST);
+        super(message, "origin", HttpStatus.BAD_REQUEST, null);
     }
 }

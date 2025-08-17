@@ -1,0 +1,22 @@
+{
+  "scenarioName": "MANAGER_AUTH_SCENARIO",
+  "requiredScenarioState": "INTERNAL_SERVER_ERROR_STATE",
+  "request": {
+    "method": "POST",
+    "url": "/manager/v1/auth/login",
+    "headers": {
+      "Content-Type": {
+        "equalTo": "application/json"
+      },
+      "Ip-Address": {
+        "equalTo": "HD5cMkRuMQ=="
+      },
+      "User-Agent": {
+        "equalTo": "buddy"
+      }
+    }
+  },
+  "response": {
+    "status": 500
+  }
+}
