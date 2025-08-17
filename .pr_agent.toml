@@ -1,0 +1,9 @@
+# .pr_agent.toml
+
+[github_app]
+# Lista de comandos que rodam quando um PR é aberto, reaberto ou marcado como "pronto para revisão".
+pr_commands = [
+    "/review",   # Faz uma revisão do código
+    "/improve",   # Sugere melhorias no código
+    "/update_changelog --pr_update_changelog.push_changelog_changes=true" # Atualiza changelog
+]
