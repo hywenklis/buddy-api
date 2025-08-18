@@ -1,13 +1,12 @@
-## 2025-08-17 [*](https://github.com/hywenklis/buddy-api/pull/188)
+## 2025-08-18 [*](https://github.com/hywenklis/buddy-api/pull/191)
 
 ### Added
-- Email verification flow with request/confirm endpoints, Redis caches, and email template integration
-- External email service integration via manager API with token caching and error handling
+- Expanded tests for email verification, manager client, and error handling with WireMock and Redis
+- Custom API client executor and Feign error decoder for external integrations
 
 ### Changed
-- Authentication now considers account status (blocked/deleted) and roles with prefix
-- Account update service supports verifying status updates
+- Authentication uses custom AuthenticatedUser with role prefix and account status checks
+- Cache and Redis configurations refined for tokens and rate limiting
 
 ### Fixed
-- Standardized domain exceptions to preserve original causes
-- Minor test and configuration adjustments for email verification and external integration
+- Minor fixes in templates, exception chaining, and mapper/update flows
