@@ -5,7 +5,3 @@ pr_commands = [
     "/update_changelog",
     "/update_changelog --pr_update_changelog.push_changelog_changes=true --pr_update_changelog.extra_instructions='add the pr commits, along with the commit authors and at the end of the line add the main pr author and his reviewers'"
 ]
-
-[config]
-enable_auto_best_practices = true
-handle_push_trigger = true
