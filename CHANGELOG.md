@@ -1,12 +1,18 @@
-## 2025-08-18 [*](https://github.com/hywenklis/buddy-api/pull/191)
+## 2025-08-19 [*](https://github.com/hywenklis/buddy-api/pull/198)
+
+Develop
+*PR: [#198](https://github.com/hywenklis/buddy-api/pull/198)*
 
 ### Added
-- Expanded tests for email verification, manager client, and error handling with WireMock and Redis
-- Custom API client executor and Feign error decoder for external integrations
+- Email verification flow with token caching, rate limiting, and notification dispatch
+  *Commits: [7](https://github.com/hywenklis/buddy-api/commit/7), [32](https://github.com/hywenklis/buddy-api/commit/32) by @hywenklis*
 
 ### Changed
-- Authentication uses custom AuthenticatedUser with role prefix and account status checks
-- Cache and Redis configurations refined for tokens and rate limiting
+- Authentication and account update services refined; Docker and test infrastructure enhanced
+  *Commits: [31](https://github.com/hywenklis/buddy-api/commit/31), [27](https://github.com/hywenklis/buddy-api/commit/27) by @hywenklis*
 
 ### Fixed
-- Minor fixes in templates, exception chaining, and mapper/update flows
+- Error handling, templates, and data types adjusted for stability
+  *Commits: [19](https://github.com/hywenklis/buddy-api/commit/19), [23](https://github.com/hywenklis/buddy-api/commit/23), [24](https://github.com/hywenklis/buddy-api/commit/24) by @hywenklis*
+
+**PR Author:** @hywenklis
