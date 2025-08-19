@@ -1,5 +1,10 @@
 [github_app]
 pr_commands = [
-    "/update_changelog",
+    "/update_changelog --pr_update_changelog.push_changelog_changes=true --pr_update_changelog.extra_instructions='also add title and commit links along with the authors of these commits and at the end the author of the PR'",
     "/improve"
 ]
+
+[pr_update_changelog]
+push_changelog_changes = true
+add_pr_link = true
+skip_ci_on_push = true
