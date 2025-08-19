@@ -1,10 +1,35 @@
 [github_app]
 pr_commands = [
-    "/update_changelog --pr_update_changelog.push_changelog_changes=true --pr_update_changelog.extra_instructions='also add title and commit links along with the authors of these commits and at the end the author of the PR'",
-    "/improve"
+    "/improve",
+    "/update_changelog"
 ]
 
 [pr_update_changelog]
 push_changelog_changes = true
 add_pr_link = true
 skip_ci_on_push = true
+
+[best_practices]
+enable_global_best_practices = true # 💎 to load org/global hierarchy if you set up pr-agent-settings repo
+organization_name = "YourOrg" # Label becomes "YourOrg best practice" (optional)
+
+[auto_best_practices]
+enable_auto_best_practices = true # 💎 generate/maintain learned best practices wiki
+utilize_auto_best_practices = true
+
+[pr_code_suggestions]
+extra_instructions = """
+(1) Follow our best_practices.md where applicable.
+(2) Keep suggestions focused and actionable.
+(3) Prefer minimal diffs.
+"""
+
+[pr_update_changelog]
+push_changelog_changes = false # set true to push a commit; false = comment only
+add_pr_link = true # include PR link
+extra_instructions = """\
+
+Include a clear changelog entry title.
+For each included change, add a commit link and list the commit author(s).
+At the end of the entry, add the PR author.
+"""
