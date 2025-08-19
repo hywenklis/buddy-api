@@ -4,25 +4,12 @@ pr_commands = [
     "/update_changelog"
 ]
 
-[pr_update_changelog]
-push_changelog_changes = true
-add_pr_link = true
-skip_ci_on_push = true
-
 [best_practices]
-enable_global_best_practices = true # 💎 to load org/global hierarchy if you set up pr-agent-settings repo
-organization_name = "YourOrg" # Label becomes "YourOrg best practice" (optional)
+enable_global_best_practices = true #
 
 [auto_best_practices]
-enable_auto_best_practices = true # 💎 generate/maintain learned best practices wiki
+enable_auto_best_practices = true #
 utilize_auto_best_practices = true
-
-[pr_code_suggestions]
-extra_instructions = """
-(1) Follow our best_practices.md where applicable.
-(2) Keep suggestions focused and actionable.
-(3) Prefer minimal diffs.
-"""
 
 [pr_update_changelog]
 push_changelog_changes = false # set true to push a commit; false = comment only
