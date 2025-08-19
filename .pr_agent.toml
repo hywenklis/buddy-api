@@ -3,3 +3,8 @@ pr_commands = [
     "/update_changelog",
     "/improve"
 ]
+
+[pr_update_changelog]
+push_changelog_changes = true
+add_pr_link = true
+skip_ci_on_push = true
