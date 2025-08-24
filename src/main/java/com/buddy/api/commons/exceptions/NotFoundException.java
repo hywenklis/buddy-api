@@ -11,6 +11,6 @@ public class NotFoundException extends DomainException {
     private static final long serialVersionUID = -7819576276216578948L;
 
     public NotFoundException(final String fieldName, final String message) {
-        super(message, fieldName, HttpStatus.NOT_FOUND);
+        super(message, fieldName, HttpStatus.NOT_FOUND, null);
     }
 }

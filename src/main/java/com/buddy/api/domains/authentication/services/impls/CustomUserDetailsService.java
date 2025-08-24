@@ -2,12 +2,13 @@ package com.buddy.api.domains.authentication.services.impls;
 
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.services.FindAccount;
+import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.services.FindProfile;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,15 +28,18 @@ public class CustomUserDetailsService implements UserDetailsService {
         AccountDto account = findAccount.findByEmail(username);
         List<ProfileDto> profiles = findProfile.findByAccountEmail(account.email().value());
 
-        String[] authorities = profiles.stream()
+        List<SimpleGrantedAuthority> authorities = profiles.stream()
             .filter(profile -> !profile.isDeleted())
-            .map(profile -> profile.profileType().name())
-            .toArray(String[]::new);
+            .map(profile -> new SimpleGrantedAuthority("ROLE_" + profile.profileType().name()))
+            .toList();
 
-        return User
-            .withUsername(account.email().value())
-            .password(account.password())
-            .authorities(authorities)
-            .build();
+        return new AuthenticatedUser(
+            account.accountId(),
+            account.email().value(),
+            account.password(),
+            !account.isDeleted() && !account.isBlocked(),
+            authorities
+        );
     }
 }
+

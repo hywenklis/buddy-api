@@ -9,6 +9,6 @@ public class AuthenticationException extends DomainException {
     private static final long serialVersionUID = 2002171235384025372L;
 
     public AuthenticationException(final String message, final String field) {
-        super(message, field, HttpStatus.UNAUTHORIZED);
+        super(message, field, HttpStatus.UNAUTHORIZED, null);
     }
 }

@@ -61,6 +61,7 @@ class FindAccountTest extends UnitTestAbstract {
         var account = AccountBuilder.validAccountDto()
             .isDeleted(false)
             .isBlocked(false)
+            .isVerified(false)
             .lastLogin(LocalDateTime.now())
             .build();
         var accountEntity = AccountBuilder.validAccountEntity()

@@ -1,13 +1,21 @@
 server:
   forward-headers-strategy: framework
+  compression:
+    enabled: true
+    mime-types: [ "application/json", "application/xml", "text/xml", "text/html", "text/plain" ]
+    min-response-size: 1024
   error:
     include-message: always
   servlet:
     context-path: /api
 
 spring:
+  application:
+    name: buddy
   main:
     allow-bean-definition-overriding: true
+  cache:
+    type: simple
   jpa:
     defer-datasource-initialization: false
     show-sql: true
@@ -40,3 +48,21 @@ auth:
       code: "123e4567-e89b-12d3-a456-426614174000"
     - type: "TOOLS"
       code: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+
+manager:
+  api:
+    base-url: "http://localhost:${wiremock.server.port}/manager"
+    content-type: "application/json"
+    user-agent: "buddy"
+    ip-address: "HD5cMkRuMQ=="
+    username: "hywenklis@email.com"
+    password: "12345678"
+    app-id: "5a5192be-c4bf-4ebb-924d-731ba927a0fd"
+
+buddy:
+  email:
+    templates:
+      from: "buddy.contato.app@gmail.com"
+      subject: "Confirme seu e-mail no Buddy"
+      template-path: "templates/email-verification.html"
+      url: https://buddyclient.vercel.app/confirm-email?token=
