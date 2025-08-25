@@ -9,6 +9,8 @@ import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.UpdateAccount;
+import com.buddy.api.domains.profile.dtos.ProfileDto;
+import com.buddy.api.domains.profile.services.FindProfile;
 import com.buddy.api.integrations.clients.manager.ManagerService;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
@@ -33,6 +35,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private final CacheManager cacheManager;
     private final EmailProperties emailProperties;
     private final EmailTemplateLoaderService emailTemplateLoader;
+    private final FindProfile findProfile;
 
     private Cache verificationTokenCache;
     private Cache rateLimitCache;
@@ -67,8 +70,11 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         verificationTokenCache.put(token, userEmail);
         rateLimitCache.put(userEmail, "rate-limited");
 
+        final List<ProfileDto> profiles = findProfile.findByAccountEmail(userEmail);
+        final String name = profiles.isEmpty() ? "Buddy" : profiles.getFirst().name();
+
         final String verificationUrl = emailProperties.templates().url() + token;
-        final String htmlBody = buildConfirmationEmailBody(verificationUrl);
+        final String htmlBody = buildConfirmationEmailBody(verificationUrl, name);
 
         managerService.sendEmailNotification(
             List.of(userEmail),
@@ -123,8 +129,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         }
     }
 
-    private String buildConfirmationEmailBody(final String verificationUrl) {
+    private String buildConfirmationEmailBody(final String verificationUrl, final String name) {
         String template = emailTemplateLoader.load(emailProperties.templates().templatePath());
-        return template.replace("%s", verificationUrl);
+        return template.replace("{{url}}", verificationUrl).replace("{{name}}", name);
     }
 }
