@@ -2,6 +2,7 @@ package com.buddy.api.units.domains.services.impls;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.account.AccountBuilder;
+import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
@@ -20,8 +22,11 @@ import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.impls.EmailVerificationServiceImpl;
 import com.buddy.api.domains.account.services.UpdateAccount;
+import com.buddy.api.domains.profile.dtos.ProfileDto;
+import com.buddy.api.domains.profile.services.FindProfile;
 import com.buddy.api.integrations.clients.manager.ManagerService;
 import com.buddy.api.units.UnitTestAbstract;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +58,9 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
 
     @Mock
     private EmailProperties.Templates templateProperties;
+
+    @Mock
+    private FindProfile findProfile;
 
     @Mock
     private Cache verificationTokenCache;
@@ -93,12 +101,17 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should send verification email for a valid account")
         void requestEmail_whenAccountIsValid_shouldSendVerificationEmail() {
-            final String fakeTemplate = "Click here: %s";
+            final String fakeTemplate = "Olá, {{name}}! Click here: {{url}}";
             final String fakeTemplatePath = "templates/fake-template.html";
+            final ProfileDto profile = ProfileBuilder.profileDto().build();
+            final String expectedName = profile.name();
+
             setupEmailProperties();
             when(rateLimitCache.get(userEmail)).thenReturn(null);
             when(templateProperties.templatePath()).thenReturn(fakeTemplatePath);
             when(emailTemplateLoader.load(fakeTemplatePath)).thenReturn(fakeTemplate);
+            when(findProfile.findByAccountEmail(userEmail)).thenReturn(List.of(profile));
+
             emailVerificationService.requestEmail(unverifiedAccount);
 
             verify(verificationTokenCache).put(tokenCaptor.capture(), eq(userEmail));
@@ -115,7 +128,34 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
             );
 
             String expectedUrl = "http://buddy.app/confirm?token=" + generatedToken;
-            assertThat(emailBodyCaptor.getValue()).isEqualTo("Click here: " + expectedUrl);
+            String expectedBody = "Olá, " + expectedName + "! Click here: " + expectedUrl;
+            assertThat(emailBodyCaptor.getValue()).isEqualTo(expectedBody);
+        }
+
+        @Test
+        @DisplayName("Should use default name when profile is not found")
+        void requestEmail_whenProfileNotFound_shouldUseDefaultName() {
+            final String fakeTemplate = "Olá, {{name}}! Click here: {{url}}";
+            final String fakeTemplatePath = "templates/fake-template.html";
+
+            setupEmailProperties();
+            when(rateLimitCache.get(userEmail)).thenReturn(null);
+            when(templateProperties.templatePath()).thenReturn(fakeTemplatePath);
+            when(emailTemplateLoader.load(fakeTemplatePath)).thenReturn(fakeTemplate);
+            when(findProfile.findByAccountEmail(userEmail)).thenReturn(Collections.emptyList());
+
+            emailVerificationService.requestEmail(unverifiedAccount);
+
+            verify(verificationTokenCache).put(tokenCaptor.capture(), eq(userEmail));
+            String generatedToken = tokenCaptor.getValue();
+
+            verify(managerService).sendEmailNotification(
+                any(), any(), any(), emailBodyCaptor.capture()
+            );
+
+            String expectedUrl = "http://buddy.app/confirm?token=" + generatedToken;
+            String expectedBody = "Olá, Buddy! Click here: " + expectedUrl;
+            assertThat(emailBodyCaptor.getValue()).isEqualTo(expectedBody);
         }
 
         @Test
