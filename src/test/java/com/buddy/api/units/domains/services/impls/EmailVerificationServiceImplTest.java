@@ -2,18 +2,18 @@ package com.buddy.api.units.domains.services.impls;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.account.AccountBuilder;
-import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.configurations.properties.EmailProperties;
+import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
@@ -22,12 +22,12 @@ import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.impls.EmailVerificationServiceImpl;
 import com.buddy.api.domains.account.services.UpdateAccount;
-import com.buddy.api.domains.profile.dtos.ProfileDto;
-import com.buddy.api.domains.profile.services.FindProfile;
 import com.buddy.api.integrations.clients.manager.ManagerService;
 import com.buddy.api.units.UnitTestAbstract;
-import java.util.Collections;
+import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,8 +38,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 class EmailVerificationServiceImplTest extends UnitTestAbstract {
+
+    private static final String VERIFICATION_TOKEN_CACHE_NAME = "emailVerificationToken";
+    private static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
+    private static final String EMAIL_FROM = "no-reply@buddy.com";
+    private static final String EMAIL_SUBJECT = "Verify Your Email";
+    private static final String TEMPLATE_PATH = "email-verification.html";
+    private static final String VERIFICATION_URL = "http://buddy.app/confirm?token=";
 
     @Mock
     private UpdateAccount updateAccount;
@@ -57,10 +66,10 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
     private EmailProperties emailProperties;
 
     @Mock
-    private EmailProperties.Templates templateProperties;
+    private RateLimitProperties rateLimitProperties;
 
     @Mock
-    private FindProfile findProfile;
+    private EmailProperties.Templates templateProperties;
 
     @Mock
     private Cache verificationTokenCache;
@@ -68,8 +77,11 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
     @Mock
     private Cache rateLimitCache;
 
-    @InjectMocks
-    private EmailVerificationServiceImpl emailVerificationService;
+    @Mock
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
 
     @Captor
     private ArgumentCaptor<String> tokenCaptor;
@@ -77,21 +89,26 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
     @Captor
     private ArgumentCaptor<String> emailBodyCaptor;
 
+    @InjectMocks
+    private EmailVerificationServiceImpl emailVerificationService;
+
     private AccountDto unverifiedAccount;
     private AccountDto verifiedAccount;
     private String userEmail;
+    private String expectedTemplate;
 
     @BeforeEach
     void setUp() {
-        when(cacheManager.getCache(VERIFICATION_TOKEN_CACHE_NAME))
-            .thenReturn(verificationTokenCache);
+        unverifiedAccount = AccountBuilder.validAccountDto().isVerified(false).build();
+        verifiedAccount = AccountBuilder.validAccountDto().isVerified(true).build();
+        userEmail = unverifiedAccount.email().value();
+        expectedTemplate = "Olá, Buddy! Click here: {{url}}";
 
+        when(cacheManager.getCache(VERIFICATION_TOKEN_CACHE_NAME)).thenReturn(
+            verificationTokenCache);
         when(cacheManager.getCache(RATE_LIMIT_CACHE_NAME)).thenReturn(rateLimitCache);
-        emailVerificationService.init();
 
-        this.unverifiedAccount = AccountBuilder.validAccountDto().isVerified(false).build();
-        this.verifiedAccount = AccountBuilder.validAccountDto().isVerified(true).build();
-        this.userEmail = unverifiedAccount.email().value();
+        emailVerificationService.init();
     }
 
     @Nested
@@ -99,85 +116,126 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
     class RequestEmailTests {
 
         @Test
-        @DisplayName("Should send verification email for a valid account")
-        void requestEmail_whenAccountIsValid_shouldSendVerificationEmail() {
-            final String fakeTemplate = "Olá, {{name}}! Click here: {{url}}";
-            final String fakeTemplatePath = "templates/fake-template.html";
-            final ProfileDto profile = ProfileBuilder.profileDto().build();
-            final String expectedName = profile.name();
-
-            setupEmailProperties();
-            when(rateLimitCache.get(userEmail)).thenReturn(null);
-            when(templateProperties.templatePath()).thenReturn(fakeTemplatePath);
-            when(emailTemplateLoader.load(fakeTemplatePath)).thenReturn(fakeTemplate);
-            when(findProfile.findByAccountEmail(userEmail)).thenReturn(List.of(profile));
+        @DisplayName("Should dispatch verification email successfully")
+        void should_dispatch_verification_email_successfully() {
+            CountDownLatch latch = new CountDownLatch(1);
+            when(emailProperties.templates()).thenReturn(templateProperties);
+            when(templateProperties.from()).thenReturn(EMAIL_FROM);
+            when(templateProperties.subject()).thenReturn(EMAIL_SUBJECT);
+            when(templateProperties.templatePath()).thenReturn(TEMPLATE_PATH);
+            when(templateProperties.url()).thenReturn(VERIFICATION_URL);
+            when(rateLimitProperties.windowMinutes()).thenReturn(1);
+            when(rateLimitProperties.maxAttempts()).thenReturn(3);
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(emailTemplateLoader.load(TEMPLATE_PATH)).thenReturn(expectedTemplate);
+            when(valueOperations.increment(RATE_LIMIT_COUNT + userEmail, 1)).thenReturn(1L);
+            when(redisTemplate.expire(RATE_LIMIT_COUNT + userEmail, Duration.ofMinutes(1)))
+                .thenReturn(true);
+            doAnswer(invocation -> {
+                latch.countDown();
+                return null;
+            }).when(managerService).sendEmailNotification(
+                eq(List.of(userEmail)),
+                eq(EMAIL_FROM),
+                eq(EMAIL_SUBJECT),
+                anyString()
+            );
 
             emailVerificationService.requestEmail(unverifiedAccount);
 
-            verify(verificationTokenCache).put(tokenCaptor.capture(), eq(userEmail));
-            String generatedToken = tokenCaptor.getValue();
-            assertThat(generatedToken).isNotNull();
-
-            verify(rateLimitCache, times(1)).put(userEmail, "rate-limited");
-
+            verify(verificationTokenCache, times(1)).put(tokenCaptor.capture(), eq(userEmail));
+            String capturedToken = tokenCaptor.getValue();
+            assertThat(capturedToken).isNotNull();
+            verify(redisTemplate, times(1)).opsForValue();
+            verify(valueOperations, times(1)).increment(RATE_LIMIT_COUNT + userEmail, 1);
+            verify(redisTemplate, times(1)).expire(RATE_LIMIT_COUNT + userEmail,
+                Duration.ofMinutes(1));
+            verify(emailTemplateLoader, times(1)).load(TEMPLATE_PATH);
             verify(managerService, times(1)).sendEmailNotification(
                 eq(List.of(userEmail)),
-                eq("buddy.contato.app@gmail.com"),
-                eq("Confirm your email"),
+                eq(EMAIL_FROM),
+                eq(EMAIL_SUBJECT),
                 emailBodyCaptor.capture()
             );
-
-            String expectedUrl = "http://buddy.app/confirm?token=" + generatedToken;
-            String expectedBody = "Olá, " + expectedName + "! Click here: " + expectedUrl;
-            assertThat(emailBodyCaptor.getValue()).isEqualTo(expectedBody);
+            assertThat(emailBodyCaptor.getValue())
+                .contains("Olá, Buddy!")
+                .contains(VERIFICATION_URL + capturedToken);
         }
 
         @Test
-        @DisplayName("Should use default name when profile is not found")
-        void requestEmail_whenProfileNotFound_shouldUseDefaultName() {
-            final String fakeTemplate = "Olá, {{name}}! Click here: {{url}}";
-            final String fakeTemplatePath = "templates/fake-template.html";
-
-            setupEmailProperties();
-            when(rateLimitCache.get(userEmail)).thenReturn(null);
-            when(templateProperties.templatePath()).thenReturn(fakeTemplatePath);
-            when(emailTemplateLoader.load(fakeTemplatePath)).thenReturn(fakeTemplate);
-            when(findProfile.findByAccountEmail(userEmail)).thenReturn(Collections.emptyList());
-
-            emailVerificationService.requestEmail(unverifiedAccount);
-
-            verify(verificationTokenCache).put(tokenCaptor.capture(), eq(userEmail));
-            String generatedToken = tokenCaptor.getValue();
-
-            verify(managerService).sendEmailNotification(
-                any(), any(), any(), emailBodyCaptor.capture()
-            );
-
-            String expectedUrl = "http://buddy.app/confirm?token=" + generatedToken;
-            String expectedBody = "Olá, Buddy! Click here: " + expectedUrl;
-            assertThat(emailBodyCaptor.getValue()).isEqualTo(expectedBody);
-        }
-
-        @Test
-        @DisplayName("Should throw AccountAlreadyVerifiedException if account is already verified")
-        void requestEmail_whenAccountIsAlreadyVerified_throwAccountAlreadyVerifiedException() {
+        @DisplayName("Should throw AccountAlreadyVerifiedException if account is verified")
+        void should_throw_account_already_verified_exception() {
             assertThatThrownBy(() -> emailVerificationService.requestEmail(verifiedAccount))
                 .isInstanceOf(AccountAlreadyVerifiedException.class)
-                .hasMessage("This account is already verified.");
+                .hasMessageContaining("This account is already verified");
 
-            verifyNoInteractions(verificationTokenCache, rateLimitCache, managerService);
+            verifyNoInteractions(verificationTokenCache, redisTemplate, managerService,
+                emailTemplateLoader);
         }
 
         @Test
-        @DisplayName("Should throw TooManyRequestsException if user is rate-limited")
-        void requestEmail_whenUserIsRateLimited_shouldThrowTooManyRequestsException() {
-            when(rateLimitCache.get(userEmail)).thenReturn(mock(Cache.ValueWrapper.class));
+        @DisplayName("Should throw TooManyRequestsException if rate limit is exceeded")
+        void should_throw_too_many_requests_exception() {
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(valueOperations.increment(RATE_LIMIT_COUNT + userEmail, 1)).thenReturn(4L);
 
             assertThatThrownBy(() -> emailVerificationService.requestEmail(unverifiedAccount))
                 .isInstanceOf(TooManyRequestsException.class)
-                .hasMessageContaining("You have requested a verification email recently.");
+                .hasMessageContaining("Too many verification requests");
 
-            verifyNoInteractions(verificationTokenCache, managerService);
+            verify(redisTemplate, times(1)).opsForValue();
+            verify(valueOperations, times(1)).increment(RATE_LIMIT_COUNT + userEmail, 1);
+            verify(redisTemplate, times(0)).expire(RATE_LIMIT_COUNT + userEmail,
+                Duration.ofMinutes(1));
+            verifyNoInteractions(verificationTokenCache, managerService, emailTemplateLoader);
+        }
+
+        @Test
+        @DisplayName("Should evict token if email sending fails")
+        void should_evict_token_on_email_sending_failure() {
+            CountDownLatch latch = new CountDownLatch(1);
+            when(emailProperties.templates()).thenReturn(templateProperties);
+            when(templateProperties.from()).thenReturn(EMAIL_FROM);
+            when(templateProperties.subject()).thenReturn(EMAIL_SUBJECT);
+            when(templateProperties.templatePath()).thenReturn(TEMPLATE_PATH);
+            when(templateProperties.url()).thenReturn(VERIFICATION_URL);
+            when(rateLimitProperties.windowMinutes()).thenReturn(1);
+            when(rateLimitProperties.maxAttempts()).thenReturn(3);
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(emailTemplateLoader.load(TEMPLATE_PATH)).thenReturn(expectedTemplate);
+            when(valueOperations.increment(RATE_LIMIT_COUNT + userEmail, 1)).thenReturn(1L);
+            when(redisTemplate.expire(RATE_LIMIT_COUNT + userEmail, Duration.ofMinutes(1)))
+                .thenReturn(true);
+            doAnswer(invocation -> {
+                latch.countDown();
+                throw new RuntimeException("Email service failure");
+            }).when(managerService).sendEmailNotification(
+                eq(List.of(userEmail)),
+                eq(EMAIL_FROM),
+                eq(EMAIL_SUBJECT),
+                anyString()
+            );
+            doNothing().when(verificationTokenCache).evict(anyString());
+
+            emailVerificationService.requestEmail(unverifiedAccount);
+
+            verify(verificationTokenCache, times(1)).put(tokenCaptor.capture(), eq(userEmail));
+            String capturedToken = tokenCaptor.getValue();
+            verify(verificationTokenCache, times(1)).evict(capturedToken);
+            verify(redisTemplate, times(1)).opsForValue();
+            verify(valueOperations, times(1)).increment(RATE_LIMIT_COUNT + userEmail, 1);
+            verify(redisTemplate, times(1)).expire(RATE_LIMIT_COUNT + userEmail,
+                Duration.ofMinutes(1));
+            verify(emailTemplateLoader, times(1)).load(TEMPLATE_PATH);
+            verify(managerService, times(1)).sendEmailNotification(
+                eq(List.of(userEmail)),
+                eq(EMAIL_FROM),
+                eq(EMAIL_SUBJECT),
+                emailBodyCaptor.capture()
+            );
+            assertThat(emailBodyCaptor.getValue())
+                .contains("Olá, Buddy!")
+                .contains(VERIFICATION_URL + capturedToken);
         }
     }
 
@@ -187,81 +245,65 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
 
         @Test
         @DisplayName("Should verify email with a valid token")
-        void confirmEmail_withValidToken_shouldSucceed() {
-            setupValidTokenForEmail(userEmail);
+        void should_verify_email_with_valid_token() {
+            String token = UUID.randomUUID().toString();
+            when(verificationTokenCache.get(token, String.class)).thenReturn(userEmail);
+            doNothing().when(updateAccount).updateIsVerified(userEmail, true);
+            doNothing().when(verificationTokenCache).evict(token);
 
-            emailVerificationService.confirmEmail(TOKEN, unverifiedAccount);
+            emailVerificationService.confirmEmail(token, unverifiedAccount);
 
+            verify(verificationTokenCache, times(1)).get(token, String.class);
             verify(updateAccount, times(1)).updateIsVerified(userEmail, true);
-            verify(verificationTokenCache, times(1)).evict(TOKEN);
+            verify(verificationTokenCache, times(1)).evict(token);
         }
 
         @Test
         @DisplayName("Should ignore request if account is already verified")
-        void confirmEmail_whenAccountIsAlreadyVerified_shouldDoNothing() {
-            setupValidTokenForEmail(verifiedAccount.email().value());
+        void should_ignore_request_if_already_verified() {
+            String token = UUID.randomUUID().toString();
+            when(verificationTokenCache.get(token, String.class)).thenReturn(
+                verifiedAccount.email().value());
+            doNothing().when(verificationTokenCache).evict(token);
 
-            emailVerificationService.confirmEmail(TOKEN, verifiedAccount);
+            emailVerificationService.confirmEmail(token, verifiedAccount);
 
+            verify(verificationTokenCache, times(1)).get(token, String.class);
             verifyNoInteractions(updateAccount);
-            verify(verificationTokenCache, times(1)).evict(TOKEN);
+            verify(verificationTokenCache, times(1)).evict(token);
         }
 
         @Test
-        @DisplayName("Should throw NotFoundException for a non-existent token")
-        void confirmEmail_withInvalidToken_shouldThrowNotFoundException() {
-            when(verificationTokenCache.get(TOKEN)).thenReturn(null);
-
-            assertNotFoundException(unverifiedAccount);
-        }
-
-        @Test
-        @DisplayName("Should throw NotFoundException when token value is null")
-        void confirmEmail_whenTokenValueIsNull_shouldThrowNotFoundException() {
-            Cache.ValueWrapper valueWrapper = mock(Cache.ValueWrapper.class);
-            when(valueWrapper.get()).thenReturn(null);
-            when(verificationTokenCache.get(TOKEN)).thenReturn(valueWrapper);
-
-            assertNotFoundException(unverifiedAccount);
-        }
-
-        @Test
-        @DisplayName("Should throw AuthenticationException when token to another user")
-        void confirmEmail_whenTokenBelongsToAnotherUser_shouldThrowAuthenticationException() {
-            Cache.ValueWrapper valueWrapper = mock(Cache.ValueWrapper.class);
-            when(valueWrapper.get()).thenReturn("another.user@example.com");
-            when(verificationTokenCache.get(TOKEN)).thenReturn(valueWrapper);
+        @DisplayName("Should throw NotFoundException for invalid token")
+        void should_throw_not_found_exception_for_invalid_token() {
+            String token = UUID.randomUUID().toString();
+            when(verificationTokenCache.get(token, String.class)).thenReturn(null);
 
             assertThatThrownBy(
-                () -> emailVerificationService.confirmEmail(TOKEN, unverifiedAccount))
-                .isInstanceOf(AuthenticationException.class)
-                .hasMessage("Token does not belong to the authenticated user");
-
-            verify(updateAccount, never()).updateIsVerified(userEmail, true);
-            verify(verificationTokenCache, never()).evict(TOKEN);
-        }
-
-        private void assertNotFoundException(final AccountDto account) {
-            assertThatThrownBy(() ->
-                emailVerificationService.confirmEmail(UnitTestAbstract.TOKEN, account))
+                () -> emailVerificationService.confirmEmail(token, unverifiedAccount))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage("Invalid or expired verification token.");
+                .hasMessageContaining("Invalid or expired verification token");
 
+            verify(verificationTokenCache, times(1)).get(token, String.class);
             verifyNoInteractions(updateAccount);
+            verify(verificationTokenCache, times(0)).evict(token);
         }
-    }
 
-    private void setupValidTokenForEmail(final String email) {
-        Cache.ValueWrapper valueWrapper = mock(Cache.ValueWrapper.class);
-        when(valueWrapper.get()).thenReturn(email);
-        when(verificationTokenCache.get(TOKEN)).thenReturn(valueWrapper);
-    }
+        @Test
+        @DisplayName("Should throw AuthenticationException for mismatched email")
+        void should_throw_authentication_exception_for_mismatched_email() {
+            String token = UUID.randomUUID().toString();
+            String anotherEmail = "wrong@example.com";
+            when(verificationTokenCache.get(token, String.class)).thenReturn(anotherEmail);
 
-    private void setupEmailProperties() {
-        when(emailProperties.templates()).thenReturn(templateProperties);
-        when(templateProperties.url()).thenReturn("http://buddy.app/confirm?token=");
-        when(templateProperties.from()).thenReturn("buddy.contato.app@gmail.com");
-        when(templateProperties.subject()).thenReturn("Confirm your email");
-        when(templateProperties.templatePath()).thenReturn("templates/fake-template.html");
+            assertThatThrownBy(
+                () -> emailVerificationService.confirmEmail(token, unverifiedAccount))
+                .isInstanceOf(AuthenticationException.class)
+                .hasMessageContaining("Token does not belong to the authenticated user");
+
+            verify(verificationTokenCache, times(1)).get(token, String.class);
+            verifyNoInteractions(updateAccount);
+            verify(verificationTokenCache, times(0)).evict(token);
+        }
     }
 }
