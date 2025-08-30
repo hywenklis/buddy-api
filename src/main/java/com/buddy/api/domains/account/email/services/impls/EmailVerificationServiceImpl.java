@@ -1,23 +1,17 @@
 package com.buddy.api.domains.account.email.services.impls;
 
-import com.buddy.api.commons.configurations.properties.EmailProperties;
-import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
-import com.buddy.api.commons.exceptions.AuthenticationException;
-import com.buddy.api.commons.exceptions.NotFoundException;
-import com.buddy.api.commons.exceptions.TooManyRequestsException;
+import com.buddy.api.commons.configurations.cache.CacheInitializer;
+import com.buddy.api.commons.configurations.cache.RateLimitChecker;
+import com.buddy.api.commons.configurations.cache.TokenManager;
 import com.buddy.api.domains.account.dtos.AccountDto;
-import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
+import com.buddy.api.domains.account.email.services.AccountValidator;
+import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.UpdateAccount;
-import com.buddy.api.integrations.clients.manager.ManagerService;
 import jakarta.annotation.PostConstruct;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,106 +19,52 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @RequiredArgsConstructor
 public class EmailVerificationServiceImpl implements EmailVerificationService {
-    private static final String VERIFICATION_TOKEN_CACHE_NAME = "emailVerificationToken";
-    private static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
-
     private final UpdateAccount updateAccount;
-    private final ManagerService managerService;
-    private final CacheManager cacheManager;
-    private final EmailProperties emailProperties;
-    private final EmailTemplateLoaderService emailTemplateLoader;
-
-    private Cache verificationTokenCache;
-    private Cache rateLimitCache;
+    private final CacheInitializer cacheInitializer;
+    private final RateLimitChecker rateLimitChecker;
+    private final TokenManager tokenManager;
+    private final EmailSender emailSender;
+    private final AccountValidator accountValidator;
 
     @PostConstruct
     public void init() {
-        this.verificationTokenCache = Objects.requireNonNull(
-            cacheManager.getCache(VERIFICATION_TOKEN_CACHE_NAME),
-            "Cache 'emailVerificationToken' not found."
-        );
-        this.rateLimitCache = Objects.requireNonNull(
-            cacheManager.getCache(RATE_LIMIT_CACHE_NAME),
-            "Cache 'emailVerificationRateLimit' not found."
-        );
+        cacheInitializer.initializeVerificationTokenCache();
     }
 
     @Override
     public void requestEmail(final AccountDto account) {
-        final String userEmail = account.email().value();
-        log.info("Received request for email verification for: {}", userEmail);
+        String userEmail = account.email().value();
+        UUID accountId = account.accountId();
+        log.info("Received request for email verification for account={}", accountId);
 
-        if (Boolean.TRUE.equals(account.isVerified())) {
-            throw new AccountAlreadyVerifiedException(
-                "account.status",
-                "This account is already verified."
-            );
-        }
+        accountValidator.validateAccountNotVerified(account);
+        rateLimitChecker.checkRateLimit(userEmail, accountId);
 
-        checkRateLimit(userEmail);
+        String token = tokenManager.generateAndStoreToken(userEmail);
+        emailSender.dispatchVerificationEmail(accountId, userEmail, token);
 
-        final String token = UUID.randomUUID().toString();
-        verificationTokenCache.put(token, userEmail);
-        rateLimitCache.put(userEmail, "rate-limited");
-
-        final String verificationUrl = emailProperties.templates().url() + token;
-        final String htmlBody = buildConfirmationEmailBody(verificationUrl);
-
-        managerService.sendEmailNotification(
-            List.of(userEmail),
-            emailProperties.templates().from(),
-            emailProperties.templates().subject(),
-            htmlBody
-        );
-
-        log.info("Verification email request processed for: {}", userEmail);
+        log.info("Verification email request for account={} "
+            + "accepted and dispatched for async processing.", accountId);
     }
 
     @Override
     @Transactional
     public void confirmEmail(final String token, final AccountDto account) {
-        log.info("Attempting to confirm email with token.");
+        UUID accountId = account.accountId();
+        log.info("Attempting to confirm email for account={}", accountId);
 
-        Cache.ValueWrapper valueWrapper = verificationTokenCache.get(token);
-        if (valueWrapper == null || valueWrapper.get() == null) {
-            throw new NotFoundException("token", "Invalid or expired verification token.");
-        }
+        String emailFromToken = tokenManager.validateAndGetTokenEmail(token, accountId);
+        accountValidator.validateTokenMatchesAccount(account, emailFromToken, accountId);
 
-        final String emailFromToken = (String) valueWrapper.get();
-
-        if (!account.email().value().equals(emailFromToken)) {
-            log.error("Token email [{}] does not match authenticated user email [{}]",
-                emailFromToken, account.email().value());
-            throw new AuthenticationException("Token does not belong to the authenticated user",
-                "token");
-        }
-
-        if (Boolean.TRUE.equals(account.isVerified())) {
-            log.warn("Account {} is already verified. Ignoring confirmation request.",
-                emailFromToken);
-
-            verificationTokenCache.evict(token);
+        if (account.isVerified()) {
+            log.warn("Account {} is already verified. Ignoring confirmation request.", accountId);
+            tokenManager.evictToken(token);
             return;
         }
 
         updateAccount.updateIsVerified(account.email().value(), true);
-        verificationTokenCache.evict(token);
+        tokenManager.evictToken(token);
 
-        log.info("Email successfully verified for account: {}", emailFromToken);
-    }
-
-    private void checkRateLimit(final String email) {
-        if (rateLimitCache.get(email) != null) {
-            log.warn("Rate limit exceeded for email verification request: {}", email);
-            throw new TooManyRequestsException(
-                "You have requested a verification email recently. "
-                    + "Please wait a minute before trying again."
-            );
-        }
-    }
-
-    private String buildConfirmationEmailBody(final String verificationUrl) {
-        String template = emailTemplateLoader.load(emailProperties.templates().templatePath());
-        return template.replace("%s", verificationUrl);
+        log.info("Email successfully verified for account={}", accountId);
     }
 }
