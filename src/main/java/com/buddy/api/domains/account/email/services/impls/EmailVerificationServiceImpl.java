@@ -6,6 +6,7 @@ import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
+import com.buddy.api.commons.exceptions.CacheInitializationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
@@ -50,8 +51,10 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         Cache rateLimitCache = cacheManager.getCache(RATE_LIMIT_CACHE_NAME);
 
         if (verificationTokenCache == null || rateLimitCache == null) {
-            throw new IllegalStateException("Required caches not found: "
-                + "emailVerificationToken or emailVerificationRateLimit");
+            throw new CacheInitializationException(
+                "cache",
+                "Required caches not found: "
+                    + "emailVerificationToken or emailVerificationRateLimit");
         }
     }
 

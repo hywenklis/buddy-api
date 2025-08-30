@@ -16,6 +16,7 @@ import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
+import com.buddy.api.commons.exceptions.CacheInitializationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.domains.account.dtos.AccountDto;
@@ -236,6 +237,20 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
             assertThat(emailBodyCaptor.getValue())
                 .contains("Olá, Buddy!")
                 .contains(VERIFICATION_URL + capturedToken);
+        }
+
+        @Test
+        @DisplayName("Should throw CacheInitializationException if caches are null")
+        void should_throw_cache_initialization_exception_if_caches_null() {
+            when(cacheManager.getCache(VERIFICATION_TOKEN_CACHE_NAME)).thenReturn(null);
+            when(cacheManager.getCache(RATE_LIMIT_CACHE_NAME)).thenReturn(null);
+
+            assertThatThrownBy(() -> emailVerificationService.init())
+                .isInstanceOf(CacheInitializationException.class)
+                .hasMessageContaining("Required caches not found");
+
+            verify(cacheManager, times(2)).getCache(VERIFICATION_TOKEN_CACHE_NAME);
+            verify(cacheManager, times(2)).getCache(RATE_LIMIT_CACHE_NAME);
         }
     }
 
