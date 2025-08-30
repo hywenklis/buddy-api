@@ -45,6 +45,7 @@ ext {
     set('flywayPostgresVersion', '11.1.0')
     set('jwtVersion', '0.12.6')
     set('embeddedRedisVersion', '1.4.3')
+    set('awaitilityVersion', '4.3.0')
 }
 
 dependencies {
@@ -91,6 +92,7 @@ dependencies {
     testImplementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
     testImplementation "org.springframework.cloud:spring-cloud-contract-wiremock"
     testImplementation "com.github.codemonstur:embedded-redis:${embeddedRedisVersion}"
+    testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
 }
 
 dependencyManagement {

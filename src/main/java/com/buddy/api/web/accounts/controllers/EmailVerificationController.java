@@ -7,11 +7,12 @@ import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.web.accounts.requests.ConfirmEmailRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,21 +24,21 @@ public class EmailVerificationController {
     private final FindAccount accountService;
 
     @PostMapping("/request")
-    public ResponseEntity<Void> requestVerification(
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void requestVerification(
         final @AuthenticationPrincipal AuthenticatedUser user
     ) {
         AccountDto account = accountService.findByEmail(user.getEmail());
         emailVerificationService.requestEmail(account);
-        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<Void> confirm(
+    @ResponseStatus(HttpStatus.OK)
+    public void confirm(
         final @RequestBody @Valid ConfirmEmailRequest request,
         final @AuthenticationPrincipal AuthenticatedUser user
     ) {
         AccountDto account = accountService.findByEmail(user.getEmail());
         emailVerificationService.confirmEmail(request.token(), account);
-        return ResponseEntity.ok().build();
     }
 }

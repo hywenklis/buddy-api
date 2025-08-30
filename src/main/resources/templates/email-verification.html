@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang='pt-BR'>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset='UTF-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -8,7 +9,16 @@
     <meta name='supported-color-schemes' content='light dark'>
     <title>Confirme seu E-mail</title>
     <style type="text/css">
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'); @media (prefers-color-scheme: dark){body, .wrapper{background-color: #121212 !important;}.main-content{background-color: #1e1e1e !important;box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;}.header-text, .primary-text-p, .primary-text-b{color: #e0e0e0 !important;}.secondary-text-p{color: #a0a0a0 !important;}.footer-text-p, .footer-text-span{color: #888888 !important;}.footer-link{color: #5ea8ff !important;}.footer-border{border-top: 1px solid #333333 !important;}}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        @media (prefers-color-scheme: dark) {
+            body, .wrapper { background-color: #121212 !important; }
+            .main-content { background-color: #1e1e1e !important; box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; }
+            .header-text, .primary-text-p, .primary-text-b { color: #e0e0e0 !important; }
+            .secondary-text-p { color: #a0a0a0 !important; }
+            .footer-text-p, .footer-text-span { color: #888888 !important; }
+            .footer-link { color: #5ea8ff !important; }
+            .footer-border { border-top: 1px solid #333333 !important; }
+        }
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: 'Inter', Arial, sans-serif;">
@@ -17,8 +27,7 @@
 </div>
 <div class='wrapper' style='width: 100%; table-layout: fixed; background-color: #f8f9fa; padding: 40px 20px;'>
     <!--[if mso]>
-    <table width='550' align='center' style='border-collapse:collapse;margin:0 auto;' cellpadding='0' cellspacing='0'
-           role='presentation'>
+    <table width='550' align='center' style='border-collapse:collapse;margin:0 auto;' cellpadding='0' cellspacing='0' role='presentation'>
         <tr>
             <td><![endif]-->
     <table class='main-content' role='presentation' border='0' cellpadding='0' cellspacing='0' align='center'
@@ -34,48 +43,55 @@
             </td>
         </tr>
         <tr>
-            <td style='padding: 16px 32px 16px 32px; font-size: 17px;'><p class='primary-text-p'
-                                                                          style="margin: 0; line-height: 1.5; font-size: 18px; font-weight: bold; color: #212529; font-family: 'Inter', Arial, sans-serif;">
-                <b
-                        class='primary-text-b' style='color: #212529;'>Bem-vindo(a)!</b>
+            <td style='padding: 16px 32px 16px 32px; font-size: 17px;'>
                 <p class='primary-text-p'
-                   style="margin: 0; line-height: 1.5; margin-top: 16px; color: #212529; font-family: 'Inter', Arial,
-                sans-serif;">O seu cadastro está quase pronto para transformar a vida de um novo amigo. Por favor,
-                    confirme o seu e-mail para ativarmos a sua conta.
+                   style="margin: 0; line-height: 1.5; font-size: 18px; color: #212529; font-family: 'Inter', Arial, sans-serif;">
+                    Olá, amigo dos animais!
+                </p>
+                <p class='primary-text-p'
+                   style="margin: 0; line-height: 1.5; margin-top: 16px; color: #212529; font-family: 'Inter', Arial, sans-serif;">
+                    Falta bem pouco para você conseguir transformar a vida de um novo amigo. Por favor, confirme o e-mail para ativarmos a sua conta.
+                </p>
             </td>
         </tr>
         <tr>
             <td style='padding: 24px 32px;'>
                 <table role='presentation' border='0' cellpadding='0' cellspacing='0' width='100%'>
                     <tr>
-                        <td align='left'><a href="%s" target="_blank" rel="noopener noreferrer"
-                                            style="font-size: 16px; font-family: 'Inter', Arial, sans-serif; font-weight: bold; text-decoration: none; color: #ffffff; background-color: #3b82f6; border: 1px solid #3b82f6; border-radius: 8px; padding: 15px 38px; display: inline-block;">Confirmar
-                            meu e-mail</a>
+                        <td align='left'>
+                            <a href="{{url}}" target="_blank" rel="noopener noreferrer"
+                               style="font-size: 16px; font-family: 'Inter', Arial, sans-serif; font-weight: bold; text-decoration: none; color: #ffffff; background-color: #3b82f6; border: 1px solid #3b82f6; border-radius: 8px; padding: 15px 38px; display: inline-block;">
+                                Confirmar meu e-mail
+                            </a>
                         </td>
                     </tr>
                 </table>
             </td>
         </tr>
         <tr>
-            <td style='padding: 0px 32px 32px 32px;'><p class='secondary-text-p'
-                                                        style='color: #6c757d; font-size: 14px; margin: 0; line-height: 1.5; font-family: "Inter", Arial, sans-serif;'>
-                Se você não solicitou este cadastro,
-                pode ignorar esta mensagem com segurança.</p></td>
+            <td style='padding: 0px 32px 32px 32px;'>
+                <p class='secondary-text-p'
+                   style='color: #6c757d; font-size: 14px; margin: 0; line-height: 1.5; font-family: "Inter", Arial, sans-serif;'>
+                    Se você não solicitou este cadastro, pode ignorar esta mensagem com segurança.
+                </p>
+            </td>
         </tr>
         <tr>
             <td class='footer-border' style='border-top: 1px solid #dee2e6;'></td>
         </tr>
         <tr>
-            <td style='padding: 24px 32px; font-size: 12px; text-align: center;'><p class='footer-text-p'
-                                                                                    style='color: #6c757d; margin: 0; line-height: 1.5; font-family: "Inter", Arial, sans-serif;'>
-                Dúvidas?
-                <a href='mailto:buddy.contato.app@gmail.com' class='footer-link'
-                   style='color:#3b82f6; text-decoration:none; font-weight: bold;'>Fale com a equipe
-                    Buddy</a><br><br><span class='footer-text-span' style='color: #adb5bd;'>© 2025 Buddy | Por um mundo com mais lares e mais amor</span>
-            </p>
+            <td style='padding: 24px 32px; font-size: 12px; text-align: center;'>
+                <p class='footer-text-p'
+                   style='color: #6c757d; margin: 0; line-height: 1.5; font-family: "Inter", Arial, sans-serif;'>
+                    Dúvidas?
+                    <a href='mailto:buddy.contato.app@gmail.com' class='footer-link'
+                       style='color:#3b82f6; text-decoration:none; font-weight: bold;'>Fale com a equipe Buddy</a><br><br>
+                    <span class='footer-text-span' style='color: #adb5bd;'>© 2025 Buddy | Por um mundo com mais lares e mais amor</span>
+                </p>
             </td>
         </tr>
     </table>
-    <!--[if mso]></td></tr></table><![endif]--></div>
+    <!--[if mso]></td></tr></table><![endif]-->
+</div>
 </body>
 </html>

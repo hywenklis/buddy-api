@@ -1,3 +1,22 @@
+## 2025-08-30 [*](https://github.com/hywenklis/buddy-api/pull/203)
+
+Fix/email template
+*PR: [#203](https://github.com/hywenklis/buddy-api/pull/203)*
+
+### Added
+- Async email dispatch, rate limit properties, and tests for email verification components
+  *Commits: [chore](https://github.com/hywenklis/buddy-api/commit/chore), [chore](https://github.com/hywenklis/buddy-api/commit/chore) by @hywenklis*
+
+### Changed
+- Refactored email verification flow with token manager, validators, and repository updates
+  *Commits: [chore](https://github.com/hywenklis/buddy-api/commit/chore) by @hywenklis*
+
+### Fixed
+- Improved email template formatting and placeholders
+  *Commits: [fix](https://github.com/hywenklis/buddy-api/commit/fix) by @hywenklis*
+
+**PR Author:** @hywenklis**
+
 ## 2025-08-19 [*](https://github.com/hywenklis/buddy-api/pull/198)
 
 Develop

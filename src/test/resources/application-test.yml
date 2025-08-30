@@ -12,6 +12,9 @@ server:
 spring:
   application:
     name: buddy
+  threads:
+    virtual:
+      enabled: true
   main:
     allow-bean-definition-overriding: true
   cache:
@@ -60,6 +63,10 @@ manager:
     app-id: "5a5192be-c4bf-4ebb-924d-731ba927a0fd"
 
 buddy:
+  rate:
+    limit:
+      max-attempts: 1
+      window-minutes: 1
   email:
     templates:
       from: "buddy.contato.app@gmail.com"
