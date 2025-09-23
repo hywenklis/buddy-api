@@ -5,9 +5,9 @@ Build: change db image version
 
 ### Changed
 - Align development Postgres image version with production
-  *Commits: [build](https://github.com/hywenklis/buddy-api/commit/build) by @hywenklis*
+  *Commits: [build](https://github.com/hywenklis/buddy-api/commit/build) by @FSLucas22*
 
-**PR Author:** @hywenklis**
+**PR Author:** @FSLucas22**
 
 ## 2025-09-23 [*](https://github.com/hywenklis/buddy-api/pull/211)
 
