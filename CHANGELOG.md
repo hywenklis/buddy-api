@@ -1,3 +1,13 @@
+## 2025-09-24 [*](https://github.com/hywenklis/buddy-api/pull/214)
+
+Chore: adjust changelog
+*PR: [#214](https://github.com/hywenklis/buddy-api/pull/214)*
+
+### Changed
+- Updated changelog generation rules in automation config
+
+**PR Author:** @hywenklis**
+
 ## 2025-09-24 [*](https://github.com/hywenklis/buddy-api/pull/212)
 
 Chore: update PR agent config and add git log support
