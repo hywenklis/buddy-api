@@ -8,10 +8,12 @@ import com.buddy.api.integrations.clients.manager.request.ManagerGatewayRequest;
 import com.buddy.api.integrations.clients.manager.response.ManagerAuthResponse;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -39,10 +41,11 @@ public class ManagerService {
         }
     }
 
-    public void sendEmailNotification(final List<String> recipients,
-                                      final String from,
-                                      final String subject,
-                                      final String body
+    @Async
+    public CompletableFuture<Void> sendEmailNotification(final List<String> recipients,
+                                                         final String from,
+                                                         final String subject,
+                                                         final String body
     ) {
         log.info("Preparing to send email notification to Manager API - Gateway");
         final String token = getValidToken();
@@ -72,6 +75,7 @@ public class ManagerService {
         );
 
         log.info("Email dispatch instruction sent successfuly to recipients: {}", recipients);
+        return CompletableFuture.completedFuture(null);
     }
 
     private Optional<String> findTokenInCache() {

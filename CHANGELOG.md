@@ -1,3 +1,44 @@
+## 2025-09-23 [*](https://github.com/hywenklis/buddy-api/pull/211)
+
+Build: change db image version
+*PR: [#211](https://github.com/hywenklis/buddy-api/pull/211)*
+
+### Changed
+- Align development Postgres image version with production
+  *Commits: [build](https://github.com/hywenklis/buddy-api/commit/build) by @FSLucas22*
+
+**PR Author:** @FSLucas22**
+
+## 2025-09-23 [*](https://github.com/hywenklis/buddy-api/pull/211)
+
+Build: align development database image with production
+*PR: [#211](https://github.com/hywenklis/buddy-api/pull/211)*
+
+### Changed
+- Updated Postgres image version for local environment to match production
+  *Commits: [build](https://github.com/hywenklis/buddy-api/commit/build) by @hywenklis*
+
+**PR Author:** @hywenklis**
+
+## 2025-08-30 [*](https://github.com/hywenklis/buddy-api/pull/203)
+
+Fix/email template
+*PR: [#203](https://github.com/hywenklis/buddy-api/pull/203)*
+
+### Added
+- Async email dispatch, rate limit properties, and tests for email verification components
+  *Commits: [chore](https://github.com/hywenklis/buddy-api/commit/chore), [chore](https://github.com/hywenklis/buddy-api/commit/chore) by @hywenklis*
+
+### Changed
+- Refactored email verification flow with token manager, validators, and repository updates
+  *Commits: [chore](https://github.com/hywenklis/buddy-api/commit/chore) by @hywenklis*
+
+### Fixed
+- Improved email template formatting and placeholders
+  *Commits: [fix](https://github.com/hywenklis/buddy-api/commit/fix) by @hywenklis*
+
+**PR Author:** @hywenklis**
+
 ## 2025-08-19 [*](https://github.com/hywenklis/buddy-api/pull/198)
 
 Develop
