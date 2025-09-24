@@ -6,7 +6,13 @@ pr_commands = [
 ]
 
 [git_log]
-command = "git log -n 5 --pretty=fuller"
+executable = "git"
+args = [
+    "log",
+    "-n",
+    "5",
+    "--pretty=fuller"
+]
 
 [best_practices]
 enable_global_best_practices = true #
