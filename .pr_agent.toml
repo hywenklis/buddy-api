@@ -1,8 +1,12 @@
 [github_app]
 pr_commands = [
     "/improve",
-    "/update_changelog"
+    "/update_changelog",
+    "/git_log"
 ]
+
+[git_log]
+command = "git log -n 5 --pretty=fuller"
 
 [best_practices]
 enable_global_best_practices = true #
