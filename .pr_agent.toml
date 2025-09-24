@@ -1,7 +1,17 @@
 [github_app]
 pr_commands = [
     "/improve",
-    "/update_changelog"
+    "/update_changelog",
+    "/git_log"
+]
+
+[git_log]
+executable = "git"
+args = [
+    "log",
+    "-n",
+    "5",
+    "--pretty=fuller"
 ]
 
 [best_practices]
