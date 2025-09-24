@@ -1,3 +1,28 @@
+## 2025-09-24 [*](https://github.com/hywenklis/buddy-api/pull/214)
+
+Chore: adjust changelog
+*PR: [#214](https://github.com/hywenklis/buddy-api/pull/214)*
+
+### Changed
+- Updated changelog generation rules in automation config
+
+**PR Author:** @hywenklis**
+
+## 2025-09-24 [*](https://github.com/hywenklis/buddy-api/pull/212)
+
+Chore: update PR agent config and add git log support
+*PR: [#212](https://github.com/hywenklis/buddy-api/pull/212)*
+
+### Added
+- Introduced git log command support in PR agent configuration
+  *Commits: [remove command](https://github.com/hywenklis/buddy-api/commit/0000000), [add executable](https://github.com/hywenklis/buddy-api/commit/0000000) by @hywenklis*
+
+### Changed
+- Adjusted changelog generation settings in automation config
+  *Commits: [chore](https://github.com/hywenklis/buddy-api/commit/0000000) by @hywenklis*
+
+**PR Author:** @hywenklis**
+
 ## 2025-09-23 [*](https://github.com/hywenklis/buddy-api/pull/211)
 
 Build: change db image version

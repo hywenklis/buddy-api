@@ -1,7 +1,17 @@
 [github_app]
 pr_commands = [
     "/improve",
-    "/update_changelog"
+    "/update_changelog",
+    "/git_log"
+]
+
+[git_log]
+executable = "git"
+args = [
+    "log",
+    "-n",
+    "5",
+    "--pretty=fuller"
 ]
 
 [best_practices]
@@ -20,10 +30,6 @@ Follow these rules to create the changelog entry:
 1.  **Title:** Start with a clear, descriptive title that summarizes the pull request.
 2.  **PR Link:** Directly below the title, add a link to the pull request, formatted like this: `*PR: [#123](https://github.com/owner/repo/pull/123)*`.
 3.  **Sections:** Group all changes into the standard categories: `### Added`, `### Changed`, and `### Fixed`.
-4.  **Change Details:** For each individual change listed as a bullet point:
-    - On a new line, list the associated commits and the author.
-    - **Commit Links:** Must be formatted as Markdown links. Use the short commit hash for the link text (e.g., `[a1b2c3d](https://github.com/owner/repo/commit/a1b2c3d)`).
-    - **Author Mentions:** Use the GitHub handle format (e.g., `@username`).
-    - *Example line:* `*Commits: [a1b2c3d](...), [e4f5g6h](...) by @username*`
+4.  **Change Details:** List each change as a bullet point.
 5.  **PR Author:** At the very end of the entry, credit the main author of the pull request, like this: `**PR Author:** @username`.
 """
