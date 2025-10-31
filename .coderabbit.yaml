@@ -1,0 +1,11 @@
+reviews:
+  base_branches:
+    - main
+    - develop
+    - 'release/*'
+    - 'hotfix/*'
+
+  disable_review_for_draft: true
+  request_changes_on_review: true
+summaries:
+  enabled: true

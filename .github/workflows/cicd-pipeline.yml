@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   validate_pr:
-    name: AI Review & Build PR
+    name: Build PR
     if: github.event.action != 'closed' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
     permissions:
@@ -45,87 +45,6 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
-      - name: Prepare for AI Review
-        id: prepare_ai_review
-        run: |
-          DIFF=$(git diff ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head_sha }})
-          if [ -z "$DIFF" ] || [ ${#DIFF} -lt 50 ]; then
-            echo "Warning: Diff is empty or too small, skipping AI review."
-            echo "should_run=false" >> $GITHUB_OUTPUT
-          else
-            echo "should_run=true" >> $GITHUB_OUTPUT
-            echo "$DIFF" > diff.txt
-          fi
-
-      - name: Generate AI summary
-        id: generate_summary
-        if: steps.prepare_ai_review.outputs.should_run == 'true'
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          ESCAPED_DIFF=$(jq -Rs . < diff.txt)
-          cat > payload.json <<EOF
-          {
-            "model": "openai/gpt-4o",
-            "messages": [
-              { "role": "system", "content": "Você é um engenheiro de software sênior. Sua tarefa é analisar o diff de código a seguir e gerar um resumo técnico em formato markdown para a descrição de um Pull Request. **Comece diretamente com os pontos de análise, sem adicionar um título próprio como 'Resumo da Pull Request'.** O resumo deve ser conciso e focar nos seguintes pontos: 1. **Propósito da Mudança**; 2. **Principais Alterações Técnicas** (classes, métodos, lógica); 3. **Possíveis Impactos ou Riscos**. A resposta deve ser em PORTUGUÊS BRASILEIRO e em formato markdown puro, sem envolvê-la em blocos de código." },
-              { "role": "user", "content": $ESCAPED_DIFF }
-            ]
-          }
-          EOF
-          HTTP_RESPONSE=$(curl -s -w "%{http_code}" -X POST https://openrouter.ai/api/v1/chat/completions -H "Content-Type: application/json" -H "Authorization: Bearer $OPENROUTER_API_KEY" --data-binary @payload.json -o response.json -m 90)
-          if [ "$HTTP_RESPONSE" -ge 400 ]; then
-             echo "Error: API call failed with status code $HTTP_RESPONSE."
-             cat response.json
-             exit 1
-          fi
-          SUMMARY=$(jq -r '.choices[0].message.content // ""' < response.json)
-          if [ -z "$SUMMARY" ]; then
-            SUMMARY="### Análise da IA\n\nA IA não conseguiu gerar uma análise para estas alterações."
-          fi
-          echo "$SUMMARY" > summary.md
-          echo "has_summary=true" >> $GITHUB_OUTPUT
-
-      - name: Update PR title and description with AI summary
-        if: steps.generate_summary.outputs.has_summary == 'true'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const summary = fs.readFileSync('summary.md', 'utf8');
-            if (!summary.trim()) { return; }
-            const { owner, repo } = context.repo;
-            const pull_number = context.payload.pull_request.number;
-            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
-            
-            // --- Lógica para o Corpo da PR (Description) ---
-            const oldBody = pr.body || '';
-            const markerStart = '### Análise Automática da IA';
-            const markerEnd = '---';
-            const startIndex = oldBody.indexOf(markerStart);
-            let cleanBody = oldBody;
-            if (startIndex !== -1) {
-              const endIndex = oldBody.indexOf(markerEnd, startIndex);
-              cleanBody = (endIndex !== -1) ? oldBody.substring(0, startIndex) + oldBody.substring(endIndex + markerEnd.length) : oldBody.substring(0, startIndex);
-            }
-            const newBody = `${markerStart}\n\n${summary}\n\n${markerEnd}\n${cleanBody.trim()}`.trim();
-
-            // --- Lógica para o Título da PR (Title) ---
-            let newTitle = pr.title;
-            const titleMatch = summary.match(/^\s*(?:\d+\.|\*)\s*(.+)/m);
-            if (titleMatch && titleMatch[1]) {
-                const summaryTitle = titleMatch[1].trim().replace(/\.$/, ''); 
-            
-                if (!pr.title.toLowerCase().includes('update')) {
-                   newTitle = summaryTitle; 
-                } else {
-                   newTitle = summaryTitle;
-                }
-            }
-            
-            await github.rest.pulls.update({ owner, repo, pull_number, body: newBody, title: newTitle });
 
       - name: Set up Java
         uses: actions/setup-java@v5
