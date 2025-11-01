@@ -345,7 +345,7 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const new_tag = "${{ steps.create_tag.outputs.new_tag }}";
-            const sync_branch = "${{ steps.create_sync_branch.outputs.branch_name }}";
+            const sync_branch = "${{ steps.sync_branch.outputs.branch_name }}";
             
             await github.rest.pulls.create({
               owner: owner,
