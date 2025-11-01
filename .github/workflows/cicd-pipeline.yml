@@ -313,15 +313,17 @@ jobs:
 
       - name: Create Sync Branch (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        id: create_sync_branch
         uses: actions/checkout@v5
         with:
-          ref: 'develop' # Começa da develop
+          ref: 'develop'
           fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
-      - run: |
+
+      - name: Configure and Push Sync Branch
+        id: sync_branch
+        run: |
           SYNC_BRANCH_NAME="bot/sync-main-to-develop-${{ steps.create_tag.outputs.new_tag }}"
-          echo "::set-output name=branch_name::$SYNC_BRANCH_NAME"
+          echo "branch_name=$SYNC_BRANCH_NAME" >> $GITHUB_OUTPUT
           
           git config user.name "GitHub Actions Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -361,9 +363,11 @@ jobs:
         uses: actions/checkout@v5
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
-      - run: |
+      - env:
+          BRANCH_TO_DELETE: ${{ github.event.pull_request.head.ref }}
+        run: |
           echo "Deleting merged release/hotfix branch: ${{ github.event.pull_request.head.ref }}"
-          git push origin --delete ${{ github.event.pull_request.head.ref }}
+          git push origin --delete "$BRANCH_TO_DELETE"
 
   deploy_to_jenkins:
     name: Deploy to Jenkins
