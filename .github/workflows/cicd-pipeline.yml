@@ -98,6 +98,7 @@ jobs:
 
   codeql_analysis:
     name: CodeQL Analysis
+    if: github.event.action != 'closed' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
     permissions:
       actions: read
