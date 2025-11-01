@@ -5,7 +5,7 @@ env:
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, closed]
+    types: [ opened, synchronize, reopened, labeled, closed ]
     branches:
       - main
       - master
@@ -116,7 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["java"]
+        language: [ "java" ]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@v2.12.0
@@ -210,11 +210,17 @@ jobs:
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
 
+      - name: Set Source Branch
+        id: source_branch
+        run: |
+          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
       - name: Delete Merged Feature Branch
         run: |
-          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           echo "Deleting merged feature branch: $SOURCE_BRANCH"
           git push origin --delete $SOURCE_BRANCH
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
 
   prepare_major_release:
     name: Prepare Major Release Branch (MAJOR)
@@ -259,11 +265,17 @@ jobs:
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
 
+      - name: Set Source Branch
+        id: source_branch
+        run: |
+          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
       - name: Delete Merged Feature Branch
         run: |
-          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           echo "Deleting merged feature branch: $SOURCE_BRANCH"
           git push origin --delete $SOURCE_BRANCH
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
 
   finalize_release:
     name: Tag Release & Sync Develop
@@ -329,12 +341,18 @@ jobs:
           git push origin develop
           echo "Develop branch is now up-to-date with main."
 
+      - name: Set Source Branch
+        id: source_branch
+        run: |
+          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
       - name: Delete Merged Release or Hotfix Branch
         if: steps.create_tag.outputs.should_run == 'true'
         run: |
-          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
-          echo "Deleting merged release/hotfix branch: $SOURCE_BRANCH"
+          echo "Deleting merged feature branch: $SOURCE_BRANCH"
           git push origin --delete $SOURCE_BRANCH
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
 
   deploy_to_jenkins:
     name: Deploy to Jenkins
