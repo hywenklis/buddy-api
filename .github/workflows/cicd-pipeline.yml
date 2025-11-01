@@ -1,0 +1,369 @@
+name: CI/CD Pipeline Completo
+
+env:
+  JAVA_VERSION: '21'
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, labeled, closed ]
+    branches:
+      - main
+      - master
+      - develop
+      - 'release/*'
+      - 'hotfix/*'
+  push:
+    branches:
+      - main
+      - master
+  schedule:
+    - cron: "0 0 * * 1" # Para CodeQL
+    - cron: '20 7 * * 2' # Para Scorecard
+  branch_protection_rule: # Para Scorecard
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  validate_pr:
+    name: Build PR
+    if: github.event.action != 'closed' && github.event.action != 'labeled'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.12.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Use Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build and test with Gradle wrapper
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build test jacocoTestReport --no-daemon
+
+      - name: Publish Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Test Results
+          junit_files: '**/build/test-results/**/*.xml'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          slug: ${{ github.repository }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  dependency_review:
+    name: Dependency Review
+    if: github.event.action != 'closed' && github.event.action != 'labeled'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.12.0
+        with:
+          egress-policy: audit
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v5
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v4
+
+  codeql_analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ "java" ]
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.12.0
+        with:
+          egress-policy: audit
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  scorecard_analysis:
+    name: Scorecard Analysis
+    if: github.event_name == 'branch_protection_rule' || github.event_name == 'schedule' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2.12.0
+        with:
+          egress-policy: audit
+      - name: "Checkout code"
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: "Run analysis"
+        uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v5
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+      - name: "Upload to code-scanning"
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+  prepare_minor_release:
+    name: Prepare Minor Release Branch (MINOR)
+    if: >
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'develop' &&
+      contains(github.event.pull_request.labels.*.name, 'create-release') &&
+      !contains(github.event.pull_request.labels.*.name, 'create-major-release')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout develop branch
+        uses: actions/checkout@v5
+        with:
+          ref: 'develop'
+          fetch-depth: 0
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Calculate and Create New MINOR Release Branch
+        run: |
+          git fetch --prune --tags
+          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
+          if [ -z "$LAST_TAG" ]; then
+            LAST_TAG="v0.0.0"
+          fi
+          echo "Last tag: $LAST_TAG"
+          LAST_TAG_NUM=${LAST_TAG#v}
+          IFS='.' read -r -a V <<< "$LAST_TAG_NUM"
+          # Incrementa o MINOR e reseta o PATCH
+          V[1]=$((V[1] + 1))
+          V[2]=0
+          NEW_VERSION="v${V[0]}.${V[1]}.${V[2]}"
+          BRANCH_NAME="release/$NEW_VERSION"
+          echo "Creating new branch from develop: $BRANCH_NAME"
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+
+      - name: Set Source Branch
+        id: source_branch
+        run: |
+          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
+      - name: Delete Merged Feature Branch
+        run: |
+          echo "Deleting merged feature branch: $SOURCE_BRANCH"
+          git push origin --delete $SOURCE_BRANCH
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+
+  prepare_major_release:
+    name: Prepare Major Release Branch (MAJOR)
+    if: >
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'develop' &&
+      contains(github.event.pull_request.labels.*.name, 'create-major-release')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout develop branch
+        uses: actions/checkout@v5
+        with:
+          ref: 'develop'
+          fetch-depth: 0
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Calculate and Create New MAJOR Release Branch
+        run: |
+          git fetch --prune --tags
+          LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
+          if [ -z "$LAST_TAG" ]; then
+            LAST_TAG="v0.0.0"
+          fi
+          echo "Last tag: $LAST_TAG"
+          LAST_TAG_NUM=${LAST_TAG#v}
+          IFS='.' read -r -a V <<< "$LAST_TAG_NUM"
+          
+          # --- LÓGICA PARA INCREMENTAR O MAJOR ---
+          V[0]=$((V[0] + 1)) 
+          V[1]=0             
+          V[2]=0            
+          NEW_VERSION="v${V[0]}.${V[1]}.${V[2]}"
+          # ----------------------------------------
+          
+          BRANCH_NAME="release/$NEW_VERSION"
+          echo "Creating new branch from develop: $BRANCH_NAME"
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+
+      - name: Set Source Branch
+        id: source_branch
+        run: |
+          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
+      - name: Delete Merged Feature Branch
+        run: |
+          echo "Deleting merged feature branch: $SOURCE_BRANCH"
+          git push origin --delete $SOURCE_BRANCH
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+
+  finalize_release:
+    name: Tag Release & Sync Develop
+    if: >
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'master')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      new_tag: ${{ steps.create_tag.outputs.new_tag }}
+      tagged: ${{ steps.create_tag.outputs.should_run }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v5
+        with:
+          ref: 'main'
+          fetch-depth: 0
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Create and Push Gitflow Tag
+        id: create_tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
+          NEW_TAG=""
+          echo "Source branch for merge to main is: $SOURCE_BRANCH"
+          
+          if [[ "$SOURCE_BRANCH" == "release/"* ]]; then
+            NEW_TAG=$(echo $SOURCE_BRANCH | sed 's/release\///')
+            echo "Release branch merge. Tag will be: $NEW_TAG"
+          elif [[ "$SOURCE_BRANCH" == "hotfix/"* ]]; then
+            LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
+            LAST_TAG_NUM=${LAST_TAG#v}
+            IFS='.' read -r -a V <<< "$LAST_TAG_NUM"
+            V[2]=$((V[2] + 1))
+            NEW_TAG="v${V[0]}.${V[1]}.${V[2]}"
+            echo "Hotfix branch merge. New patch tag will be: $NEW_TAG"
+          else
+            echo "Merge to main is not from a release/hotfix branch. Skipping."
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "new_tag=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          git tag $NEW_TAG ${{ github.event.pull_request.merge_commit_sha }}
+          git push origin $NEW_TAG
+          echo "Tag $NEW_TAG created and pushed."
+          echo "should_run=true" >> $GITHUB_OUTPUT
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Sync main back to develop
+        if: steps.create_tag.outputs.should_run == 'true'
+        run: |
+          echo "Syncing main back into develop..."
+          git fetch origin develop
+          git checkout develop
+          git merge origin/main --no-ff -m "chore: sync main after release [skip ci]"
+          git push origin develop
+          echo "Develop branch is now up-to-date with main."
+
+      - name: Set Source Branch
+        id: source_branch
+        run: |
+          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+
+      - name: Delete Merged Release or Hotfix Branch
+        if: steps.create_tag.outputs.should_run == 'true'
+        run: |
+          echo "Deleting merged feature branch: $SOURCE_BRANCH"
+          git push origin --delete $SOURCE_BRANCH
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+
+  deploy_to_jenkins:
+    name: Deploy to Jenkins
+    runs-on: ubuntu-latest
+    needs: finalize_release
+    if: needs.finalize_release.result == 'success' && needs.finalize_release.outputs.tagged == 'true'
+    steps:
+      - name: "Deploy to Jenkins"
+        run: |
+          echo "Triggering Jenkins deploy for tag: ${{ needs.finalize_release.outputs.new_tag }}"
+          # Você pode passar a tag para o Jenkins, se ele aceitar:
+          # &NEW_TAG=${{ needs.finalize_release.outputs.new_tag }}
+          curl -X POST "${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB }}/buildWithParameters?PROJECT=${{ secrets.JENKINS_PROJECT }}&GIT_BRANCH=main" \
+          --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
