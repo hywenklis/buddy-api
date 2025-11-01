@@ -1,8 +1,5 @@
 name: CI/CD Pipeline Completo
 
-env:
-  JAVA_VERSION: '21'
-
 on:
   pull_request:
     types: [ opened, synchronize, reopened, labeled, closed ]
@@ -28,7 +25,9 @@ concurrency:
 jobs:
   validate_pr:
     name: Build PR
-    if: github.event.action != 'closed' && github.event.action != 'labeled'
+    env:
+      JAVA_VERSION: '21'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -82,7 +81,7 @@ jobs:
 
   dependency_review:
     name: Dependency Review
-    if: github.event.action != 'closed' && github.event.action != 'labeled'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -98,7 +97,7 @@ jobs:
 
   codeql_analysis:
     name: CodeQL Analysis
-    if: github.event.action != 'closed' && github.event.action != 'labeled'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.action != 'labeled'
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -270,6 +269,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     outputs:
       new_tag: ${{ steps.create_tag.outputs.new_tag }}
       tagged: ${{ steps.create_tag.outputs.should_run }}
@@ -279,7 +279,6 @@ jobs:
         with:
           ref: 'main'
           fetch-depth: 0
-          ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
 
       - name: Configure Git User
         run: |
@@ -291,18 +290,14 @@ jobs:
         run: |
           SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           NEW_TAG=""
-          echo "Source branch for merge to main is: $SOURCE_BRANCH"
-          
           if [[ "$SOURCE_BRANCH" == "release/"* ]]; then
             NEW_TAG=$(echo $SOURCE_BRANCH | sed 's/release\///')
-            echo "Release branch merge. Tag will be: $NEW_TAG"
           elif [[ "$SOURCE_BRANCH" == "hotfix/"* ]]; then
             LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
             LAST_TAG_NUM=${LAST_TAG#v}
             IFS='.' read -r -a V <<< "$LAST_TAG_NUM"
             V[2]=$((V[2] + 1))
             NEW_TAG="v${V[0]}.${V[1]}.${V[2]}"
-            echo "Hotfix branch merge. New patch tag will be: $NEW_TAG"
           else
             echo "Merge to main is not from a release/hotfix branch. Skipping."
             echo "should_run=false" >> $GITHUB_OUTPUT
@@ -316,23 +311,63 @@ jobs:
           echo "should_run=true" >> $GITHUB_OUTPUT
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
-      - name: Sync main back to develop
+      - name: Create Sync Branch (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
+        uses: actions/checkout@v5
+        with:
+          ref: 'develop'
+          fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
+
+      - name: Configure and Push Sync Branch
+        id: sync_branch
         run: |
-          echo "Syncing main back into develop..."
-          git fetch origin develop
-          git checkout develop
-          git merge origin/main --no-ff -m "chore: sync main after release [skip ci]"
-          git push origin develop
-          echo "Develop branch is now up-to-date with main."
+          SYNC_BRANCH_NAME="bot/sync-main-to-develop-${{ steps.create_tag.outputs.new_tag }}"
+          echo "branch_name=$SYNC_BRANCH_NAME" >> $GITHUB_OUTPUT
+          
+          git config user.name "GitHub Actions Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          echo "Creating sync branch: $SYNC_BRANCH_NAME"
+          git checkout -b $SYNC_BRANCH_NAME
+          
+          echo "Merging main into sync branch..."
+          git merge origin/main --no-ff -m "chore: sync main after release ${{ steps.create_tag.outputs.new_tag }} [skip ci]"
+          
+          echo "Pushing sync branch..."
+          git push origin $SYNC_BRANCH_NAME
+
+      - name: Open Pull Request (main -> develop)
+        if: steps.create_tag.outputs.should_run == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const new_tag = "${{ steps.create_tag.outputs.new_tag }}";
+            const sync_branch = "${{ steps.sync_branch.outputs.branch_name }}";
+            
+            await github.rest.pulls.create({
+              owner: owner,
+              repo: repo,
+              title: `🤖 Sync: main -> develop (Release ${new_tag})`,
+              head: sync_branch,
+              base: 'develop',
+              body: `Sincronização automática da \`main\` de volta para a \`develop\` após a release \`${new_tag}\`.
+            
+              Este PR rodará os status checks. Assim que passarem, pode ser mergeado.`
+            });
 
       - name: Delete Merged Release or Hotfix Branch
         if: steps.create_tag.outputs.should_run == 'true'
+        uses: actions/checkout@v5
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
+      - env:
+          BRANCH_TO_DELETE: ${{ github.event.pull_request.head.ref }}
         run: |
-          echo "Deleting merged release/hotfix branch: $SOURCE_BRANCH"
-          git push origin --delete $SOURCE_BRANCH
-        env:
-          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          echo "Deleting merged release/hotfix branch: ${{ github.event.pull_request.head.ref }}"
+          git push origin --delete "$BRANCH_TO_DELETE"
 
   deploy_to_jenkins:
     name: Deploy to Jenkins
