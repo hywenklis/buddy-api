@@ -178,10 +178,13 @@ jobs:
         with:
           ref: 'develop'
           fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
+
       - name: Configure Git User
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Calculate and Create New MINOR Release Branch
         run: |
           git fetch --prune --tags
@@ -223,10 +226,13 @@ jobs:
         with:
           ref: 'develop'
           fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
+
       - name: Configure Git User
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Calculate and Create New MAJOR Release Branch
         run: |
           git fetch --prune --tags
@@ -273,14 +279,15 @@ jobs:
         with:
           ref: 'main'
           fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
+
       - name: Configure Git User
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Create and Push Gitflow Tag
         id: create_tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           NEW_TAG=""
@@ -306,7 +313,7 @@ jobs:
           git tag $NEW_TAG ${{ github.event.pull_request.merge_commit_sha }}
           git push origin $NEW_TAG
           echo "Tag $NEW_TAG created and pushed."
-          echo "should_run=true" >> $GITHUB_OUTPUT
+          echo "should_run=true" >> $GITHUBO_OUTPUT
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
       - name: Sync main back to develop
