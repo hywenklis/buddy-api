@@ -55,16 +55,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Use Gradle Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Build and test with Gradle wrapper
         run: |
           chmod +x gradlew
@@ -201,7 +191,6 @@ jobs:
           echo "Last tag: $LAST_TAG"
           LAST_TAG_NUM=${LAST_TAG#v}
           IFS='.' read -r -a V <<< "$LAST_TAG_NUM"
-          # Incrementa o MINOR e reseta o PATCH
           V[1]=$((V[1] + 1))
           V[2]=0
           NEW_VERSION="v${V[0]}.${V[1]}.${V[2]}"
@@ -209,11 +198,6 @@ jobs:
           echo "Creating new branch from develop: $BRANCH_NAME"
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
-
-      - name: Set Source Branch
-        id: source_branch
-        run: |
-          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
       - name: Delete Merged Feature Branch
         run: |
@@ -253,22 +237,15 @@ jobs:
           LAST_TAG_NUM=${LAST_TAG#v}
           IFS='.' read -r -a V <<< "$LAST_TAG_NUM"
           
-          # --- LÓGICA PARA INCREMENTAR O MAJOR ---
           V[0]=$((V[0] + 1)) 
           V[1]=0             
           V[2]=0            
           NEW_VERSION="v${V[0]}.${V[1]}.${V[2]}"
-          # ----------------------------------------
           
           BRANCH_NAME="release/$NEW_VERSION"
           echo "Creating new branch from develop: $BRANCH_NAME"
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
-
-      - name: Set Source Branch
-        id: source_branch
-        run: |
-          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
       - name: Delete Merged Feature Branch
         run: |
@@ -341,15 +318,10 @@ jobs:
           git push origin develop
           echo "Develop branch is now up-to-date with main."
 
-      - name: Set Source Branch
-        id: source_branch
-        run: |
-          echo "SOURCE_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
-
       - name: Delete Merged Release or Hotfix Branch
         if: steps.create_tag.outputs.should_run == 'true'
         run: |
-          echo "Deleting merged feature branch: $SOURCE_BRANCH"
+          echo "Deleting merged release/hotfix branch: $SOURCE_BRANCH"
           git push origin --delete $SOURCE_BRANCH
         env:
           SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
@@ -363,7 +335,5 @@ jobs:
       - name: "Deploy to Jenkins"
         run: |
           echo "Triggering Jenkins deploy for tag: ${{ needs.finalize_release.outputs.new_tag }}"
-          # Você pode passar a tag para o Jenkins, se ele aceitar:
-          # &NEW_TAG=${{ needs.finalize_release.outputs.new_tag }}
           curl -X POST "${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB }}/buildWithParameters?PROJECT=${{ secrets.JENKINS_PROJECT }}&GIT_BRANCH=main" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
