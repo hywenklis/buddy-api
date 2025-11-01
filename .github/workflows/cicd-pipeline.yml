@@ -366,8 +366,8 @@ jobs:
       - env:
           BRANCH_TO_DELETE: ${{ github.event.pull_request.head.ref }}
         run: |
-          echo "Deleting merged release/hotfix branch: ${{ github.event.pull_request.head.ref }}"
-          git push origin --delete "$BRANCH_TO_DELETE"
+          echo "Deleting merged release/hotfix branch: ${BRANCH_TO_DELETE}"
+          git push origin --delete "${BRANCH_TO_DELETE}"
 
   deploy_to_jenkins:
     name: Deploy to Jenkins
