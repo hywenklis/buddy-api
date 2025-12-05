@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/accounts/verifications")
 @RequiredArgsConstructor
-public class EmailVerificationController {
+public class EmailVerificationController implements EmailVerificationControllerDoc {
 
     private final EmailVerificationService emailVerificationService;
     private final FindAccount accountService;
@@ -26,8 +26,7 @@ public class EmailVerificationController {
     @PostMapping("/request")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void requestVerification(
-        final @AuthenticationPrincipal AuthenticatedUser user
-    ) {
+        final @AuthenticationPrincipal AuthenticatedUser user) {
         AccountDto account = accountService.findByEmail(user.getEmail());
         emailVerificationService.requestEmail(account);
     }
@@ -36,8 +35,7 @@ public class EmailVerificationController {
     @ResponseStatus(HttpStatus.OK)
     public void confirm(
         final @RequestBody @Valid ConfirmEmailRequest request,
-        final @AuthenticationPrincipal AuthenticatedUser user
-    ) {
+        final @AuthenticationPrincipal AuthenticatedUser user) {
         AccountDto account = accountService.findByEmail(user.getEmail());
         emailVerificationService.confirmEmail(request.token(), account);
     }
