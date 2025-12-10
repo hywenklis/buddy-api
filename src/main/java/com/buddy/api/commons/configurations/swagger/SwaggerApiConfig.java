@@ -45,14 +45,14 @@ public class SwaggerApiConfig {
                     .url("https://buddy.com"))
                 .license(getLicense()))
             .externalDocs(new io.swagger.v3.oas.models.ExternalDocumentation()
-                .description("Project Documentation")
+                .description("Project Documentation & Source Code")
                 .url("https://github.com/hywenklis/buddy-api"))
             .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH));
     }
 
     private License getLicense() {
         return new License()
-            .name("Licença MIT (Copyright 2024 Hywenklis)")
-            .url("https://opensource.org/licenses/MIT");
+            .name("Licença GNU Affero General Public License v3.0 (Copyright 2024 Hywenklis)")
+            .url("https://www.gnu.org/licenses/agpl-3.0.html");
     }
 }
