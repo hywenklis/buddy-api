@@ -1,83 +1,212 @@
-## Guia Completo para Contribuidores
+# 🚀 Guia de Contribuição e Fluxo de Desenvolvimento
 
-Caso você esteja lendo esta versão do README, você está pegando o projeto em um estágio extremamente inicial, mas empolgante, pois há várias coisas a serem definidas. Então, caso queira contribuir, utilize as issues para entender quais pontos ainda não foram resolvidos, conversar conosco e contribuir.
+Bem-vindo ao Guia de Contribuição! Este documento detalha o fluxo de trabalho Gitflow que usamos, que é semi-automatizado com GitHub Actions (o nosso "Robô" 🤖).
 
-Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
+O processo é dividido em dois: um para **Contribuidores Externos** (via Fork) e um para a **Equipe Principal** (que gere as releases).
 
-#### Realizando PRs para o repositório raiz
+## O Nosso Fluxo de Release (Visão Geral)
 
-1. **Faça um fork desse repositório no GitHub:**
-   - Clique no botão "Fork" no canto superior direito. Isso criará uma cópia do repositório em sua conta do GitHub.
+Para entender como o código vai da `develop` para a `main`, aqui está o diagrama do processo de lançamento automatizado. Este fluxo é iniciado por um **Label** específico num PR para a `develop`.
 
-2. **Clone o fork para o seu computador:**
-   - Abra o terminal e navegue até o diretório onde deseja clonar o repositório.
-   - Execute o seguinte comando:
-     ```bash
-     git clone https://github.com/<SEU_USUARIO>/buddy-backend.git
-     ```
-     *Substitua `<SEU_USUARIO>` pelo seu nome de usuário no GitHub.*
+```mermaid
+graph TD
+    A(Início: Dev abre PR<br><code>feature/tarefa</code> ➔ <code>develop</code>) --> B{O PR tem um Label de Release?};
+    
+    B -- "Não" --> C(Merge normal na `develop`.<br>Fim do ciclo da feature.);
+    
+    B -- "Sim: 'create-release'" --> D(<b>AÇÃO DO ROBÔ</b>:<br>Cria a branch <code>release/v1.2.0</code>);
+    
+    D --> E(<b>AÇÃO MANUAL DO ADMIN</b>:<br>Abre um novo PR:<br><code>release/v1.2.0</code> ➔ <code>main</code>);
+    
+    E --> F(<b>AÇÃO MANUAL DO ADMIN</b>:<br>Faz o merge na <code>main</code>);
+    
+    F --> G(<b>AÇÃO DO ROBÔ</b>:<br>1. Cria a Tag <code>v1.2.0</code><br>2. Aciona o Deploy no Jenkins);
+    
+    F --> H(<b>AÇÃO DO ROBÔ</b>:<br>Cria a branch <code>bot/sync-main...</code><br>e abre um PR de Sync:<br><code>bot/sync...</code> ➔ <code>develop</code>);
+    
+    H --> I(<b>AÇÃO MANUAL DO ADMIN</b>:<br>Faz o merge do PR de Sync.<br><b>Ciclo Completo.</b>);
 
-3. **Tipos de branches:**
-   - **main:** *Branch principal do projeto, onde o código estável é armazenado.*
-   - **develop:** *Branch de desenvolvimento, onde as novas features são criadas e testadas.*
-   - **feature:** *Branches criadas a partir da develop para implementação de novas features.*
-   - **fix:** *Branches criadas a partir da develop para correção de bugs.*
-   - **hotfix:** *Branches criadas a partir da main para correções urgentes de bugs.*
+    subgraph Legenda
+        direction LR
+        L1(Ação Manual)
+        L2(Ação do Robô)
+        L3{Decisão}
+    end
 
-4. **Crie uma branch para sua contribuição:**
-   - Crie uma branch para cada feature ou correção que você for implementar. Por exemplo:
-     ```bash
-     git checkout -b feature/minha-feature
-     ```
-     *Substitua `minha-feature` pelo nome da sua branch. Lembre-se de usar o prefixo correto, como `feature/nome-relacionado`.*
+    style A fill:#FFF,stroke:#333
+    style C fill:#FFF,stroke:#333
+    style E fill:#FFF,stroke:#333
+    style F fill:#FFF,stroke:#333
+    style I fill:#FFF,stroke:#333
+    style B fill:#F9E79F,stroke:#333
+    style D fill:#D6EAF8,stroke:#333
+    style G fill:#D6EAF8,stroke:#333
+    style H fill:#D6EAF8,stroke:#333
+```
 
-5. **Implemente sua contribuição:**
-   - Faça as alterações no código de acordo com sua feature ou correção.
-   - Adicione e commite as suas mudanças:
-     ```bash
-     git add <arquivos_modificados>
-     git commit -m "Mensagem do seu commit"
-     ```
+-----
 
-6. **Envie sua branch para o GitHub:**
-   - Envie sua branch para o seu fork remoto:
-     ```bash
-     git push origin feature/minha-feature
-     ```
+## 1\. 🌍 Guia para Contribuidores Externos (Via Fork)
 
-7. **Crie uma pull request:**
-   - No GitHub, acesse seu fork do repositório.
-   - Clique na aba "Pull requests".
-   - Clique no botão "New pull request".
-   - Selecione sua branch como branch de origem e a branch `develop` como branch de destino.
-   - Adicione um título e uma descrição detalhada da sua contribuição.
-   - Clique no botão "Create pull request".
+Este é o fluxo padrão para qualquer pessoa que queira contribuir com código.
 
-#### Revise e finalize o merge
+### A. Configuração Inicial (Apenas uma vez)
 
-- Aguarde a revisão da sua pull request por outros colaboradores.
-- Responda a comentários e faça as alterações solicitadas.
-- Quando sua pull request for aprovada, você poderá fazer o merge na branch `develop`.
+1.  **Faça um Fork:** Clique no botão "Fork" no canto superior direito.
+2.  **Clone o seu Fork:**
+    ```bash
+    git clone [https://github.com/](https://github.com/)<SEU_USUARIO>/buddy-api.git
+    cd buddy-api
+    ```
+3.  **Adicione o Repositório Original (Upstream):** Isto é crucial para manter seu fork atualizado.
+    ```bash
+    git remote add upstream [https://github.com/hywenklis/buddy-api.git](https://github.com/hywenklis/buddy-api.git)
+    ```
 
-### Opções de merge:
+### B. O Fluxo de Contribuição
 
-- **Squash and merge:** Combina todas as alterações da sua branch em um único commit antes de mesclar na branch `develop`. Utilize este método para merge de pull requests em branches de desenvolvimento (feature e fix).
-- **Merge commit:** Cria um novo commit de merge que inclui todas as alterações da sua branch. Utilize este método para merge da branch develop na main.
+1.  **Sincronize seu Fork:** Antes de começar, garanta que sua `develop` está igual à original.
 
-Escolha a opção de merge de acordo com as diretrizes do projeto.
+    ```bash
+    git checkout develop
+    git fetch upstream develop
+    git rebase upstream/develop
+    git push origin develop
+    ```
 
-## Boas Práticas de Contribuição
+2.  **Crie sua Branch:** Use os prefixos `feature/` ou `fix/`.
 
-- Faça commits claros e descritivos.
-- Teste seu código antes de enviar uma pull request.
-- Respeite o código de conduta do projeto.
-- Participe das discussões e revisões de código.
-- Exclua a branch feature ou fix após o merge na develop.
-- Não exclua a branch develop após o merge na main.
+    ```bash
+    git checkout -b feature/minha-nova-feature
+    ```
 
-## Recursos Adicionais
+3.  **Implemente e Faça Commits:**
 
-- [Documentação do Git](https://git-scm.com/doc)
-- [Guia de contribuição do GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
+    ```bash
+    git add .
+    git commit -m "feat: implementa a nova feature X"
+    ```
 
-Agradecemos sua contribuição para o Buddy!
+4.  **Envie para o seu Fork:**
+
+    ```bash
+    git push origin feature/minha-nova-feature
+    ```
+
+5.  **Crie um Pull Request (PR):**
+
+    * No GitHub, vá ao seu fork e clique em "New pull request".
+    * Destino (Base): **`develop`** do repositório `hywenklis/buddy-api`.
+    * Origem (Compare): `feature/minha-nova-feature` do seu fork.
+    * Descreva detalhadamente o que você fez.
+
+6.  **Aguarde a Revisão:**
+
+    * A Equipe Principal irá rever seu código. Fique atento a pedidos de alteração.
+    * Assim que aprovado, a Equipe Principal fará o merge do seu PR.
+
+-----
+
+## 2\. 🧑‍💻 Guia para a Equipe Principal (Admins)
+
+Este fluxo detalha o desenvolvimento interno e, mais importante, como as **releases** são gerenciadas usando o nosso robô.
+
+### A. Fluxo de Feature (Interno)
+
+O fluxo do dia-a-dia.
+
+1.  Crie sua branch (ex: `feature/nova-api`) a partir da `develop`.
+2.  Abra um PR com a base: **`develop`**.
+3.  Após aprovação e os checks passarem, faça o **Squash and merge**.
+
+### B. 🌟 Fluxo de Release (O Lançamento Automatizado)
+
+Este é o processo para publicar uma nova versão (MINOR ou MAJOR).
+
+#### Fase 1: A Ignição (O Label Mágico)
+
+1.  Prepare o Pull Request que deve iniciar a release (normalmente a última `feature` do ciclo).
+
+2.  **AÇÃO CRÍTICA:** Antes de fazer o merge deste PR em `develop`, **adicione um Label:**
+
+    > **`create-release`**
+
+    >   * Para uma versão **MINOR** (ex: v1.1.5 -\> v1.2.0)
+
+    > **`create-major-release`**
+
+    >   * Para uma versão **MAJOR** (ex: v1.2.0 -\> v2.0.0)
+
+3.  **Faça o Merge** em `develop` (via **Squash and merge**).
+
+4.  **AÇÃO DO ROBÔ 🤖:** O robô irá detetar o label, calcular a nova versão e automaticamente criar a branch de release (ex: `release/v1.2.0`) a partir da `develop`.
+
+#### Fase 2: Finalizar a Release (O PR para `main`)
+
+1.  **AÇÃO MANUAL:** Imediatamente, **crie um novo Pull Request**:
+    * **Base:** `main`
+    * **Compare:** `release/v1.2.0` (a branch que o robô acabou de criar)
+2.  **Revise:** Este é o PR de Produção. Verifique tudo com cuidado.
+3.  **AÇÃO MANUAL:** Faça o merge usando **Merge commit** (ver Boas Práticas) para a `main`.
+4.  **AÇÃO DO ROBÔ 🤖:** No instante do merge, o robô irá:
+    1.  Criar a **Tag Git** (ex: `v1.2.0`) no commit de merge.
+    2.  Acionar o **deploy no Jenkins** (que usa a nova tag).
+    3.  Deletar a branch `release/v1.2.0` (que já foi mergeada).
+    4.  Abrir um **PR de Sincronização** automático (`🤖 Sync: main -> develop...`).
+
+#### Fase 3: Sincronização (O PR do Robô)
+
+1.  **AÇÃO MANUAL (FINAL):** O robô abriu um PR da `main` de volta para a `develop`.
+    * **Porquê?** As nossas regras de segurança (`Ruleset`) exigem que todas as mudanças na `develop` passem por um PR com status checks. Este PR cumpre essa regra, garantindo que o histórico da `main` (incluindo a tag) volte para a `develop`.
+2.  Aguarde os checks (`Build PR`, `CodeQL`, etc.) passarem.
+3.  Assim que estiverem verdes, **faça o merge** deste PR (com **Merge commit**). O ciclo de release está completo.
+
+### C. 🔥 Fluxo de Hotfix (Correção Urgente)
+
+1.  **Crie a branch** a partir da `main`:
+    ```bash
+    git checkout main && git pull
+    git checkout -b hotfix/corrige-bug-critico
+    ```
+2.  **Abra um PR** com a base: `main`.
+3.  **AÇÃO MANUAL:** Faça o merge (com **Merge commit**) para a `main`.
+4.  **AÇÃO DO ROBÔ 🤖:** O robô irá:
+    1.  Calcular a nova versão de **PATCH** (ex: v1.2.0 -\> v1.2.1) e criar a **Tag**.
+    2.  Acionar o **deploy no Jenkins**.
+    3.  Deletar a branch `hotfix/...`.
+    4.  Abrir o **PR de Sincronização** (`🤖 Sync...`) para a `develop`.
+5.  **AÇÃO MANUAL (FINAL):** Faça o merge do PR de Sincronização do robô na `develop`.
+
+-----
+
+### 3\. Boas Práticas de Contribuição
+
+* **Commits:** Faça commits claros e descritivos (veja [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)).
+* **Testes:** Teste seu código antes de enviar uma pull request.
+* **Código de Conduta:** Respeite o código de conduta do projeto.
+* **Discussão:** Participe das discussões e revisões de código.
+
+#### Opções de Merge (Para a Equipe Principal)
+
+* **Squash and merge:** **(Padrão)** Combina todos os commits do PR em um único commit.
+
+    * **Use para:** `feature/*` e `fix/*` em `develop`.
+    * **Porquê:** Mantém o histórico da `develop` limpo e linear.
+
+* **Merge commit:** **(Obrigatório para Releases)** Cria um commit de merge que preserva o histórico da branch.
+
+    * **Use para:** `release/*` em `main`, `hotfix/*` em `main`, e os PRs de sync do robô.
+    * **Porquê:** Preserva o histórico exato da release e da sincronização.
+
+#### Limpeza de Branches
+
+* **Equipe Principal:** Branches `feature/*` e `fix/*` São deletadas deletadas após o merge na `develop` e a adição das tags para gerar a release.
+* **Robô:** Branches `release/*` e `hotfix/*` são deletadas **automaticamente pelo robô** após o merge na `main`.
+* **NÃO** delete `main` ou `develop`.
+
+### Recursos Adicionais
+
+* [Documentação do Git](https://git-scm.com/doc)
+* [Guia de contribuição do GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
+
+Agradecemos sua contribuição para o Buddy\!

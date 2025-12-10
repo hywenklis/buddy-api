@@ -4,9 +4,6 @@ import com.buddy.api.domains.pet.services.FindPet;
 import com.buddy.api.web.pets.mappers.PetMapperParamsResponse;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
 import com.buddy.api.web.pets.responses.PetParamsResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -21,8 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/pets")
 @RequiredArgsConstructor
-@Tag(name = "Pet", description = "Endpoints related to pets")
-public class FindPetController {
+public class FindPetController implements FindPetControllerDoc {
 
     private final FindPet findPetService;
     private final PetMapperParamsResponse mapperResponse;
@@ -30,15 +26,8 @@ public class FindPetController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(
-        summary = "Get pets with pagination",
-        description = "Get pets based on search criteria with pagination. "
-            + "You can provide various search parameters to filter the results."
-    )
     public PagedModel<EntityModel<PetParamsResponse>> findPetsBySearchParams(
-        @Parameter(description = "Search criteria for filtering pets")
         final PetSearchCriteriaRequest petSearchCriteriaRequest,
-        @Parameter(description = "Pagination information")
         final Pageable pageable
     ) {
         var petPage = findPetService.findPets(petSearchCriteriaRequest, pageable);
