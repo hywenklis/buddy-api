@@ -52,7 +52,7 @@ public class SwaggerApiConfig {
 
     private License getLicense() {
         return new License()
-            .name("Apache 2.0")
-            .url("https://www.apache.org/licenses/LICENSE-2.0");
+            .name("Licença MIT (Copyright 2024 Hywenklis)")
+            .url("https://opensource.org/licenses/MIT");
     }
 }
