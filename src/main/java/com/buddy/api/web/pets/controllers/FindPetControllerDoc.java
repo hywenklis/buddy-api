@@ -17,26 +17,15 @@ import org.springframework.http.MediaType;
 @Tag(name = "Pet", description = "Endpoints related to pets")
 public interface FindPetControllerDoc {
 
-    @Operation(
-        summary = "Get pets with pagination",
-        description =
-            "Get pets based on search criteria with pagination. "
-                + "You can provide various search parameters to filter the results.",
-        responses = {
-            @ApiResponse(
-                responseCode = "200",
-                description = "Pets found successfully"
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Internal server error",
-                content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class
-                    )
-                )
-            )
-        })
+    @Operation(summary = "Get pets with pagination",
+        description = "Get pets based on search criteria with pagination. "
+            + "You can provide various search parameters to filter the results.", responses = {
+                @ApiResponse(responseCode = "200", description = "Pets found successfully"),
+
+                @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema =
+                    @Schema(implementation = ErrorResponse.class)))})
+
     PagedModel<EntityModel<PetParamsResponse>> findPetsBySearchParams(
         @Parameter(description = "Search criteria for filtering pets")
         PetSearchCriteriaRequest petSearchCriteriaRequest,

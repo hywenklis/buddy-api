@@ -13,31 +13,19 @@ import org.springframework.http.MediaType;
 @Tag(name = "Shelter", description = "Endpoint related to shelter registration")
 public interface CreateShelterControllerDoc {
 
-    @Operation(
-        summary = "Register shelter",
-        description = "Register shelter with their appropriate information",
-        responses = {
-            @ApiResponse(
-                responseCode = "201",
-                description = "Shelter created successfully"
-            ),
+    @Operation(summary = "Register shelter",
+        description = "Register shelter with their appropriate information", responses = {
+            @ApiResponse(responseCode = "201", description = "Shelter created successfully"),
+
             @ApiResponse(
                 responseCode = "400",
                 description = "Invalid input data (e.g. CPF/Email already exists)",
-                content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class)
-                )
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Internal server error",
-                content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class
-                    )
-                )
-            )
-        })
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class)))})
+
     CreatedSuccessResponse registration(ShelterRequest shelterRequest);
 }

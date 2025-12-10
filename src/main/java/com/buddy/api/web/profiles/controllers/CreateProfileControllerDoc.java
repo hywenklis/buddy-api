@@ -14,37 +14,20 @@ import org.springframework.http.MediaType;
 public interface CreateProfileControllerDoc {
 
     @Operation(summary = "Register profile",
-        description = "Register profile with their appropriate information",
-        responses = {
-            @ApiResponse(
-                responseCode = "201",
-                description = "Profile created successfully"
-            ),
-            @ApiResponse(
-                responseCode = "400",
-                description = "Invalid input data",
-                content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class
-                    )
-                )
-            ),
-            @ApiResponse(
-                responseCode = "404",
-                description = "Account not found",
-                content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class)
-                )
-            ),
-            @ApiResponse(
-                responseCode = "500",
-                description = "Internal server error",
-                content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ErrorResponse.class)
-                )
-            )
-        })
+        description = "Register profile with their appropriate information", responses = {
+            @ApiResponse(responseCode = "201", description = "Profile created successfully"),
+
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "404", description = "Account not found",
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = ErrorResponse.class)))})
+
     CreatedSuccessResponse registration(ProfileRequest request);
 }

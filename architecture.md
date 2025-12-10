@@ -152,6 +152,9 @@ C4Component
 
     Container(apiApp, "API Application", "Spring Boot", "Core application logic.")
 
+    System_Ext(managerService, "Manager Service", "Sistema externo.")
+    ContainerDb(database, "Database", "PostgreSQL", "Armazena dados.")
+    
     Component(webLayer, "Web Layer", "Spring MVC Controllers", "Expõe endpoints REST e valida entradas.")
     Component(domainLayer, "Domain Layer", "Services & Domain Objects", "Contém regras de negócio e lógica de domínio.")
     Component(integrationLayer, "Integration Layer", "Feign Clients", "Gerencia comunicação com sistemas externos.")
