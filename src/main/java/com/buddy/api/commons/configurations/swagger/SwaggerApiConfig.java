@@ -32,18 +32,27 @@ public class SwaggerApiConfig {
                     .bearerFormat("JWT")
                     .description("JWT Authorization header using the Bearer scheme.")))
             .info(new Info()
-                .title("Microservice " + " - [" + buildProperties.getName() + "]")
-                .description(
-                    "Artifact: " + buildProperties.getArtifact()
-                        + " | Timestamp of the Build: "
-                        + buildProperties.getTime().atZone(ZoneId.systemDefault()))
+                .title("Buddy API")
+                .description("API for managing adoptions, pets, and shelters. "
+                    + "Artifact: " + buildProperties.getArtifact()
+                    + " | Version: " + buildProperties.getVersion()
+                    + " | Build Time: "
+                    + buildProperties.getTime().atZone(ZoneId.systemDefault()))
                 .version(buildProperties.getVersion())
+                .contact(new io.swagger.v3.oas.models.info.Contact()
+                    .name("Buddy API Team")
+                    .email("contact@buddy.com")
+                    .url("https://buddy.com"))
                 .license(getLicense()))
+            .externalDocs(new io.swagger.v3.oas.models.ExternalDocumentation()
+                .description("Project Documentation & Source Code")
+                .url("https://github.com/hywenklis/buddy-api"))
             .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH));
     }
 
     private License getLicense() {
         return new License()
-            .name(String.format("%s developed by hywenklis", buildProperties.getName()));
+            .name("Licença GNU Affero General Public License v3.0 (Copyright 2024 Hywenklis)")
+            .url("https://www.gnu.org/licenses/agpl-3.0.html");
     }
 }
