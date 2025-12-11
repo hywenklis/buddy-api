@@ -41,7 +41,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -91,7 +91,7 @@ jobs:
         with:
           egress-policy: audit
       - name: 'Checkout Repository'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v4
 
@@ -113,7 +113,7 @@ jobs:
         with:
           egress-policy: audit
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -140,7 +140,7 @@ jobs:
         with:
           egress-policy: audit
       - name: "Checkout code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: "Run analysis"
@@ -173,7 +173,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -221,7 +221,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -275,7 +275,7 @@ jobs:
       tagged: ${{ steps.create_tag.outputs.should_run }}
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: 'main'
           fetch-depth: 0
@@ -313,7 +313,7 @@ jobs:
 
       - name: Create Sync Branch (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -360,7 +360,7 @@ jobs:
 
       - name: Delete Merged Release or Hotfix Branch
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
       - env:
