@@ -139,8 +139,7 @@ curl -X POST http://localhost:8080/api/accounts \
 **Resposta esperada (201 Created):**
 ```json
 {
-  "id": "uuid-gerado",
-  "message": "Account created successfully. Please verify your email."
+  "message": "successfully created"
 }
 ```
 
