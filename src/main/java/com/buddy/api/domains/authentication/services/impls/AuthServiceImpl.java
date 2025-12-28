@@ -3,7 +3,10 @@ package com.buddy.api.domains.authentication.services.impls;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.exceptions.AccountBlockedException;
+import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
+import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
@@ -97,11 +100,28 @@ public class AuthServiceImpl implements AuthService {
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
             );
-            return userDetailsService.loadUserByUsername(email);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            if (userDetails instanceof AuthenticatedUser authenticatedUser) {
+                if (!authenticatedUser.isEnabled()) {
+                    AccountDto account = findAccount.findByEmail(email);
+                    if (Boolean.FALSE.equals(account.isVerified())) {
+                        throw new AccountNotVerifiedException("email",
+                            "Conta não verificada. Verifique seu email para ativar sua conta.");
+                    }
+                    if (Boolean.TRUE.equals(account.isBlocked())) {
+                        throw new AccountBlockedException("email",
+                            "Conta bloqueada. Entre em contato com o suporte.");
+                    }
+                }
+            }
+
+            return userDetails;
+        } catch (AccountNotVerifiedException | AccountBlockedException ex) {
+            throw ex;
         } catch (Exception ex) {
             log.error("Authentication failed for user: {}", email, ex);
-            throw new AuthenticationException("Authentication error occurred: " + ex.getMessage(),
-                "credentials");
+            throw new AuthenticationException("Email ou senha incorretos", "credentials");
         }
     }
 
