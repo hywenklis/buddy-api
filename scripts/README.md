@@ -1,8 +1,34 @@
 # Dependabot Branch Management
 
-This directory contains scripts to help manage Dependabot PRs in the repository.
+This directory contains scripts and workflows to help manage Dependabot PRs in the repository.
 
-## Prerequisites
+## Automated Workflow (Recommended)
+
+The repository includes a GitHub Actions workflow (`.github/workflows/auto-update-dependabot.yml`) that automatically:
+
+1. Updates all Dependabot branches with the latest `develop` branch
+2. Checks if all CI/CD checks pass
+3. Automatically merges passing PRs
+
+### Running the Automated Workflow
+
+The workflow runs automatically every Monday at 10:00 AM UTC, but you can also trigger it manually:
+
+1. Go to the **Actions** tab in GitHub
+2. Select **Auto-Update Dependabot PRs** workflow
+3. Click **Run workflow**
+4. Select the branch (usually `main`) and click **Run workflow**
+
+The workflow will:
+- Update all Dependabot branches with `develop`
+- Add comments to PRs indicating update status
+- Enable auto-merge for PRs with passing checks
+
+## Manual Script Usage
+
+For more control or local execution, you can use the bash script.
+
+### Prerequisites
 
 - Git installed and configured
 - [GitHub CLI (gh)](https://cli.github.com/) installed and authenticated
