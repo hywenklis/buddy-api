@@ -18,10 +18,10 @@ public enum WeightRange {
 
     public static WeightRange fromDescription(final String description) {
         for (WeightRange range : values()) {
-            if (range.description.equals(description)) {
+            if (range.description.equalsIgnoreCase(description) || range.name().equalsIgnoreCase(description)) {
                 return range;
             }
         }
-        throw new IllegalArgumentException("Unknown weight range: " + description);
+        return null;
     }
 }

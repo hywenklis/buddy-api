@@ -16,10 +16,10 @@ public enum Species {
 
     public static Species valueOfDescription(final String description) {
         for (Species species : values()) {
-            if (species.description.equals(description)) {
+            if (species.description.equalsIgnoreCase(description) || species.name().equalsIgnoreCase(description)) {
                 return species;
             }
         }
-        throw new IllegalArgumentException("Unknown species: " + description);
+        return null;
     }
 }
