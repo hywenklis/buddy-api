@@ -17,6 +17,7 @@ public class CreateAccountImpl implements CreateAccount {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final AccountMapper accountMapper;
+    private final com.buddy.api.domains.account.email.services.EmailVerificationService emailVerificationService;
 
     @Override
     @Transactional
@@ -26,7 +27,9 @@ public class CreateAccountImpl implements CreateAccount {
         final var accountEntity = accountMapper.toAccountEntity(accountDto);
 
         accountEntity.setPassword(passwordEncoder.encode(accountDto.password()));
-        accountRepository.save(accountEntity);
+        final var savedAccount = accountRepository.save(accountEntity);
+
+        emailVerificationService.requestEmail(accountMapper.toAccountDto(savedAccount));
     }
 
     private void validateEmailIsNotRegistered(final EmailAddress email) {
