@@ -7,10 +7,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.exceptions.AccountBlockedException;
+import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
@@ -23,13 +27,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -54,45 +62,38 @@ class AuthServiceTest extends UnitTestAbstract {
     @Mock
     private HttpServletRequest request;
 
+    @Mock
+    private Authentication authResult;
+
+
     @InjectMocks
     private AuthServiceImpl authService;
 
     @Test
     @DisplayName("Should authenticate user successfully and return AuthDto")
     void should_authenticate_user_successfully() {
-        var authDto = AuthDto.builder()
+        final var authDto = AuthDto.builder()
             .email(RandomEmailUtils.generateValidEmail())
             .password(RandomStringUtils.secure().nextAlphanumeric(10))
             .build();
 
-        var userDetails = new User(
+        final var userDetails = new User(
             authDto.email(),
             authDto.password(),
             List.of(new SimpleGrantedAuthority(ProfileTypeEnum.USER.name())));
 
-        var authentication = new UsernamePasswordAuthenticationToken(
-            authDto.email(),
-            authDto.password()
-        );
+        final var activeProfile = ProfileBuilder.profileDto().isDeleted(false).build();
+        final var adminProfile =
+            ProfileBuilder.profileDto().profileType(ProfileTypeEnum.ADMIN).isDeleted(false).build();
+        final var deletedProfile =
+            ProfileBuilder.profileDto().profileType(ProfileTypeEnum.ADMIN).isDeleted(true).build();
+        final var profiles = List.of(activeProfile, adminProfile, deletedProfile);
 
-        var activeProfile = ProfileBuilder.profileDto().isDeleted(false).build();
+        when(authResult.getPrincipal()).thenReturn(userDetails);
 
-        var adminProfile = ProfileBuilder
-            .profileDto()
-            .profileType(ProfileTypeEnum.ADMIN)
-            .isDeleted(false)
-            .build();
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+            .thenReturn(authResult);
 
-        var deletedProfile = ProfileBuilder
-            .profileDto()
-            .profileType(ProfileTypeEnum.ADMIN)
-            .isDeleted(true)
-            .build();
-
-        var profiles = List.of(activeProfile, adminProfile, deletedProfile);
-
-        when(authenticationManager.authenticate(authentication)).thenReturn(null);
-        when(userDetailsService.loadUserByUsername(authDto.email())).thenReturn(userDetails);
         when(findProfile.findByAccountEmail(authDto.email())).thenReturn(profiles);
 
         when(jwtUtil.generateAccessToken(
@@ -114,9 +115,6 @@ class AuthServiceTest extends UnitTestAbstract {
 
         verify(updateAccount, times(1))
             .updateLastLogin(eq(authDto.email()), any(LocalDateTime.class));
-
-        verify(userDetailsService, times(1))
-            .loadUserByUsername(authDto.email());
 
         verify(findProfile, times(1))
             .findByAccountEmail(authDto.email());
@@ -206,5 +204,80 @@ class AuthServiceTest extends UnitTestAbstract {
         verify(jwtUtil, times(1)).validateToken(REFRESH_TOKEN, email);
         verify(jwtUtil, never()).generateAccessToken(any(), any());
         verify(updateAccount, never()).updateLastLogin(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw AccountNotVerifiedException"
+        + " when AuthenticationManager throws DisabledException")
+    void should_throw_not_verified_when_disabled() {
+        final var authDto = AuthDto.builder()
+            .email(RandomEmailUtils.generateValidEmail())
+            .password(UUID.randomUUID().toString())
+            .build();
+
+        when(authenticationManager.authenticate(any()))
+            .thenThrow(new DisabledException("User is disabled"));
+
+        assertThatThrownBy(() -> authService.authenticate(authDto))
+            .isInstanceOf(AccountNotVerifiedException.class)
+            .hasMessage(
+                "account not verified check your email to activate your account"
+            );
+    }
+
+    @Test
+    @DisplayName("Should throw AccountBlockedException "
+        + "when AuthenticationManager throws LockedException")
+    void should_throw_blocked_when_locked() {
+        final var authDto = AuthDto.builder()
+            .email(RandomEmailUtils.generateValidEmail())
+            .password(UUID.randomUUID().toString())
+            .build();
+
+        when(authenticationManager.authenticate(any()))
+            .thenThrow(new LockedException("User account is locked"));
+
+        assertThatThrownBy(() -> authService.authenticate(authDto))
+            .isInstanceOf(AccountBlockedException.class)
+            .hasMessage("account blocked contact support");
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException for generic errors")
+    void should_throw_authentication_exception_generic() {
+        final var authDto = AuthDto.builder()
+            .email(RandomEmailUtils.generateValidEmail())
+            .password(UUID.randomUUID().toString())
+            .build();
+
+        when(authenticationManager.authenticate(any()))
+            .thenThrow(new RuntimeException("Database down"));
+
+        assertThatThrownBy(() -> authService.authenticate(authDto))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("incorrect email or password");
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException "
+        + "when JwtException occurs during refresh (e.g. expired token)")
+    void should_throw_auth_exception_when_jwt_exception_occurs() {
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+
+        when(jwtUtil.getEmailFromToken(REFRESH_TOKEN))
+            .thenThrow(new io.jsonwebtoken.JwtException("Token expired or invalid"));
+
+        assertThatThrownBy(() -> authService.refreshToken(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid refresh token or token expired")
+            .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
+
+        verify(jwtUtil, times(1)).extractRefreshToken(request);
+        verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);
+
+        verifyNoMoreInteractions(jwtUtil);
+        verifyNoInteractions(userDetailsService);
+        verifyNoInteractions(updateAccount);
+        verifyNoInteractions(findProfile);
     }
 }

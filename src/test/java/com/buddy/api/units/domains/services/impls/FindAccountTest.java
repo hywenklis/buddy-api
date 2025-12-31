@@ -134,4 +134,70 @@ class FindAccountTest extends UnitTestAbstract {
             .isInstanceOf(AccountUnavailableException.class)
             .hasMessage("Account is not available");
     }
+
+    @Test
+    @DisplayName("Should find account for authentication even if blocked")
+    void should_find_account_for_authentication_when_blocked() {
+        final var accountDto = AccountBuilder.validAccountDto()
+            .isBlocked(true)
+            .isDeleted(false)
+            .build();
+
+        final var accountEntity = AccountBuilder.validAccountEntity()
+            .email(accountDto.email())
+            .password(accountDto.password())
+            .phoneNumber(accountDto.phoneNumber())
+            .isBlocked(true)
+            .isDeleted(false)
+            .build();
+
+        when(accountRepository.findByEmail(accountDto.email()))
+            .thenReturn(Optional.of(accountEntity));
+
+        AccountDto result = findAccount.findAccountForAuthentication(accountDto.email().value());
+
+        assertThat(result).isNotNull();
+        assertThat(result.email().value()).isEqualTo(accountDto.email().value());
+        assertThat(result.isBlocked()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should find account for authentication even if deleted")
+    void should_find_account_for_authentication_when_deleted() {
+        final var accountDto = AccountBuilder.validAccountDto()
+            .isBlocked(false)
+            .isDeleted(true)
+            .build();
+
+        final var accountEntity = AccountBuilder.validAccountEntity()
+            .email(accountDto.email())
+            .password(accountDto.password())
+            .phoneNumber(accountDto.phoneNumber())
+            .isBlocked(false)
+            .isDeleted(true)
+            .build();
+
+        when(accountRepository.findByEmail(accountDto.email()))
+            .thenReturn(Optional.of(accountEntity));
+
+        AccountDto result = findAccount.findAccountForAuthentication(accountDto.email().value());
+
+        assertThat(result).isNotNull();
+        assertThat(result.email().value()).isEqualTo(accountDto.email().value());
+        assertThat(result.isDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException "
+        + "in findAccountForAuthentication when account does not exist")
+    void should_throw_not_found_in_authentication_when_email_does_not_exist() {
+        final var email = RandomEmailUtils.generateValidEmail();
+
+        when(accountRepository.findByEmail(new EmailAddress(email)))
+            .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> findAccount.findAccountForAuthentication(email))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessage("Account not found");
+    }
 }

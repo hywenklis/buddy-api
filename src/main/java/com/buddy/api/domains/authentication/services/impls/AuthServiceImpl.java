@@ -6,7 +6,6 @@ import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.commons.exceptions.AccountBlockedException;
 import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
-import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
@@ -21,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -97,31 +98,21 @@ public class AuthServiceImpl implements AuthService {
 
     private UserDetails authenticateUser(final String email, final String password) {
         try {
-            authenticationManager.authenticate(
+            final var authResult = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
             );
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-            if (userDetails instanceof AuthenticatedUser authenticatedUser) {
-                if (!authenticatedUser.isEnabled()) {
-                    AccountDto account = findAccount.findByEmail(email);
-                    if (Boolean.FALSE.equals(account.isVerified())) {
-                        throw new AccountNotVerifiedException("email",
-                            "Conta não verificada. Verifique seu email para ativar sua conta.");
-                    }
-                    if (Boolean.TRUE.equals(account.isBlocked())) {
-                        throw new AccountBlockedException("email",
-                            "Conta bloqueada. Entre em contato com o suporte.");
-                    }
-                }
-            }
+            return (UserDetails) authResult.getPrincipal();
 
-            return userDetails;
-        } catch (AccountNotVerifiedException | AccountBlockedException ex) {
-            throw ex;
+        } catch (DisabledException e) {
+            throw new AccountNotVerifiedException("email",
+                "account not verified check your email to activate your account");
+        } catch (LockedException e) {
+            throw new AccountBlockedException("email",
+                "account blocked contact support");
         } catch (Exception ex) {
             log.error("Authentication failed for user: {}", email, ex);
-            throw new AuthenticationException("Email ou senha incorretos", "credentials");
+            throw new AuthenticationException("incorrect email or password", "credentials");
         }
     }
 

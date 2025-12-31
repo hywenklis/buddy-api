@@ -25,21 +25,18 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         log.debug("Loading user details for email: {}", username);
-        AccountDto account = findAccount.findByEmail(username);
+
+        AccountDto account = findAccount.findAccountForAuthentication(username);
+
         List<ProfileDto> profiles = findProfile.findByAccountEmail(account.email().value());
 
         List<SimpleGrantedAuthority> authorities = profiles.stream()
             .filter(profile -> !profile.isDeleted())
-            .map(profile -> new SimpleGrantedAuthority("ROLE_" + profile.profileType().name()))
+            .map(profile -> new SimpleGrantedAuthority(
+                "ROLE_" + profile.profileType().name())
+            )
             .toList();
 
-        return new AuthenticatedUser(
-            account.accountId(),
-            account.email().value(),
-            account.password(),
-            !account.isDeleted() && !account.isBlocked(),
-            authorities
-        );
+        return new AuthenticatedUser(account, authorities);
     }
 }
-
