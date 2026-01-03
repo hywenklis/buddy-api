@@ -1,23 +1,25 @@
 package com.buddy.api.units.domains.services.impls;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static com.buddy.api.builders.account.AccountBuilder.validAccountDto;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.authentication.services.impls.CustomUserDetailsService;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
+import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.profile.services.FindProfile;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
+import com.buddy.api.utils.RandomEmailUtils;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 class CustomUserDetailsServiceTest extends UnitTestAbstract {
@@ -32,21 +34,24 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
     private CustomUserDetailsService customUserDetailsService;
 
     @Test
-    @DisplayName("Should load user details successfully when account and profiles are found")
+    @DisplayName("Should load user details with ROLE_USER, SCOPE_VERIFIED and Profile Role")
     void should_load_user_details_successfully() {
-        AccountDto accountDto = AccountBuilder.validAccountDto()
+        AccountDto accountDto = validAccountDto()
+            .email(new EmailAddress(RandomEmailUtils.generateValidEmail()))
             .isBlocked(false)
             .isDeleted(false)
             .isVerified(true)
             .build();
 
-        ProfileDto activeProfile = ProfileBuilder.profileDto().isDeleted(false).build();
-        ProfileDto deletedProfile = ProfileBuilder.profileDto().isDeleted(true).build();
+        ProfileDto activeProfile = ProfileBuilder.profileDto()
+            .profileType(ProfileTypeEnum.SHELTER)
+            .isDeleted(false)
+            .build();
 
-        List<ProfileDto> profiles = List.of(activeProfile, deletedProfile);
-
-        when(findAccount.findByEmail(accountDto.email().value())).thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value())).thenReturn(profiles);
+        when(findAccount.findAccountForAuthentication(accountDto.email().value()))
+            .thenReturn(accountDto);
+        when(findProfile.findByAccountEmail(accountDto.email().value()))
+            .thenReturn(List.of(activeProfile));
 
         UserDetails result = customUserDetailsService.loadUserByUsername(
             accountDto.email().value()
@@ -54,56 +59,125 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         assertThat(result).isNotNull();
         assertThat(result.getUsername()).isEqualTo(accountDto.email().value());
-        assertThat(result.getPassword()).isEqualTo(accountDto.password());
-        assertThat(result.getAuthorities().size() == 1).isSameAs(true);
-        assertThat(result.getAuthorities().iterator().next().getAuthority())
-            .isEqualTo("ROLE_" + activeProfile.profileType().name());
         assertThat(result.isEnabled()).isTrue();
+        assertThat(result.isAccountNonLocked()).isTrue();
+
+        List<String> authorities = result.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .toList();
+
+        assertThat(authorities).hasSize(3)
+            .contains("ROLE_USER")
+            .contains("SCOPE_VERIFIED")
+            .contains("ROLE_SHELTER");
     }
 
     @Test
-    @DisplayName("Should return user with no authorities when all profiles are deleted")
-    void should_return_user_with_no_authorities_when_all_profiles_are_deleted() {
-        AccountDto accountDto = AccountBuilder.validAccountDto()
+    @DisplayName("Should return user with only ROLE_USER when unverified and no active profiles")
+    void should_return_only_base_role_when_unverified_and_profiles_deleted() {
+        AccountDto accountDto = validAccountDto()
+            .email(new EmailAddress(RandomEmailUtils.generateValidEmail()))
+            .isVerified(false)
             .isDeleted(false)
             .isBlocked(false)
             .build();
 
         ProfileDto deletedProfile = ProfileBuilder.profileDto().isDeleted(true).build();
-        List<ProfileDto> profiles = List.of(deletedProfile);
 
-        when(findAccount.findByEmail(accountDto.email().value())).thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value())).thenReturn(profiles);
+        when(findAccount.findAccountForAuthentication(accountDto.email().value()))
+            .thenReturn(accountDto);
+        when(findProfile.findByAccountEmail(accountDto.email().value()))
+            .thenReturn(List.of(deletedProfile));
 
         UserDetails result = customUserDetailsService.loadUserByUsername(
             accountDto.email().value()
         );
 
         assertThat(result).isNotNull();
-        assertThat(result.getUsername()).isEqualTo(accountDto.email().value());
-        assertThat(result.getPassword()).isEqualTo(accountDto.password());
-        assertThat(result.getAuthorities().size()).isZero();
+        assertThat(result.isEnabled()).isTrue();
+
+        assertThat(result.getAuthorities())
+            .extracting(GrantedAuthority::getAuthority)
+            .containsExactly("ROLE_USER");
     }
 
-    @ParameterizedTest
-    @CsvSource({
-        "true, false",
-        "false, true",
-        "true, true"
-    })
-    @DisplayName("then it should return disabled UserDetails if account is deleted or blocked")
-    void thenShouldReturnDisabledUserDetails(final Boolean isDeleted, final Boolean isBlocked) {
-        final var accountDto = AccountBuilder.validAccountDto()
-            .isDeleted(isDeleted)
-            .isBlocked(isBlocked)
+    @Test
+    @DisplayName("Should return LOCKED UserDetails when account is blocked")
+    void should_return_account_locked_when_blocked() {
+        final var accountDto = validAccountDto()
+            .email(new EmailAddress(RandomEmailUtils.generateValidEmail()))
+            .isVerified(true)
+            .isDeleted(false)
+            .isBlocked(true)
             .build();
 
-        when(findAccount.findByEmail(accountDto.email().value())).thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value())).thenReturn(List.of());
+        when(findAccount.findAccountForAuthentication(accountDto.email().value()))
+            .thenReturn(accountDto);
+        when(findProfile.findByAccountEmail(accountDto.email().value()))
+            .thenReturn(List.of());
+
+        final var result = customUserDetailsService.loadUserByUsername(accountDto.email().value());
+
+        assertThat(result).isNotNull();
+        assertThat(result.isAccountNonLocked()).isFalse();
+        assertThat(result.isEnabled()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should return DISABLED UserDetails when account is deleted")
+    void should_return_account_disabled_when_deleted() {
+        final var accountDto = validAccountDto()
+            .email(new EmailAddress(RandomEmailUtils.generateValidEmail()))
+            .isVerified(true)
+            .isDeleted(true)
+            .isBlocked(false)
+            .build();
+
+        when(findAccount.findAccountForAuthentication(accountDto.email().value()))
+            .thenReturn(accountDto);
+        when(findProfile.findByAccountEmail(accountDto.email().value()))
+            .thenReturn(List.of());
 
         final var result = customUserDetailsService.loadUserByUsername(accountDto.email().value());
 
         assertThat(result).isNotNull();
         assertThat(result.isEnabled()).isFalse();
+        assertThat(result.isAccountNonLocked()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should map multiple profiles correctly to authorities")
+    void should_map_multiple_profiles() {
+        AccountDto accountDto = validAccountDto()
+            .isVerified(true)
+            .isBlocked(false).isDeleted(false)
+            .build();
+
+        final var shelter = ProfileBuilder
+            .profileDto()
+            .profileType(ProfileTypeEnum.SHELTER)
+            .isDeleted(false).build();
+
+        final var admin = ProfileBuilder
+            .profileDto()
+            .profileType(ProfileTypeEnum.ADMIN)
+            .isDeleted(false).build();
+
+        when(findAccount.findAccountForAuthentication(accountDto.email().value()))
+            .thenReturn(accountDto);
+        when(findProfile.findByAccountEmail(accountDto.email().value()))
+            .thenReturn(List.of(shelter, admin));
+
+        UserDetails result = customUserDetailsService
+            .loadUserByUsername(accountDto.email().value());
+
+        assertThat(result.getAuthorities())
+            .extracting(GrantedAuthority::getAuthority)
+            .containsExactlyInAnyOrder(
+                "ROLE_USER",
+                "SCOPE_VERIFIED",
+                "ROLE_SHELTER",
+                "ROLE_ADMIN"
+            );
     }
 }

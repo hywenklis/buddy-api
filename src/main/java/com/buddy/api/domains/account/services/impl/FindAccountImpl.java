@@ -30,7 +30,7 @@ public class FindAccountImpl implements FindAccount {
     @Override
     @Transactional(readOnly = true)
     public AccountDto findByEmail(final String email) {
-        var account = accountRepository.findByEmail(new EmailAddress(email))
+        final var account = accountRepository.findByEmail(new EmailAddress(email))
             .orElseThrow(() -> new NotFoundException("email", "Account not found"));
 
         if (account.getIsBlocked() || account.getIsDeleted()) {
@@ -41,6 +41,15 @@ public class FindAccountImpl implements FindAccount {
             throw new AccountUnavailableException("credentials",
                 "Account is not available");
         }
+
+        return accountMapper.toAccountDto(account);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AccountDto findAccountForAuthentication(final String email) {
+        final var account = accountRepository.findByEmail(new EmailAddress(email))
+            .orElseThrow(() -> new NotFoundException("email", "Account not found"));
 
         return accountMapper.toAccountDto(account);
     }

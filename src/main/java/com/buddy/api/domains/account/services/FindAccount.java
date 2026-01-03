@@ -7,4 +7,6 @@ public interface FindAccount {
     Boolean existsById(UUID accountId);
 
     AccountDto findByEmail(String email);
+
+    AccountDto findAccountForAuthentication(String email);
 }

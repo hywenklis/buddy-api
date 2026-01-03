@@ -1,58 +1,50 @@
 package com.buddy.api.domains.authentication.dtos;
 
+import com.buddy.api.domains.account.dtos.AccountDto;
 import java.io.Serial;
 import java.util.Collection;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Data
-@AllArgsConstructor
+@Getter
 public class AuthenticatedUser implements UserDetails {
 
     @Serial
-    private static final long serialVersionUID = -3174341100491618731L;
-    private final UUID accountId;
+    private static final long serialVersionUID = -6582441640280677406L;
+
     private final String email;
     private final String password;
-    private final boolean enabled;
+    private final boolean blocked;
+    private final boolean deleted;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
+    public AuthenticatedUser(final AccountDto account,
+                             final Collection<? extends GrantedAuthority> authorities) {
+        this.email = account.email().value();
+        this.password = account.password();
+        this.blocked = account.isBlocked();
+        this.deleted = account.isDeleted();
+        this.authorities = authorities;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return this.authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !this.blocked;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return !this.deleted;
     }
 }
-
