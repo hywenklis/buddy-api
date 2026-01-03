@@ -5,9 +5,11 @@ import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.services.FindProfile;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,21 +27,24 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         log.debug("Loading user details for email: {}", username);
-        AccountDto account = findAccount.findByEmail(username);
+
+        AccountDto account = findAccount.findAccountForAuthentication(username);
+
         List<ProfileDto> profiles = findProfile.findByAccountEmail(account.email().value());
 
-        List<SimpleGrantedAuthority> authorities = profiles.stream()
+        List<GrantedAuthority> allAuthorities = new ArrayList<>();
+
+        profiles.stream()
             .filter(profile -> !profile.isDeleted())
             .map(profile -> new SimpleGrantedAuthority("ROLE_" + profile.profileType().name()))
-            .toList();
+            .forEach(allAuthorities::add);
 
-        return new AuthenticatedUser(
-            account.accountId(),
-            account.email().value(),
-            account.password(),
-            !account.isDeleted() && !account.isBlocked(),
-            authorities
-        );
+        allAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+        if (account.isVerified()) {
+            allAuthorities.add(new SimpleGrantedAuthority("SCOPE_VERIFIED"));
+        }
+
+        return new AuthenticatedUser(account, allAuthorities);
     }
 }
-

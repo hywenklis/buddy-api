@@ -54,13 +54,17 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
 
     @BeforeEach
     void setUp() {
-        authenticatedAccount = accountRepository.save(validAccountEntity().build());
+        authenticatedAccount =
+            accountRepository.save(validAccountEntity().isVerified(true).build());
+
         accessToken = jwtUtil.generateAccessToken(
             authenticatedAccount.getEmail().value(),
             List.of(
-                USER.name(),
-                ADMIN.name(),
-                SHELTER.name())
+                "ROLE_" + USER.name(),
+                "ROLE_" + ADMIN.name(),
+                "ROLE_" + SHELTER.name(),
+                "SCOPE_VERIFIED"
+            )
         );
     }
 
@@ -71,7 +75,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .accountId(authenticatedAccount.getAccountId())
             .build();
 
-        ResultActions response = performCreateProfileRequest(request);
+        ResultActions response = performCreateProfileRequest(request, accessToken);
 
         final var newProfile = findProfileByName(authenticatedAccount, request.name());
 
@@ -81,13 +85,40 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
+    @DisplayName("Should NOT register profile if user is NOT VERIFIED (Missing Scope)")
+    void should_not_register_profile_if_unverified() throws Exception {
+        final var unverifiedAccount = accountRepository.save(
+            validAccountEntity()
+                .isVerified(false)
+                .build()
+        );
+
+        String unverifiedToken = jwtUtil.generateAccessToken(
+            unverifiedAccount.getEmail().value(),
+            List.of("ROLE_USER")
+        );
+
+        final var request = profileComponent.validProfileRequest()
+            .accountId(unverifiedAccount.getAccountId())
+            .build();
+
+        ResultActions response = performCreateProfileRequest(request, unverifiedToken);
+
+        expectErrorStatusFrom(response, HttpStatus.FORBIDDEN)
+            .forField("authorization",
+                "Access denied you are not allowed to perform this action");
+
+        assertProfileCount(unverifiedAccount, 0);
+    }
+
+    @Test
     @DisplayName("Should register a new profile for an account that already has one")
     void should_register_new_profile_for_account_with_existing_profile() throws Exception {
         final var firstRequest = profileComponent.validProfileRequest()
             .accountId(authenticatedAccount.getAccountId())
             .build();
 
-        ResultActions firstResponse = performCreateProfileRequest(firstRequest);
+        ResultActions firstResponse = performCreateProfileRequest(firstRequest, accessToken);
 
         expectCreatedFrom(firstResponse);
         assertProfileCount(authenticatedAccount, 1);
@@ -96,7 +127,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .accountId(authenticatedAccount.getAccountId())
             .build();
 
-        ResultActions secondResponse = performCreateProfileRequest(secondRequest);
+        ResultActions secondResponse = performCreateProfileRequest(secondRequest, accessToken);
         final var profileEntity = findProfileByName(authenticatedAccount, secondRequest.name());
 
         expectCreatedFrom(secondResponse);
@@ -109,7 +140,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_without_account_id() throws Exception {
         final var request = profileRequest().accountId(null).build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField("accountId", ERROR_ACCOUNT_ID_REQUIRED);
     }
 
@@ -118,7 +149,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_when_account_is_not_from_database_account() throws Exception {
         final var request = profileRequest().accountId(UUID.randomUUID()).build();
 
-        expectNotFoundFrom(performCreateProfileRequest(request))
+        expectNotFoundFrom(performCreateProfileRequest(request, accessToken))
             .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
     }
 
@@ -131,7 +162,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .accountId(deletedAccount.getAccountId())
             .build();
 
-        expectNotFoundFrom(performCreateProfileRequest(request))
+        expectNotFoundFrom(performCreateProfileRequest(request, accessToken))
             .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
     }
 
@@ -143,7 +174,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(null)
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField(FIELD_NAME, ERROR_NAME_REQUIRED);
     }
 
@@ -155,7 +186,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(RandomStringUtils.secure().nextAlphabetic(2))
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField(FIELD_NAME, ERROR_NAME_SIZE);
     }
 
@@ -167,7 +198,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(RandomStringUtils.secure().nextAlphabetic(101))
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField(FIELD_NAME, ERROR_NAME_SIZE);
     }
 
@@ -182,7 +213,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .name(name)
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField(FIELD_NAME, ERROR_REPEATED_NAME);
         assertProfileCount(authenticatedAccount, 0);
     }
@@ -195,7 +226,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .description(RandomStringUtils.secure().nextAlphabetic(256))
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField("description", ERROR_DESCRIPTION_SIZE);
     }
 
@@ -207,7 +238,7 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .profileType(null)
             .build();
 
-        expectBadRequestFrom(performCreateProfileRequest(request))
+        expectBadRequestFrom(performCreateProfileRequest(request, accessToken))
             .forField("profileType", ERROR_PROFILE_TYPE_REQUIRED);
     }
 
@@ -219,16 +250,18 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .profileType(ADMIN)
             .build();
 
-        expectErrorStatusFrom(performCreateProfileRequest(request), HttpStatus.FORBIDDEN)
+        expectErrorStatusFrom(performCreateProfileRequest(request, accessToken),
+            HttpStatus.FORBIDDEN)
             .forField("profileType", ERROR_PROFILE_TYPE_ADMIN_FORBIDDEN);
         assertProfileCount(authenticatedAccount, 0);
     }
 
-    private ResultActions performCreateProfileRequest(final ProfileRequest request)
+    private ResultActions performCreateProfileRequest(final ProfileRequest request,
+                                                      final String token)
         throws Exception {
         return mockMvc
             .perform(post(PROFILE_REGISTER_URL)
-                .header("Authorization", "Bearer " + accessToken)
+                .header("Authorization", "Bearer " + token)
                 .header("Origin", VALID_ORIGIN)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
