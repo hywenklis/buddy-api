@@ -40,7 +40,7 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
             .email(new EmailAddress(RandomEmailUtils.generateValidEmail()))
             .isBlocked(false)
             .isDeleted(false)
-            .isVerified(true) // CONTA VERIFICADA -> Deve ter SCOPE_VERIFIED
+            .isVerified(true)
             .build();
 
         ProfileDto activeProfile = ProfileBuilder.profileDto()
@@ -59,8 +59,6 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         assertThat(result).isNotNull();
         assertThat(result.getUsername()).isEqualTo(accountDto.email().value());
-
-        // Valida que está ativo (não deletado) e desbloqueado
         assertThat(result.isEnabled()).isTrue();
         assertThat(result.isAccountNonLocked()).isTrue();
 
