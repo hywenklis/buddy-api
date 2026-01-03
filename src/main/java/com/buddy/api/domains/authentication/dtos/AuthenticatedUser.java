@@ -23,8 +23,8 @@ public class AuthenticatedUser implements UserDetails {
                              final Collection<? extends GrantedAuthority> authorities) {
         this.email = account.email().value();
         this.password = account.password();
-        this.blocked = !account.isBlocked();
-        this.deleted = !account.isDeleted();
+        this.blocked = account.isBlocked();
+        this.deleted = account.isDeleted();
         this.authorities = authorities;
     }
 
@@ -40,11 +40,11 @@ public class AuthenticatedUser implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.blocked;
+        return !this.blocked;
     }
 
     @Override
     public boolean isEnabled() {
-        return this.deleted;
+        return !this.deleted;
     }
 }
