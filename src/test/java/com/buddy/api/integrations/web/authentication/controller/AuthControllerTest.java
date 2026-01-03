@@ -36,25 +36,30 @@ class AuthControllerTest extends IntegrationTestAbstract {
     @DisplayName("Should authenticate user successfully and filter out ADMIN profiles")
     void authenticate_user_success() throws Exception {
         String plainPassword = RandomStringUtils.secure().nextAlphanumeric(10);
-        var account = validAccountEntity()
+
+        final var account = validAccountEntity()
             .password(passwordEncoder.encode(plainPassword))
+            .isVerified(true)
             .build();
         accountRepository.save(account);
 
-        var userProfile = ProfileBuilder.profileEntity()
+        final var userProfile = ProfileBuilder.profileEntity()
             .account(account)
             .build();
-        var adminProfile = ProfileBuilder.profileEntity()
+
+        final var adminProfile = ProfileBuilder.profileEntity()
             .account(account)
             .profileType(ADMIN)
             .build();
+
         profileRepository.save(userProfile);
         profileRepository.save(adminProfile);
 
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(account.getEmail().value())
             .password(plainPassword)
             .build();
+
         ResultActions result = performAuthRequest(req);
 
         result
@@ -70,13 +75,13 @@ class AuthControllerTest extends IntegrationTestAbstract {
         assertAuthSuccess(result, userProfile);
     }
 
-
     @Test
     @DisplayName("Should refresh token successfully")
     void refresh_token_success() throws Exception {
-        var plain = RandomStringUtils.secure().nextAlphanumeric(10);
-        var account = validAccountEntity()
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity()
             .password(passwordEncoder.encode(plain))
+            .isVerified(true)
             .build();
         accountRepository.save(account);
 
@@ -89,19 +94,19 @@ class AuthControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not authenticate if email is not provided")
     void should_not_authenticate_without_email() throws Exception {
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(null)
             .password(RandomStringUtils.secure().nextAlphanumeric(10))
             .build();
 
         expectBadRequestFrom(performAuthRequest(req))
-            .forField("email", "Account email is mandatory");
+            .forField(EMAIL, "Account email is mandatory");
     }
 
     @Test
     @DisplayName("Should not authenticate if password is not provided")
     void should_not_authenticate_without_password() throws Exception {
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(generateValidEmail())
             .password(null)
             .build();
@@ -113,9 +118,9 @@ class AuthControllerTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should not authenticate with invalid credentials")
     void should_not_authenticate_with_invalid_credentials() throws Exception {
-        var account = validAccountEntity().build();
+        final var account = validAccountEntity().isVerified(true).build();
         accountRepository.save(account);
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(account.getEmail().value())
             .password(RandomStringUtils.secure().nextAlphanumeric(10))
             .build();
@@ -123,52 +128,92 @@ class AuthControllerTest extends IntegrationTestAbstract {
         expectErrorStatusFrom(performAuthRequest(req), UNAUTHORIZED)
             .forField(
                 CREDENTIALS_NAME,
-                "Authentication error occurred: Bad credentials"
+                "incorrect email or password"
             );
     }
 
     @Test
-    @DisplayName("Should not authenticate if account is not available")
-    void should_not_authenticate_if_account_not_available() throws Exception {
-        var plain = RandomStringUtils.secure().nextAlphanumeric(10);
-        var account = validAccountEntity()
+    @DisplayName("Should not authenticate if account is blocked")
+    void should_not_authenticate_if_account_is_blocked() throws Exception {
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity()
             .password(passwordEncoder.encode(plain))
             .isBlocked(true)
             .isDeleted(false)
             .build();
         accountRepository.save(account);
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(account.getEmail().value())
             .password(plain)
             .build();
 
-        expectErrorStatusFrom(performAuthRequest(req), UNAUTHORIZED)
+        expectErrorStatusFrom(performAuthRequest(req), FORBIDDEN)
             .forField(
-                CREDENTIALS_NAME,
-                "Authentication error occurred: Account is not available"
+                EMAIL,
+                "account blocked contact support"
             );
+    }
 
-        account.setIsBlocked(false);
-        account.setIsDeleted(true);
+    @Test
+    @DisplayName("Should not authenticate if account is deleted")
+    void should_not_authenticate_if_account_is_deleted() throws Exception {
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity()
+            .password(passwordEncoder.encode(plain))
+            .isBlocked(false)
+            .isDeleted(true)
+            .build();
+        accountRepository.save(account);
+        final var req = AuthRequest.builder()
+            .email(account.getEmail().value())
+            .password(plain)
+            .build();
+
+        expectErrorStatusFrom(performAuthRequest(req), FORBIDDEN)
+            .forField(
+                EMAIL,
+                "account no longer active"
+            );
+    }
+
+    @Test
+    @DisplayName("Should authenticate even if account is not verified")
+    void should_authenticate_when_account_is_not_verified() throws Exception {
+        String plainPassword = RandomStringUtils.secure().nextAlphanumeric(10);
+
+        final var account = validAccountEntity()
+            .password(passwordEncoder.encode(plainPassword))
+            .isVerified(false)
+            .isBlocked(false)
+            .isDeleted(false)
+            .build();
         accountRepository.save(account);
 
-        expectErrorStatusFrom(performAuthRequest(req), UNAUTHORIZED)
-            .forField(
-                CREDENTIALS_NAME,
-                "Authentication error occurred: Account is not available"
-            );
+        final var userProfile = ProfileBuilder.profileEntity()
+            .account(account)
+            .build();
+        profileRepository.save(userProfile);
+
+        final var req = AuthRequest.builder()
+            .email(account.getEmail().value())
+            .password(plainPassword)
+            .build();
+
+        ResultActions result = performAuthRequest(req);
+
+        assertAuthSuccess(result, userProfile);
     }
 
     @Test
     @DisplayName("Should not authenticate with invalid email format")
     void should_not_authenticate_with_invalid_email_format() throws Exception {
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(RandomStringUtils.secure().nextAlphanumeric(10))
             .password(RandomStringUtils.secure().nextAlphanumeric(10))
             .build();
 
         expectBadRequestFrom(performAuthRequest(req))
-            .forField("email", "Account email must be a valid email address");
+            .forField(EMAIL, "Account email must be a valid email address");
     }
 
     @Test
@@ -186,38 +231,16 @@ class AuthControllerTest extends IntegrationTestAbstract {
     }
 
     @Test
-    @DisplayName("Should forbid refresh if account not available")
-    void should_forbid_refresh_if_account_not_available() throws Exception {
-        var plain = RandomStringUtils.secure().nextAlphanumeric(10);
-        var account = validAccountEntity()
-            .password(passwordEncoder.encode(plain))
-            .build();
-        accountRepository.save(account);
-        String refresh = obtainRefreshToken(plain, account);
-
-        account.setIsBlocked(true);
-        accountRepository.save(account);
-        expectErrorStatusFrom(performRefreshRequest(refresh), FORBIDDEN)
-            .forField(CREDENTIALS_NAME, "Account is not available");
-
-        account.setIsBlocked(false);
-        account.setIsDeleted(true);
-        accountRepository.save(account);
-        expectErrorStatusFrom(performRefreshRequest(refresh), FORBIDDEN)
-            .forField(CREDENTIALS_NAME, "Account is not available");
-    }
-
-    @Test
     @DisplayName("Should not authenticate when email exceeds maximum length")
     void should_not_authenticate_with_email_too_long() throws Exception {
         String longEmail = "a".repeat(60) + "@" + "b".repeat(40) + ".com";
-        var req = AuthRequest.builder()
+        final var req = AuthRequest.builder()
             .email(longEmail)
             .password(RandomStringUtils.secure().nextAlphanumeric(10))
             .build();
 
         expectBadRequestFrom(performAuthRequest(req))
-            .forFieldContains("email", "Account email must be at most 100 characters");
+            .forFieldContains(EMAIL, "Account email must be at most 100 characters");
     }
 
     private ResultActions performAuthRequest(final AuthRequest req) throws Exception {
