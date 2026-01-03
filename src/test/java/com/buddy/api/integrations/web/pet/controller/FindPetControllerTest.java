@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.ResultActions;
 @DisplayName("GET /v1/pets")
 class FindPetControllerTest extends IntegrationTestAbstract {
 
+    public static final String EMBEDDED = "$._embedded";
+
     @BeforeEach
     void setUp() {
         shelter = shelterComponent.createShelterNoPets();
@@ -97,7 +99,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
 
         mockMvc.perform(get(PET_BASE_URL + "?id=" + pet.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, hasSize(1)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
@@ -253,8 +255,9 @@ class FindPetControllerTest extends IntegrationTestAbstract {
         "weightRange, 1000kg"
     })
     @DisplayName("Should return Bad Request when search parameter (Enum) is invalid")
-    void should_return_bad_request_when_search_param_is_invalid(String param, String value)
-        throws Exception {
+    void should_return_bad_request_when_search_param_is_invalid(final String param,
+                                                                final String value
+    ) throws Exception {
         mockMvc.perform(get(PET_BASE_URL + "?" + param + "=" + value))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.errors[0].field", equalTo("search_criteria")))
@@ -269,7 +272,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
 
         mockMvc.perform(get(PET_BASE_URL + "?unknownFilter=blue"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
                 equalTo(pet.getId().toString())));
     }
@@ -280,7 +283,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     ) throws Exception {
         mockMvc.perform(get(url))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, hasSize(2)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
@@ -295,7 +298,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     ) throws Exception {
         ResultActions result = mockMvc.perform(get(url))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)));
 
         result.andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[*].id",
