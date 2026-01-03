@@ -57,9 +57,6 @@ O projeto inclui automação completa para gerenciamento de PRs do Dependabot:
 - **Merge Automático**: PRs com todos os checks passando são mergeados automaticamente
 - **Execução Agendada**: Roda toda segunda-feira às 10:00 UTC
 - **Execução Manual**: Disponível via GitHub Actions
-
-Para mais detalhes, consulte a [documentação de automação do Dependabot](docs/DEPENDABOT_AUTOMATION.md).
-
 ---
 
 ## 📚 Documentação
