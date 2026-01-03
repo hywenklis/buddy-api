@@ -13,10 +13,10 @@ public enum Gender {
 
     public static Gender valueOfDescription(final String description) {
         for (Gender gender : values()) {
-            if (gender.description.equalsIgnoreCase(description) || gender.name().equalsIgnoreCase(description)) {
+            if (gender.description.equals(description)) {
                 return gender;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Unknown gender: " + description);
     }
 }

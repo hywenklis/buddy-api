@@ -2,6 +2,7 @@ package com.buddy.api.integrations.web.pet.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isA;
@@ -240,6 +241,28 @@ class FindPetControllerTest extends IntegrationTestAbstract {
             twelveYearsPet,
             tenYearsPet
         );
+    }
+
+    @Test
+    @DisplayName("Should return Bad Request when ageRange is invalid")
+    void should_return_bad_request_when_age_range_is_invalid() throws Exception {
+        mockMvc.perform(get(PET_BASE_URL + "?ageRange=invalid_value"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errors[0].field", equalTo("search_criteria")))
+            .andExpect(jsonPath("$.errors[0].message",
+                containsString("Invalid search parameter")));
+    }
+
+    @Test
+    @DisplayName("Should ignore unknown filters and return success")
+    void should_ignore_unknown_filters() throws Exception {
+        PetEntity pet = petComponent.savePetWithName("IgnoredFilterPet", shelter);
+
+        mockMvc.perform(get(PET_BASE_URL + "?unknownFilter=blue"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
+                equalTo(pet.getId().toString())));
     }
 
     private void performGetRequestAndExpectTwoPets(final String url,

@@ -19,10 +19,10 @@ public enum AgeRange {
 
     public static AgeRange fromDescription(final String description) {
         for (AgeRange range : values()) {
-            if (range.description.equalsIgnoreCase(description) || range.name().equalsIgnoreCase(description)) {
+            if (range.description.equals(description)) {
                 return range;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Unknown age range: " + description);
     }
 }

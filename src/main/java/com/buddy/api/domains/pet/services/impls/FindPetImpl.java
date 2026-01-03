@@ -11,6 +11,7 @@ import com.buddy.api.domains.pet.specifications.PetSpecifications;
 import com.buddy.api.web.pets.requests.PetSearchCriteriaRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,12 @@ public class FindPetImpl implements FindPet {
             throw new PetSearchException(
                 ex.getPropertyName(),
                 "An error occurred while searching for pets due to an invalid property reference",
+                ex
+            );
+        } catch (InvalidDataAccessApiUsageException | IllegalArgumentException ex) {
+            throw new PetSearchException(
+                "search_criteria",
+                "Invalid search parameter provided: " + ex.getCause().getMessage(),
                 ex
             );
         }
