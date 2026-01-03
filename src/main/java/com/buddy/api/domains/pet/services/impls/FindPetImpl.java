@@ -52,9 +52,11 @@ public class FindPetImpl implements FindPet {
                 ex
             );
         } catch (InvalidDataAccessApiUsageException | IllegalArgumentException ex) {
+            String errorMessage = ex.getCause() != null
+                ? ex.getCause().getMessage() : ex.getMessage();
             throw new PetSearchException(
                 "search_criteria",
-                "Invalid search parameter provided: " + ex.getCause().getMessage(),
+                "Invalid search parameter provided: " + errorMessage,
                 ex
             );
         }

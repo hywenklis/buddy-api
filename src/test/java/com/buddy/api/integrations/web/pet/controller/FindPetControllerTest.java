@@ -18,6 +18,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("GET /v1/pets")
@@ -243,10 +245,17 @@ class FindPetControllerTest extends IntegrationTestAbstract {
         );
     }
 
-    @Test
-    @DisplayName("Should return Bad Request when ageRange is invalid")
-    void should_return_bad_request_when_age_range_is_invalid() throws Exception {
-        mockMvc.perform(get(PET_BASE_URL + "?ageRange=invalid_value"))
+    @ParameterizedTest(name = "[{index}] Should return 400 when {0} is invalid value: {1}")
+    @CsvSource({
+        "ageRange, invalid_years",
+        "species, dragon",
+        "gender, unknown_gender",
+        "weightRange, 1000kg"
+    })
+    @DisplayName("Should return Bad Request when search parameter (Enum) is invalid")
+    void should_return_bad_request_when_search_param_is_invalid(String param, String value)
+        throws Exception {
+        mockMvc.perform(get(PET_BASE_URL + "?" + param + "=" + value))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.errors[0].field", equalTo("search_criteria")))
             .andExpect(jsonPath("$.errors[0].message",
