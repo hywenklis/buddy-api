@@ -221,7 +221,7 @@ class AuthServiceTest extends UnitTestAbstract {
         assertThatThrownBy(() -> authService.authenticate(authDto))
             .isInstanceOf(AccountNotVerifiedException.class)
             .hasMessage(
-                "account not verified check your email to activate your account"
+                "account no longer active"
             );
     }
 

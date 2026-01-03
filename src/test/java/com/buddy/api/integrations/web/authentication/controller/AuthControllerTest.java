@@ -172,31 +172,36 @@ class AuthControllerTest extends IntegrationTestAbstract {
         expectErrorStatusFrom(performAuthRequest(req), FORBIDDEN)
             .forField(
                 EMAIL,
-                "account blocked contact support"
+                "account no longer active"
             );
     }
 
     @Test
-    @DisplayName("Should not authenticate if account is not verified")
-    void should_not_authenticate_if_account_is_not_verified() throws Exception {
-        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+    @DisplayName("Should authenticate even if account is not verified")
+    void should_authenticate_when_account_is_not_verified() throws Exception {
+        String plainPassword = RandomStringUtils.secure().nextAlphanumeric(10);
+
         final var account = validAccountEntity()
-            .password(passwordEncoder.encode(plain))
+            .password(passwordEncoder.encode(plainPassword))
             .isVerified(false)
             .isBlocked(false)
             .isDeleted(false)
             .build();
         accountRepository.save(account);
+
+        final var userProfile = ProfileBuilder.profileEntity()
+            .account(account)
+            .build();
+        profileRepository.save(userProfile);
+
         final var req = AuthRequest.builder()
             .email(account.getEmail().value())
-            .password(plain)
+            .password(plainPassword)
             .build();
 
-        expectErrorStatusFrom(performAuthRequest(req), FORBIDDEN)
-            .forField(
-                EMAIL,
-                "account not verified check your email to activate your account"
-            );
+        ResultActions result = performAuthRequest(req);
+
+        assertAuthSuccess(result, userProfile);
     }
 
     @Test

@@ -5,9 +5,11 @@ import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.services.FindProfile;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,13 +32,19 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         List<ProfileDto> profiles = findProfile.findByAccountEmail(account.email().value());
 
-        List<SimpleGrantedAuthority> authorities = profiles.stream()
-            .filter(profile -> !profile.isDeleted())
-            .map(profile -> new SimpleGrantedAuthority(
-                "ROLE_" + profile.profileType().name())
-            )
-            .toList();
+        List<GrantedAuthority> allAuthorities = new ArrayList<>();
 
-        return new AuthenticatedUser(account, authorities);
+        profiles.stream()
+            .filter(profile -> !profile.isDeleted())
+            .map(profile -> new SimpleGrantedAuthority("ROLE_" + profile.profileType().name()))
+            .forEach(allAuthorities::add);
+
+        allAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+        if (account.isVerified()) {
+            allAuthorities.add(new SimpleGrantedAuthority("SCOPE_VERIFIED"));
+        }
+
+        return new AuthenticatedUser(account, allAuthorities);
     }
 }

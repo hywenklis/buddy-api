@@ -104,12 +104,11 @@ public class AuthServiceImpl implements AuthService {
 
             return (UserDetails) authResult.getPrincipal();
 
-        } catch (DisabledException e) {
-            throw new AccountNotVerifiedException("email",
-                "account not verified check your email to activate your account");
-        } catch (LockedException e) {
-            throw new AccountBlockedException("email",
-                "account blocked contact support");
+        } catch (DisabledException ex) {
+            log.warn("Attempt to login to deleted account: {}", email);
+            throw new AccountNotVerifiedException("email", "account no longer active");
+        } catch (LockedException ex) {
+            throw new AccountBlockedException("email", "account blocked contact support");
         } catch (Exception ex) {
             log.error("Authentication failed for user: {}", email, ex);
             throw new AuthenticationException("incorrect email or password", "credentials");

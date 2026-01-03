@@ -15,16 +15,16 @@ public class AuthenticatedUser implements UserDetails {
 
     private final String email;
     private final String password;
-    private final boolean verified;
-    private final boolean active;
+    private final boolean blocked;
+    private final boolean deleted;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public AuthenticatedUser(final AccountDto account,
                              final Collection<? extends GrantedAuthority> authorities) {
         this.email = account.email().value();
         this.password = account.password();
-        this.verified = account.isVerified();
-        this.active = !account.isBlocked() && !account.isDeleted();
+        this.blocked = !account.isBlocked();
+        this.deleted = !account.isDeleted();
         this.authorities = authorities;
     }
 
@@ -39,22 +39,12 @@ public class AuthenticatedUser implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
     public boolean isAccountNonLocked() {
-        return this.active;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
+        return this.blocked;
     }
 
     @Override
     public boolean isEnabled() {
-        return this.verified;
+        return this.deleted;
     }
 }

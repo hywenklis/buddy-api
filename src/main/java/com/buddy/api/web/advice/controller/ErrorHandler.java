@@ -35,7 +35,7 @@ public class ErrorHandler {
         final AccessDeniedException ex) {
         return buildErrorResponse(
             "authorization",
-            "Access denied you are not allowed to perform this action: " + ex.getMessage(),
+            "Access denied you are not allowed to perform this action",
             HttpStatus.FORBIDDEN
         );
     }
@@ -45,7 +45,7 @@ public class ErrorHandler {
         final AuthenticationException ex) {
         return buildErrorResponse(
             "credentials",
-            "authentication failed: " + ex.getMessage(),
+            "authentication failed",
             HttpStatus.UNAUTHORIZED
         );
     }
