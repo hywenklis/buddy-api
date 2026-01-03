@@ -134,6 +134,13 @@ public final class PetSpecifications {
         };
     }
 
+    /**
+     * Adds a predicate to the provided list when the given value is not null.
+     *
+     * @param predicates       the list to append the created Predicate to
+     * @param value            the value to check for nullity before creating a Predicate
+     * @param predicateFunction a function that maps the non-null value to a Predicate
+     */
     private static <T> void addPredicateIfNotNull(
         final List<Predicate> predicates,
         final T value,

@@ -27,6 +27,14 @@ public class FindPetImpl implements FindPet {
     private final PetRepository petRepository;
     private final PetDomainMapper mapper;
 
+    /**
+     * Finds pets that match the provided search criteria and returns them as a paginated list of DTOs.
+     *
+     * @param searchParams criteria used to filter pets
+     * @param pageable     pagination and sorting information for the result set
+     * @return a page of PetSearchCriteriaDto containing pets that match the criteria; an empty page if no matches are found
+     * @throws PetSearchException if a search property is invalid or the provided search criteria cause data-access errors
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<PetSearchCriteriaDto> findPets(final PetSearchCriteriaRequest searchParams,
