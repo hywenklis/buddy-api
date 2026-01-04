@@ -159,7 +159,7 @@ jobs:
           echo "Checking for Dependabot PRs ready to merge..."
 
           # Get all open Dependabot PRs targeting develop
-          PRS=$(gh pr list --author "dependabot[bot]" --base develop --json number,headRefName,mergeable,statusCheckRollup --jq '.[] | select(.mergeable == "MERGEABLE") | select(.statusCheckRollup | all(.conclusion == "SUCCESS")) | .number')
+          PRS=$(gh pr list --author "dependabot[bot]" --base develop --json number,headRefName,mergeable,statusCheckRollup --jq '.[] | select(.mergeable == "MERGEABLE") | select(.statusCheckRollup | length > 0) | select(.statusCheckRollup | all(.conclusion == "SUCCESS")) | .number')
 
           if [ -z "$PRS" ]; then
             echo "No Dependabot PRs ready to merge"

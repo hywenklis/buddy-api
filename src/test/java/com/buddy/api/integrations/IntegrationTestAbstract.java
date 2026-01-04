@@ -105,14 +105,10 @@ public abstract class IntegrationTestAbstract {
     void init() {
         clearRepositories();
 
-        try {
-            redisTemplate.execute((RedisConnection connection) -> {
-                connection.serverCommands().flushDb();
-                return "OK";
-            });
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-        }
+        redisTemplate.execute((RedisConnection connection) -> {
+            connection.serverCommands().flushDb();
+            return "OK";
+        });
 
         WireMock.resetAllRequests();
         WireMock.resetAllScenarios();
