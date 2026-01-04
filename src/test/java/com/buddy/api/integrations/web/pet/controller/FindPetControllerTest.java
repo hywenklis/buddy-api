@@ -2,6 +2,7 @@ package com.buddy.api.integrations.web.pet.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isA;
@@ -17,10 +18,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.web.servlet.ResultActions;
 
 @DisplayName("GET /v1/pets")
 class FindPetControllerTest extends IntegrationTestAbstract {
+
+    public static final String EMBEDDED = "$._embedded";
 
     @BeforeEach
     void setUp() {
@@ -94,7 +99,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
 
         mockMvc.perform(get(PET_BASE_URL + "?id=" + pet.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, hasSize(1)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
@@ -242,13 +247,43 @@ class FindPetControllerTest extends IntegrationTestAbstract {
         );
     }
 
+    @ParameterizedTest(name = "[{index}] Should return 400 when {0} is invalid value: {1}")
+    @CsvSource({
+        "ageRange, invalid_years",
+        "species, dragon",
+        "gender, unknown_gender",
+        "weightRange, 1000kg"
+    })
+    @DisplayName("Should return Bad Request when search parameter (Enum) is invalid")
+    void should_return_bad_request_when_search_param_is_invalid(final String param,
+                                                                final String value
+    ) throws Exception {
+        mockMvc.perform(get(PET_BASE_URL + "?" + param + "=" + value))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errors[0].field", equalTo("search_criteria")))
+            .andExpect(jsonPath("$.errors[0].message",
+                containsString("Invalid search parameter")));
+    }
+
+    @Test
+    @DisplayName("Should ignore unknown filters and return success")
+    void should_ignore_unknown_filters() throws Exception {
+        PetEntity pet = petComponent.savePetWithName("IgnoredFilterPet", shelter);
+
+        mockMvc.perform(get(PET_BASE_URL + "?unknownFilter=blue"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath(EMBEDDED).exists())
+            .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
+                equalTo(pet.getId().toString())));
+    }
+
     private void performGetRequestAndExpectTwoPets(final String url,
                                                    final PetEntity firstExpected,
                                                    final PetEntity secondExpected
     ) throws Exception {
         mockMvc.perform(get(url))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, hasSize(2)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",
@@ -263,7 +298,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
     ) throws Exception {
         ResultActions result = mockMvc.perform(get(url))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath(EMBEDDED).exists())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)));
 
         result.andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[*].id",
