@@ -11,15 +11,13 @@ import com.buddy.api.domains.pet.repositories.PetImageRepository;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.shelter.entities.ShelterEntity;
-import com.buddy.api.integrations.configs.EmbeddedRedisConfig;
+import com.buddy.api.integrations.configs.RedisTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.Import;
@@ -31,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 0, stubs = "classpath:/mappings")
-@Import(EmbeddedRedisConfig.class)
+@Import(RedisTestConfig.class)
 public abstract class IntegrationTestAbstract {
 
     @Autowired
@@ -93,6 +91,7 @@ public abstract class IntegrationTestAbstract {
     protected static final String PATH_EMAIL_VERIFICATION_REQUEST = "/request";
     protected static final String PATH_EMAIL_VERIFICATION_CONFIRM = "/confirm";
     protected static final String BEARER = "Bearer ";
+    protected static final String EMAIL = "email";
 
     protected ShelterEntity shelter;
 
@@ -105,10 +104,6 @@ public abstract class IntegrationTestAbstract {
     @BeforeEach
     void init() {
         clearRepositories();
-        cacheManager.getCacheNames().stream()
-            .map(cacheManager::getCache)
-            .filter(Objects::nonNull)
-            .forEach(Cache::clear);
 
         redisTemplate.execute((RedisConnection connection) -> {
             connection.serverCommands().flushDb();

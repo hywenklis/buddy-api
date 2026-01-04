@@ -44,9 +44,19 @@ Iniciado como um projeto integrador de faculdade, o projeto ganhou vida própria
 - **Banco de Dados**: PostgreSQL, Flyway (migrações)
 - **Integrações**: Feign (clientes HTTP), Redis (cache e controle de taxa)
 - **Testes**: JUnit, Mockito, WireMock
-- **CI/CD**: GitHub Actions, Dependabot
+- **CI/CD**: GitHub Actions, Dependabot (com automação de merge)
 - **Documentação**: Swagger, Markdown, Mermaid (diagramas)
 
+---
+
+## 🤖 Automação de Dependências
+
+O projeto inclui automação completa para gerenciamento de PRs do Dependabot:
+
+- **Atualização Automática**: Branches do Dependabot são atualizados automaticamente com o branch `develop`
+- **Merge Automático**: PRs com todos os checks passando são mergeados automaticamente
+- **Execução Agendada**: Roda toda segunda-feira às 10:00 UTC
+- **Execução Manual**: Disponível via GitHub Actions
 ---
 
 ## 📚 Documentação

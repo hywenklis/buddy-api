@@ -3,6 +3,8 @@ package com.buddy.api.domains.authentication.services.impls;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.exceptions.AccountBlockedException;
+import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
 import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
@@ -18,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -94,14 +98,20 @@ public class AuthServiceImpl implements AuthService {
 
     private UserDetails authenticateUser(final String email, final String password) {
         try {
-            authenticationManager.authenticate(
+            final var authResult = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
             );
-            return userDetailsService.loadUserByUsername(email);
+
+            return (UserDetails) authResult.getPrincipal();
+
+        } catch (DisabledException ex) {
+            log.warn("Attempt to login to deleted account: {}", email);
+            throw new AccountNotVerifiedException("email", "account no longer active");
+        } catch (LockedException ex) {
+            throw new AccountBlockedException("email", "account blocked contact support");
         } catch (Exception ex) {
             log.error("Authentication failed for user: {}", email, ex);
-            throw new AuthenticationException("Authentication error occurred: " + ex.getMessage(),
-                "credentials");
+            throw new AuthenticationException("incorrect email or password", "credentials");
         }
     }
 
