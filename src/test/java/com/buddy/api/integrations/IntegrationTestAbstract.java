@@ -14,7 +14,6 @@ import com.buddy.api.domains.shelter.entities.ShelterEntity;
 import com.buddy.api.integrations.configs.RedisTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,7 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 0, stubs = "classpath:/mappings")
 @Import(RedisTestConfig.class)
-@Slf4j
 public abstract class IntegrationTestAbstract {
 
     @Autowired
@@ -107,14 +105,10 @@ public abstract class IntegrationTestAbstract {
     void init() {
         clearRepositories();
 
-        try {
-            redisTemplate.execute((RedisConnection connection) -> {
-                connection.serverCommands().flushDb();
-                return "OK";
-            });
-        } catch (Exception e) {
-            log.warn("Failed to flush Redis during test setup: {}", e.getMessage());
-        }
+        redisTemplate.execute((RedisConnection connection) -> {
+            connection.serverCommands().flushDb();
+            return "OK";
+        });
 
         WireMock.resetAllRequests();
         WireMock.resetAllScenarios();
