@@ -33,7 +33,6 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
     private String userJwt;
     private Cache verificationTokenCache;
 
-
     @BeforeEach
     void setup() {
         final var authenticatedUser = accountComponent.createAndAuthenticateUser();
