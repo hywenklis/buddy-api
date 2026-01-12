@@ -5,12 +5,15 @@ import com.buddy.api.components.AccountComponent;
 import com.buddy.api.components.PetComponent;
 import com.buddy.api.components.ProfileComponent;
 import com.buddy.api.components.ShelterComponent;
+import com.buddy.api.components.TermsComponent;
 import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.adoption.repositories.AdoptionRequestRepository;
 import com.buddy.api.domains.pet.repositories.PetImageRepository;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.shelter.entities.ShelterEntity;
+import com.buddy.api.domains.terms.repositories.TermsAcceptanceRepository;
+import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
 import com.buddy.api.integrations.configs.RedisTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -77,6 +80,16 @@ public abstract class IntegrationTestAbstract {
     @Autowired
     protected RedisTemplate<String, String> redisTemplate;
 
+    @Autowired
+    protected TermsVersionRepository termsVersionRepository;
+
+    @Autowired
+    protected TermsAcceptanceRepository termsAcceptanceRepository;
+
+    @Autowired
+    protected TermsComponent termsComponent;
+
+    protected static final String TERMS_BASE_URL = "/v1/terms";
     protected static final String PET_BASE_URL = "/v1/pets";
     protected static final String EMBEDDED_PET_RESPONSES = "$._embedded.petParamsResponseList";
     protected static final String AUTH_URL = "/v1/auth/login";
@@ -92,10 +105,13 @@ public abstract class IntegrationTestAbstract {
     protected static final String PATH_EMAIL_VERIFICATION_CONFIRM = "/confirm";
     protected static final String BEARER = "Bearer ";
     protected static final String EMAIL = "email";
+    protected static final String AUTHORIZATION = "Authorization";
 
     protected ShelterEntity shelter;
 
     protected void clearRepositories() {
+        termsAcceptanceRepository.deleteAll();
+        termsVersionRepository.deleteAll();
         petImageRepository.deleteAll();
         adoptionRequestRepository.deleteAll();
         petRepository.deleteAll();

@@ -25,6 +25,9 @@ import org.mockito.Mock;
 
 class JwtUtilTest extends UnitTestAbstract {
 
+    private static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+
     @Mock
     private HttpServletRequest request;
 
@@ -104,15 +107,62 @@ class JwtUtilTest extends UnitTestAbstract {
             .build();
         JwtUtil shortJwt = new JwtUtil(shortProps);
         String token = shortJwt.generateAccessToken(EMAIL_VALUE, PROFILES);
-        Thread.sleep(5);
+
+        Thread.sleep(10);
 
         assertThat(shortJwt.validateToken(token, EMAIL_VALUE)).isFalse();
     }
 
     @Test
+    @DisplayName("Should return false and log warning for malformed token")
+    void validateToken_malformed() {
+        assertThat(jwtUtil.validateToken("garbage-token", EMAIL_VALUE)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should extract access token from cookie if present")
+    void extractAccessToken_fromCookie() {
+        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, "cookie-token");
+        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+
+        Optional<String> opt = jwtUtil.extractAccessToken(request);
+        assertThat(opt).isPresent().contains("cookie-token");
+    }
+
+    @Test
+    @DisplayName("Should prioritize cookie over header for access token")
+    void extractAccessToken_priorityCookie() {
+        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, "cookie-token");
+        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+
+        Optional<String> opt = jwtUtil.extractAccessToken(request);
+        assertThat(opt).isPresent().contains("cookie-token");
+    }
+
+    @Test
+    @DisplayName("Should extract access token from header when cookie is absent")
+    void extractAccessToken_fromHeader() {
+        when(request.getCookies()).thenReturn(null);
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(BEARER_TOKEN);
+
+        Optional<String> opt = jwtUtil.extractAccessToken(request);
+        assertThat(opt).isPresent().contains(BEARER_TOKEN.substring(7));
+    }
+
+    @Test
+    @DisplayName("Should skip header if it does not start with Bearer")
+    void extractAccessToken_invalidHeaderPrefix() {
+        when(request.getCookies()).thenReturn(null);
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Basic 123456");
+
+        Optional<String> opt = jwtUtil.extractAccessToken(request);
+        assertThat(opt).isEmpty();
+    }
+
+    @Test
     @DisplayName("Should extract refresh token from cookie if present")
     void extractRefreshToken_fromCookie() {
-        Cookie cookie = new Cookie(REFRESH_TOKEN_NAME, REFRESH_TOKEN);
+        Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN);
         when(request.getCookies()).thenReturn(new Cookie[]{cookie});
 
         Optional<String> opt = jwtUtil.extractRefreshToken(request);
@@ -130,12 +180,23 @@ class JwtUtilTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should return empty when no refresh token is present")
-    void extractRefreshToken_none() {
+    @DisplayName("Should return empty when no tokens are present")
+    void extractToken_none() {
         when(request.getCookies()).thenReturn(null);
         when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(null);
 
-        Optional<String> opt = jwtUtil.extractRefreshToken(request);
+        assertThat(jwtUtil.extractAccessToken(request)).isEmpty();
+        assertThat(jwtUtil.extractRefreshToken(request)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should ignore cookies with blank values")
+    void extractToken_blankCookie() {
+        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, "");
+        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(null);
+
+        Optional<String> opt = jwtUtil.extractAccessToken(request);
         assertThat(opt).isEmpty();
     }
 
