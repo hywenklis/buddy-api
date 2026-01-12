@@ -25,7 +25,7 @@ public class AcceptTermsImpl implements AcceptTerms {
     @Override
     @Transactional
     public void accept(final AcceptTermsDto acceptTermsDto) {
-        log.info("processing acceptance of terms via email: {}", acceptTermsDto.email());
+        log.info("processing acceptance of terms for user");
         final var account = findAccount.findByEmail(acceptTermsDto.email());
         final var activeVersion = findTermsVersion.findActive();
 

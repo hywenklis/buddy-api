@@ -31,6 +31,7 @@ public class TermsVersionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     @Column(name = "terms_version_id", nullable = false, unique = true)
     private UUID termsVersionId;
 

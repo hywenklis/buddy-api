@@ -3,7 +3,9 @@ package com.buddy.api.commons.configurations.cache;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
@@ -30,14 +32,24 @@ public class CacheConfig {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        BasicPolymorphicTypeValidator.builder()
-            .allowIfBaseType(Object.class)
+        BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+            .allowIfBaseType("com.buddy.api")
+            .allowIfBaseType("java.util.ArrayList")
+            .allowIfBaseType("java.util.UUID")
+            .allowIfBaseType("java.util.HashMap")
+            .allowIfBaseType("java.util.HashSet")
+            .allowIfBaseType("java.time")
             .build();
 
-        StdTypeResolverBuilder typeResolverBuilder = new StdTypeResolverBuilder();
+        StdTypeResolverBuilder typeResolverBuilder = new StdTypeResolverBuilder() {
+            @Override
+            public PolymorphicTypeValidator subTypeValidator(final MapperConfig<?> config) {
+                return ptv;
+            }
+        };
+
         typeResolverBuilder.init(JsonTypeInfo.Id.CLASS, null);
         typeResolverBuilder.inclusion(JsonTypeInfo.As.PROPERTY);
-        typeResolverBuilder.typeProperty("@class");
 
         objectMapper.setDefaultTyping(typeResolverBuilder);
 

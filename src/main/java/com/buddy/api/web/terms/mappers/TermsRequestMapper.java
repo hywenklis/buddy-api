@@ -44,6 +44,6 @@ public interface TermsRequestMapper {
     default String extractUserAgent(final HttpServletRequest request) {
         return Optional.ofNullable(request)
             .map(req -> req.getHeader("User-Agent"))
-            .orElse(null);
+            .orElse("Unknown");
     }
 }

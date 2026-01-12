@@ -32,6 +32,7 @@ public class TermsAcceptanceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     @Column(name = "acceptance_id", nullable = false, unique = true)
     private UUID id;
 

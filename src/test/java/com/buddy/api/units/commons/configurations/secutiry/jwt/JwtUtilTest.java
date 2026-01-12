@@ -27,6 +27,7 @@ class JwtUtilTest extends UnitTestAbstract {
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+    private static final String COOKIE_TOKEN = "cookie-token";
 
     @Mock
     private HttpServletRequest request;
@@ -122,21 +123,21 @@ class JwtUtilTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should extract access token from cookie if present")
     void extractAccessToken_fromCookie() {
-        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, "cookie-token");
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, COOKIE_TOKEN);
+        when(request.getCookies()).thenReturn(new Cookie[] {cookie});
 
         Optional<String> opt = jwtUtil.extractAccessToken(request);
-        assertThat(opt).isPresent().contains("cookie-token");
+        assertThat(opt).isPresent().contains(COOKIE_TOKEN);
     }
 
     @Test
     @DisplayName("Should prioritize cookie over header for access token")
     void extractAccessToken_priorityCookie() {
-        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, "cookie-token");
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, COOKIE_TOKEN);
+        when(request.getCookies()).thenReturn(new Cookie[] {cookie});
 
         Optional<String> opt = jwtUtil.extractAccessToken(request);
-        assertThat(opt).isPresent().contains("cookie-token");
+        assertThat(opt).isPresent().contains(COOKIE_TOKEN);
     }
 
     @Test
@@ -163,7 +164,7 @@ class JwtUtilTest extends UnitTestAbstract {
     @DisplayName("Should extract refresh token from cookie if present")
     void extractRefreshToken_fromCookie() {
         Cookie cookie = new Cookie(REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN);
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getCookies()).thenReturn(new Cookie[] {cookie});
 
         Optional<String> opt = jwtUtil.extractRefreshToken(request);
         assertThat(opt).isPresent().contains(REFRESH_TOKEN);
@@ -193,7 +194,7 @@ class JwtUtilTest extends UnitTestAbstract {
     @DisplayName("Should ignore cookies with blank values")
     void extractToken_blankCookie() {
         Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, "");
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getCookies()).thenReturn(new Cookie[] {cookie});
         when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(null);
 
         Optional<String> opt = jwtUtil.extractAccessToken(request);
