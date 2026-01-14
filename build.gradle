@@ -183,5 +183,5 @@ pmd {
     toolVersion = "7.0.0"
     ignoreFailures = false
     consoleOutput = true
-    sourceSets = [sourceSets. main]
+    sourceSets = [sourceSets.main]
 }
