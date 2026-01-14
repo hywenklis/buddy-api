@@ -33,7 +33,7 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
     @ValueSource(strings = {KEY_16_BYTES, KEY_24_BYTES, KEY_32_BYTES})
     @DisplayName("Should instantiate successfully "
         + "when encryption key length is valid (16, 24, or 32 bytes)")
-    void constructor_withValidKeyLength_shouldSucceed(String validKey) {
+    void constructor_withValidKeyLength_shouldSucceed(final String validKey) {
         assertThatCode(() -> new BuddySecurityProperties(
             validKey, "AES/GCM/NoPadding", 128, 12
         )).doesNotThrowAnyException();
@@ -47,7 +47,7 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
         "very_long_key_that_exceeds_32_bytes_limit_for_sure_123"
     })
     @DisplayName("Should throw IllegalArgumentException when encryption key length is invalid")
-    void constructor_withInvalidKeyLength_shouldThrowException(String invalidKey) {
+    void constructor_withInvalidKeyLength_shouldThrowException(final String invalidKey) {
         assertThatThrownBy(() -> new BuddySecurityProperties(
             invalidKey, "AES/GCM/NoPadding", 128, 12
         ))
@@ -67,20 +67,20 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
         assertThat(violations).hasSize(4);
 
         assertThat(violations).anyMatch(v ->
-            v.getPropertyPath().toString().equals("encryptionKey") &&
-                v.getMessage().contains("Encryption key cannot be empty"));
+            v.getPropertyPath().toString().equals("encryptionKey")
+                && v.getMessage().contains("Encryption key cannot be empty"));
 
         assertThat(violations).anyMatch(v ->
-            v.getPropertyPath().toString().equals("algorithm") &&
-                v.getMessage().contains("Algorithm cannot be empty"));
+            v.getPropertyPath().toString().equals("algorithm")
+                && v.getMessage().contains("Algorithm cannot be empty"));
 
         assertThat(violations).anyMatch(v ->
-            v.getPropertyPath().toString().equals("tagLength") &&
-                v.getMessage().contains("Tag length cannot be null"));
+            v.getPropertyPath().toString().equals("tagLength")
+                && v.getMessage().contains("Tag length cannot be null"));
 
         assertThat(violations).anyMatch(v ->
-            v.getPropertyPath().toString().equals("ivLength") &&
-                v.getMessage().contains("IV length cannot be null"));
+            v.getPropertyPath().toString().equals("ivLength")
+                && v.getMessage().contains("IV length cannot be null"));
     }
 
     @Test
@@ -99,12 +99,12 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
         assertThat(violations).hasSize(2);
 
         assertThat(violations).anyMatch(v ->
-            v.getPropertyPath().toString().equals("tagLength") &&
-                v.getMessage().contains("must be 128 bits"));
+            v.getPropertyPath().toString().equals("tagLength")
+                && v.getMessage().contains("must be 128 bits"));
 
         assertThat(violations).anyMatch(v ->
-            v.getPropertyPath().toString().equals("ivLength") &&
-                v.getMessage().contains("must be 12 bytes"));
+            v.getPropertyPath().toString().equals("ivLength")
+                && v.getMessage().contains("must be 12 bytes"));
     }
 
     @Test

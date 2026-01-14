@@ -103,14 +103,10 @@ class TermsControllerTest extends IntegrationTestAbstract {
         @DisplayName("Should return 404 if trying to accept terms but none are active")
         void should_fail_if_no_active_terms() throws Exception {
             final var user = accountComponent.createAndAuthenticateUser();
-            final var request = validAcceptTermsDto()
-                .email(user.account().getEmail().value())
-                .build();
 
             expectNotFoundFrom(mockMvc.perform(post(TERMS_ACCEPT_URL)
                 .header(AUTHORIZATION, BEARER + user.jwt())
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))));
+                .contentType(APPLICATION_JSON)));
         }
 
         @Test

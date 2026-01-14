@@ -31,13 +31,22 @@ public interface TermsRequestMapper {
 
     @Named("extractIp")
     default String extractIp(final HttpServletRequest request) {
+        final String unknownIp = "0.0.0.0";
+
         return Optional.ofNullable(request)
             .map(req -> req.getHeader("X-Forwarded-For"))
             .filter(Predicate.not(String::isBlank))
             .map(header -> header.split(",")[0].trim())
+
             .or(() -> Optional.ofNullable(request)
-                .map(HttpServletRequest::getRemoteAddr))
-            .orElse(null);
+                .map(req -> req.getHeader("X-Real-IP"))
+                .filter(Predicate.not(String::isBlank)))
+
+            .or(() -> Optional.ofNullable(request)
+                .map(HttpServletRequest::getRemoteAddr)
+                .filter(Predicate.not(String::isBlank)))
+
+            .orElse(unknownIp);
     }
 
     @Named("extractUserAgent")
