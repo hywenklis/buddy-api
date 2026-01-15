@@ -1,6 +1,7 @@
 package com.buddy.api.units.commons.configurations.secutiry.jwt;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -162,5 +163,21 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
 
         verify(filterChain, times(1)).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should throw NullPointerException (from Lombok @NonNull) when arguments are null")
+    void doFilter_withNullParams_throwsException() {
+        assertThatThrownBy(() -> jwtAuthenticationFilter.doFilter(
+            null, response, filterChain
+        )).isInstanceOf(Exception.class);
+
+        assertThatThrownBy(() -> jwtAuthenticationFilter.doFilter(
+            request, null, filterChain
+        )).isInstanceOf(Exception.class);
+
+        assertThatThrownBy(() -> jwtAuthenticationFilter.doFilter(
+            request, response, null
+        )).isInstanceOf(Exception.class);
     }
 }

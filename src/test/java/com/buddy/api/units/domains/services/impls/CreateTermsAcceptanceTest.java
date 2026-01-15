@@ -57,4 +57,12 @@ public class CreateTermsAcceptanceTest extends UnitTestAbstract {
                     .isEqualTo(acceptanceDto.termsVersion().termsVersionId());
             });
     }
+
+    @Test
+    @DisplayName("Should return null when mapping null "
+        + "nested objects (Coverage for default methods)")
+    void should_return_null_in_mapper_default_methods() {
+        assertThat(termsMapper.mapAccount(null)).isNull();
+        assertThat(termsMapper.mapVersion(null)).isNull();
+    }
 }
