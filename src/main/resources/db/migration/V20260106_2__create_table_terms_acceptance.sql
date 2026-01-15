@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS terms_acceptance (
     terms_version_id UUID NOT NULL,
     account_id UUID NOT NULL,
     ip_address VARCHAR(255) NOT NULL,
-    user_agent TEXT,
+    user_agent TEXT NOT NULL,
     accepted_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_terms_acceptance_account FOREIGN KEY (account_id) REFERENCES account(account_id),
     CONSTRAINT fk_terms_acceptance_version FOREIGN KEY (terms_version_id) REFERENCES terms_version(terms_version_id)
