@@ -1,13 +1,11 @@
 package com.buddy.api.commons.configurations.security.jwt;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -28,57 +27,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
-    public void doFilterInternal(
+    protected void doFilterInternal(
         @NonNull final HttpServletRequest request,
         @NonNull final HttpServletResponse response,
-        final FilterChain filterChain
+        @NonNull final FilterChain filterChain
     ) throws ServletException, IOException {
-        extractJwtFromRequest(request)
-            .flatMap(this::validateAndGetUserDetails)
+
+        jwtUtil.extractAccessToken(request)
             .ifPresentOrElse(
-                userDetails -> authenticateUser(request, userDetails),
-                () -> log.debug("No valid JWT found in request")
+                token -> processTokenAuthentication(request, token),
+                () -> log.trace("No JWT found in request")
             );
 
         filterChain.doFilter(request, response);
     }
 
-    private Optional<String> extractJwtFromRequest(final HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader("Authorization"))
-            .filter(header -> header.startsWith("Bearer "))
-            .map(header -> header.substring(7))
-            .or(() -> extractJwtFromCookies(request));
-    }
-
-    private Optional<String> extractJwtFromCookies(final HttpServletRequest request) {
-        return Optional.ofNullable(request.getCookies())
-            .flatMap(cookies -> Arrays.stream(cookies)
-                .filter(cookie -> "access_token".equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst());
-    }
-
-    private Optional<UserDetails> validateAndGetUserDetails(final String jwt) {
+    private void processTokenAuthentication(final HttpServletRequest request, final String token) {
         try {
-            String email = jwtUtil.getEmailFromToken(jwt);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            return jwtUtil.validateToken(jwt, userDetails.getUsername())
-                ? Optional.of(userDetails)
-                : Optional.empty();
-        } catch (Exception e) {
-            log.error("Failed to validate JWT", e);
-            return Optional.empty();
+            final String email = jwtUtil.getEmailFromToken(token);
+
+            if (shouldSkipAuthentication(email)) {
+                return;
+            }
+
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+            if (!jwtUtil.validateToken(token, userDetails.getUsername())) {
+                log.warn("Invalid JWT token for user: {}", email);
+                return;
+            }
+
+            authenticateUser(request, userDetails);
+
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
+        } catch (UsernameNotFoundException e) {
+            log.warn("User from token not found: {}", e.getMessage());
         }
     }
 
-    private void authenticateUser(final HttpServletRequest request, final UserDetails userDetails) {
-        log.info("User authenticated: {}", userDetails.getUsername());
-        UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.getAuthorities()
-            );
+    private boolean shouldSkipAuthentication(final String email) {
+        return email == null || SecurityContextHolder.getContext().getAuthentication() != null;
+    }
+
+    private void authenticateUser(final HttpServletRequest request,
+                                  final UserDetails userDetails
+    ) {
+        log.debug("User authenticated: {}", userDetails.getUsername());
+
+        var authentication = new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.getAuthorities()
+        );
 
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);

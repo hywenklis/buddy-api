@@ -8,8 +8,8 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.4.4'
-    id 'com.palantir.git-version' version '4.1.0'
+    id 'com.github.spotbugs' version '6.4.8'
+    id 'com.palantir.git-version' version '4.2.0'
     id 'pmd'
 }
 
@@ -39,7 +39,6 @@ ext {
     set('commonsLang3Version', "3.17.0")
     set('lombokVersion', "1.18.36")
     set('postgresqlVersion', "42.7.4")
-    set('h2Version', "2.3.232")
     set('spotbugsVersion', '4.8.6')
     set('micrometerVersion', '1.4.1')
     set('flywayPostgresVersion', '11.1.0')
@@ -88,12 +87,12 @@ dependencies {
     // Test Dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.projectlombok:lombok:${lombokVersion}"
-    testImplementation "com.h2database:h2:${h2Version}"
     testImplementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
     testImplementation "org.springframework.cloud:spring-cloud-contract-wiremock"
     testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
     testImplementation "org.springframework.boot:spring-boot-testcontainers"
     testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:postgresql"
 }
 
 dependencyManagement {
@@ -183,4 +182,5 @@ pmd {
     toolVersion = "7.0.0"
     ignoreFailures = false
     consoleOutput = true
+    sourceSets = [sourceSets.main]
 }
