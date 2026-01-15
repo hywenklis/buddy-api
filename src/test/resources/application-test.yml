@@ -29,11 +29,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
 
   flyway:
     enabled: true
@@ -73,3 +68,8 @@ buddy:
       subject: "Confirme seu e-mail no Buddy"
       template-path: "templates/email-verification.html"
       url: https://buddyclient.vercel.app/confirm-email?token=
+  security:
+    encryption-key: "ChangeMeToARandomStringOf32Chars"
+    algorithm: "AES/GCM/NoPadding"
+    tag-length: 128
+    iv-length: 12
