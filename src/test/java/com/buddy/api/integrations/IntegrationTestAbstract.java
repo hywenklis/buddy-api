@@ -14,7 +14,7 @@ import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.domains.shelter.entities.ShelterEntity;
 import com.buddy.api.domains.terms.repositories.TermsAcceptanceRepository;
 import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
-import com.buddy.api.integrations.configs.RedisTestConfig;
+import com.buddy.api.integrations.configs.TestContainersConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 0, stubs = "classpath:/mappings")
-@Import(RedisTestConfig.class)
+@Import(TestContainersConfig.class)
 public abstract class IntegrationTestAbstract {
 
     @Autowired

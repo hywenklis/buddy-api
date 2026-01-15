@@ -26,7 +26,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "terms_versions")
+@Table(name = "terms_version")
 public class TermsVersionEntity {
 
     @Id
