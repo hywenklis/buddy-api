@@ -111,3 +111,8 @@ buddy:
       subject: "Confirme seu e-mail no Buddy"
       template-path: "templates/email-verification.html"
       url: https://buddyclient.vercel.app/confirm-email?token=
+  security:
+    encryption-key: "ChangeMeToARandomStringOf32Chars"
+    algorithm: "AES/GCM/NoPadding"
+    tag-length: 128
+    iv-length: 12

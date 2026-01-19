@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 public class JwtUtil {
 
     private final AuthProperties properties;
+
+    private static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
@@ -50,37 +52,43 @@ public class JwtUtil {
             .compact();
     }
 
+    public Optional<String> extractAccessToken(final HttpServletRequest request) {
+        return extractTokenFromCookies(request, ACCESS_TOKEN_COOKIE_NAME)
+            .or(() -> extractTokenFromHeader(request));
+    }
+
+    public Optional<String> extractRefreshToken(final HttpServletRequest request) {
+        return extractTokenFromCookies(request, REFRESH_TOKEN_COOKIE_NAME)
+            .or(() -> extractTokenFromHeader(request));
+    }
+
     public String getEmailFromToken(final String token) throws JwtException {
-        Claims claims = parseClaims(token);
-        return claims.getSubject();
+        return parseClaims(token).getSubject();
     }
 
     public boolean validateToken(final String token, final String username) {
         try {
             Claims claims = parseClaims(token);
-            return claims
-                .getSubject()
-                .equals(username) && !claims.getExpiration()
-                .before(new Date());
+
+            return claims.getSubject().equals(username);
         } catch (JwtException e) {
-            log.error("Invalid JWT token", e);
+            log.warn("Token validation failed: {}", e.getMessage());
             return false;
         }
     }
 
-    public Optional<String> extractRefreshToken(final HttpServletRequest request) {
-        log.debug("Extracting refresh token from request");
-        return extractTokenFromCookies(request)
-            .or(() -> extractTokenFromHeader(request));
-    }
+    private Optional<String> extractTokenFromCookies(final HttpServletRequest request,
+                                                     final String cookieName
+    ) {
+        if (request.getCookies() == null) {
+            return Optional.empty();
+        }
 
-    private Optional<String> extractTokenFromCookies(final HttpServletRequest request) {
-        log.debug("Extracting JWT from cookies with name: {}", JwtUtil.REFRESH_TOKEN_COOKIE_NAME);
-        return Optional.ofNullable(request.getCookies())
-            .flatMap(cookies -> Arrays.stream(cookies)
-                .filter(cookie -> JwtUtil.REFRESH_TOKEN_COOKIE_NAME.equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst());
+        return Arrays.stream(request.getCookies())
+            .filter(cookie -> cookieName.equals(cookie.getName()))
+            .map(Cookie::getValue)
+            .filter(val -> !val.isBlank())
+            .findFirst();
     }
 
     private Optional<String> extractTokenFromHeader(final HttpServletRequest request) {
