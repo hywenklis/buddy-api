@@ -8,9 +8,11 @@ import com.buddy.api.domains.account.services.CreateAccount;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CreateAccountImpl implements CreateAccount {
@@ -24,9 +26,11 @@ public class CreateAccountImpl implements CreateAccount {
         validateEmailIsNotRegistered(accountDto.email());
 
         final var accountEntity = accountMapper.toAccountEntity(accountDto);
-
         accountEntity.setPassword(passwordEncoder.encode(accountDto.password()));
+
+        log.info("Creating account for email: {}", accountDto.email().value());
         accountRepository.save(accountEntity);
+        log.info("Account created successfully with ID: {}", accountEntity.getAccountId());
     }
 
     private void validateEmailIsNotRegistered(final EmailAddress email) {
