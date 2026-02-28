@@ -8,7 +8,7 @@ spring:
   cloud:
     config:
       name: ${spring.application.name}
-      uri: https://jaiminho.propresto.app/api
+      uri: ${CONFIG_SERVER_URI}
       username: 'jaiminho-admin'
       password: ${config_password}
       label: ${CONFIG_SERVER_LABEL}
