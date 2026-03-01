@@ -16,18 +16,18 @@ public interface PetDomainMapper {
     @Mapping(target = "updateDate", ignore = true)
     @Mapping(target = "createDate", ignore = true)
     @Mapping(target = "shelter", ignore = true)
-    PetEntity mapToEntity(PetDto petDto);
+    PetEntity mapToEntity(final PetDto petDto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "pet", ignore = true)
     @Mapping(target = "updateDate", ignore = true)
     @Mapping(target = "createDate", ignore = true)
-    PetImageEntity mapToEntity(PetImageDto petImageDto);
+    PetImageEntity mapToEntity(final PetImageDto petImageDto);
 
     @Mapping(target = "shelterId", source = "shelter.id")
-    PetDto mapToDto(PetEntity petEntity);
+    PetDto mapToDto(final PetEntity petEntity);
 
-    PetImageDto mapToDto(PetImageEntity petImageEntity);
+    PetImageDto mapToDto(final PetImageEntity petImageEntity);
 
     @Mapping(target = "shelterId", source = "petEntity", qualifiedByName = "extractShelterId")
     @Mapping(target = "shelterCompactDto.nameShelter",
@@ -38,10 +38,10 @@ public interface PetDomainMapper {
         source = "petEntity",
         qualifiedByName = "extractShelterAvatar"
     )
-    PetSearchCriteriaDto mapParamsToDto(PetEntity petEntity);
+    PetSearchCriteriaDto mapParamsToDto(final PetEntity petEntity);
 
     @Named("extractShelterId")
-    default UUID extractShelterId(PetEntity petEntity) {
+    default UUID extractShelterId(final PetEntity petEntity) {
         if (petEntity != null && petEntity.getShelter() != null) {
             return petEntity.getShelter().getId();
         }
@@ -49,12 +49,12 @@ public interface PetDomainMapper {
     }
 
     @Named("extractShelterName")
-    default String extractShelterName(PetEntity petEntity) {
+    default String extractShelterName(final PetEntity petEntity) {
         return petEntity != null ? petEntity.getShelter().getNameShelter() : null;
     }
 
     @Named("extractShelterAvatar")
-    default String extractShelterAvatar(PetEntity petEntity) {
+    default String extractShelterAvatar(final PetEntity petEntity) {
         return petEntity != null ? petEntity.getShelter().getAvatar() : null;
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApiClientExecutor {
 
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public <T> T execute(final String integrationName, final Supplier<T> action) {
         try {
             return action.get();
