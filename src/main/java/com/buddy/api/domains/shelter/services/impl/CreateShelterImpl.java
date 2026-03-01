@@ -23,6 +23,5 @@ public class CreateShelterImpl implements CreateShelter {
         log.info("Creating shelter: {}", shelterDto.nameShelter());
         final var savedShelter = shelterRepository.save(mapper.mapToEntity(shelterDto));
         log.info("Shelter created successfully with ID: {}", savedShelter.getId());
-        mapper.mapToDto(savedShelter);
     }
 }
