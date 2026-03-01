@@ -96,6 +96,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private UserDetails authenticateUser(final String email, final String password) {
         try {
             final var authResult = authenticationManager.authenticate(

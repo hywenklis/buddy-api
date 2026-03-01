@@ -36,6 +36,7 @@ public abstract class AbstractAttributeEncryptor implements AttributeConverter<S
             .orElse(null);
     }
 
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private String encrypt(final String data) {
         try {
             final byte[] iv = new byte[properties.ivLength()];
@@ -54,6 +55,7 @@ public abstract class AbstractAttributeEncryptor implements AttributeConverter<S
         }
     }
 
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private String decrypt(final String encryptedData) {
         try {
             final byte[] decoded = Base64.getDecoder().decode(encryptedData);
