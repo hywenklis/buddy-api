@@ -28,7 +28,7 @@ public class CreateAccountImpl implements CreateAccount {
         final var accountEntity = accountMapper.toAccountEntity(accountDto);
         accountEntity.setPassword(passwordEncoder.encode(accountDto.password()));
 
-        log.info("Creating account for email: {}", accountDto.email().value());
+        log.info("Creating account");
         accountRepository.save(accountEntity);
         log.info("Account created successfully with ID: {}", accountEntity.getAccountId());
     }
