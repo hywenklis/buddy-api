@@ -52,7 +52,12 @@ public class ShelterEntity {
 
     private String avatar;
 
-    @OneToMany(mappedBy = "shelter", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(
+        mappedBy = "shelter",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
     @Builder.Default
     private List<PetEntity> pets = new ArrayList<>();
 

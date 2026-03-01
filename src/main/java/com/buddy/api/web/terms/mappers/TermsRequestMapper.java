@@ -2,6 +2,8 @@ package com.buddy.api.web.terms.mappers;
 
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.terms.dtos.AcceptTermsDto;
+import com.buddy.api.domains.terms.dtos.CreateTermsVersionDto;
+import com.buddy.api.web.terms.requests.CreateTermsVersionRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -16,7 +18,21 @@ public interface TermsRequestMapper {
     @Mapping(target = "email", source = "userDetails", qualifiedByName = "extractEmail")
     @Mapping(target = "ipAddress", source = "request", qualifiedByName = "extractIp")
     @Mapping(target = "userAgent", source = "request", qualifiedByName = "extractUserAgent")
-    AcceptTermsDto toDto(HttpServletRequest request, UserDetails userDetails);
+    AcceptTermsDto toDto(final HttpServletRequest request,
+                         final UserDetails userDetails
+    );
+
+    @Mapping(
+        target = "publishedByAccountEmail",
+        source = "userDetails",
+        qualifiedByName = "extractEmail"
+    )
+    @Mapping(target = "versionTag", source = "request.versionTag")
+    @Mapping(target = "content", source = "request.content")
+    @Mapping(target = "isActive", source = "request.isActive")
+    CreateTermsVersionDto toCreateDto(final CreateTermsVersionRequest request,
+                                      final UserDetails userDetails
+    );
 
     @Named("extractEmail")
     default String extractEmail(final UserDetails userDetails) {
