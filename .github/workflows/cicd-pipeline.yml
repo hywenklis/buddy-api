@@ -319,7 +319,10 @@ jobs:
           NEW_TAG="${{ steps.create_tag.outputs.new_tag }}"
           echo "Criando GitHub Release para a tag $NEW_TAG..."
           
-          if gh release view "$NEW_TAG" > /dev/null 2>&1; then
+          rc=0
+          gh release view "$NEW_TAG" > /dev/null 2>&1 || rc=$?
+          
+          if [ $rc -eq 0 ]; then
             echo "Release $NEW_TAG já existe. Pulando criação."
           else
             # A flag --generate-notes cria o changelog automaticamente baseado nos PRs
@@ -351,9 +354,9 @@ jobs:
           for TAG in $TAGS_TO_DELETE; do
             echo "Limpando: $TAG"
           
-            # Captura o exit code antes de avaliar
-            gh release view "$TAG" > /dev/null 2>&1
-            rc=$?
+            rc=0
+            gh release view "$TAG" > /dev/null 2>&1 || rc=$?
+          
             if [ $rc -eq 0 ]; then
               echo "Deletando GitHub Release e a Tag do Git: $TAG"
               gh release delete "$TAG" --cleanup-tag -y
