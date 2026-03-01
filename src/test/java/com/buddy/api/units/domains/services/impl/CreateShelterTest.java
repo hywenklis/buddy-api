@@ -40,7 +40,6 @@ class CreateShelterTest extends UnitTestAbstract {
 
         // Mock
         when(mapper.mapToEntity(shelterDto)).thenReturn(shelterEntity);
-        when(mapper.mapToDto(shelterEntity)).thenReturn(shelterDto);
         when(shelterRepository.save(shelterEntity)).thenReturn(shelterEntity);
 
         // When

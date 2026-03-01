@@ -3,6 +3,7 @@ package com.buddy.api.units.domains.services.impl;
 import static com.buddy.api.builders.terms.TermsBuilder.validTermsVersionEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -110,7 +111,7 @@ class FindTermsVersionTest extends UnitTestAbstract {
         final var result = findTermsVersion.findByTag(tagToSearch);
 
         verify(termsVersionRepository, times(1)).findByVersionTag(tagToSearch);
-        verify(termsMapper, never()).toTermsVersionDto(null);
+        verify(termsMapper, never()).toTermsVersionDto(any());
 
         assertThat(result).isEmpty();
     }
