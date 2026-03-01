@@ -323,7 +323,7 @@ jobs:
             echo "Release $NEW_TAG já existe. Pulando criação."
           else
             # A flag --generate-notes cria o changelog automaticamente baseado nos PRs
-            gh release create "$NEW_TAG"
+            gh release create "$NEW_TAG" \
               --title "Release $NEW_TAG" \
               --generate-notes \
               --latest
@@ -351,19 +351,16 @@ jobs:
           for TAG in $TAGS_TO_DELETE; do
             echo "Limpando: $TAG"
           
-            # Verifica se a tag possui uma Release no GitHub
-            if gh release view "$TAG" > /dev/null 2>&1; then
+            # Captura o exit code antes de avaliar
+            gh release view "$TAG" > /dev/null 2>&1
+            rc=$?
+            if [ $rc -eq 0 ]; then
               echo "Deletando GitHub Release e a Tag do Git: $TAG"
-              # A flag --cleanup-tag exclui a tag do Git junto com a Release
               gh release delete "$TAG" --cleanup-tag -y
+            elif [ $rc -eq 4 ]; then
+              echo "ERRO: Autenticação necessária para consultar release $TAG" >&2
+              exit 1
             else
-              rc=$?
-              if [ $rc -eq 4 ]; then
-                echo "ERRO: Autenticação necessária para consultar release $TAG" >&2
-                exit 1
-              fi
-              # exit code 1 pode ser "not found" ou outro erro (rede, rate limit)
-              # Em produção, considere falhar também para erros não-found
               echo "Release não encontrada (ou erro de API). Deletando apenas a Tag do Git: $TAG"
               git push --delete origin "$TAG" || true
             fi
