@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -25,36 +26,38 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .headers(headers -> headers
-                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
-                        .contentTypeOptions(Customizer.withDefaults())
-                        .frameOptions(frame -> frame.deny())
-                        .httpStrictTransportSecurity(hsts -> hsts
-                                .includeSubDomains(true)
-                                .maxAgeInSeconds(31536000)))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v1/auth/**",
-                                "/v1/accounts/register",
-                                "/v1/pets/**",
-                                "/v1/shelters/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/actuator/health",
-                                "/actuator/info",
-                                "/v2/api-docs",
-                                "/configuration/ui",
-                                "/swagger-resources/**",
-                                "/configuration/security",
-                                "/webjars/**",
-                                "/api-docs/**",
-                                "/v1/terms/active")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(STATELESS))
+            .headers(headers -> headers
+                .contentSecurityPolicy(csp ->
+                    csp.policyDirectives("default-src 'self'"))
+                .contentTypeOptions(Customizer.withDefaults())
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000)))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/v1/auth/**",
+                    "/v1/accounts/register",
+                    "/v1/pets/**",
+                    "/v1/shelters/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/actuator/health",
+                    "/actuator/info",
+                    "/v2/api-docs",
+                    "/configuration/ui",
+                    "/swagger-resources/**",
+                    "/configuration/security",
+                    "/webjars/**",
+                    "/api-docs/**",
+                    "/v1/terms/active")
+                .permitAll()
+                .anyRequest().authenticated())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

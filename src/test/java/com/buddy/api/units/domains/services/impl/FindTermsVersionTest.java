@@ -3,6 +3,7 @@ package com.buddy.api.units.domains.services.impl;
 import static com.buddy.api.builders.terms.TermsBuilder.validTermsVersionEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +15,7 @@ import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
 import com.buddy.api.domains.terms.services.impl.FindTermsVersionImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.Optional;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
@@ -69,5 +71,47 @@ class FindTermsVersionTest extends UnitTestAbstract {
 
         verify(termsVersionRepository,
             times(1)).findFirstByIsActiveTrueOrderByPublicationDateDesc();
+    }
+
+    @Test
+    @DisplayName("Should return Optional of DTO when terms version is found by tag")
+    void should_return_optional_of_dto_when_found_by_tag() {
+        final String tagToSearch = RandomStringUtils.secure().nextAlphabetic(10);
+        final TermsVersionEntity entity = validTermsVersionEntity()
+            .versionTag(tagToSearch)
+            .build();
+
+        when(termsVersionRepository.findByVersionTag(tagToSearch)).thenReturn(Optional.of(entity));
+
+        final var result = findTermsVersion.findByTag(tagToSearch);
+
+        assertThat(result)
+            .isPresent()
+            .hasValueSatisfying(dto -> {
+                assertThat(dto.termsVersionId()).isEqualTo(entity.getTermsVersionId());
+                assertThat(dto.versionTag()).isEqualTo(entity.getVersionTag());
+                assertThat(dto.content()).isEqualTo(entity.getContent());
+                assertThat(dto.isActive()).isEqualTo(entity.getIsActive());
+            });
+
+        verify(termsVersionRepository, times(1))
+            .findByVersionTag(tagToSearch);
+        verify(termsMapper, times(1)).toTermsVersionDto(entity);
+    }
+
+    @Test
+    @DisplayName("Should return empty Optional when terms version is not found by tag")
+    void should_return_empty_optional_when_not_found_by_tag() {
+        final String tagToSearch = RandomStringUtils.secure().nextAlphabetic(10);
+
+        when(termsVersionRepository.findByVersionTag(tagToSearch))
+            .thenReturn(Optional.empty());
+
+        final var result = findTermsVersion.findByTag(tagToSearch);
+
+        verify(termsVersionRepository, times(1)).findByVersionTag(tagToSearch);
+        verify(termsMapper, never()).toTermsVersionDto(null);
+
+        assertThat(result).isEmpty();
     }
 }
