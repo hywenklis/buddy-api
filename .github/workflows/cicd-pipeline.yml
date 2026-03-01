@@ -311,6 +311,52 @@ jobs:
           echo "should_run=true" >> $GITHUB_OUTPUT
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
+      - name: Create GitHub Release with Changelog
+        if: steps.create_tag.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_TAG="${{ steps.create_tag.outputs.new_tag }}"
+          echo "Criando GitHub Release para a tag $NEW_TAG..."
+          
+          # A flag --generate-notes cria o changelog automaticamente baseado nos PRs
+          gh release create "$NEW_TAG" \
+            --title "Release $NEW_TAG" \
+            --generate-notes \
+            --latest
+
+      - name: Clean up old tags and releases (Keep last 5)
+        if: steps.create_tag.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Buscando todas as tags..."
+          git fetch --prune --tags
+          
+          # Lista tags com prefixo 'v*', ordena decrescente por versão e pula as 5 primeiras
+          TAGS_TO_DELETE=$(git tag -l "v*" --sort=-v:refname | tail -n +6)
+          
+          if [ -z "$TAGS_TO_DELETE" ]; then
+            echo "Nenhuma tag antiga para deletar. O total atual é 5 ou menos."
+            exit 0
+          fi
+          
+          echo "Tags marcadas para exclusão: $TAGS_TO_DELETE"
+          
+          for TAG in $TAGS_TO_DELETE; do
+            echo "Limpando: $TAG"
+          
+            # Verifica se a tag possui uma Release no GitHub
+            if gh release view "$TAG" > /dev/null 2>&1; then
+              echo "Deletando GitHub Release e a Tag do Git: $TAG"
+              # A flag --cleanup-tag exclui a tag do Git junto com a Release
+              gh release delete "$TAG" --cleanup-tag -y
+            else
+              echo "Release não encontrada. Deletando apenas a Tag do Git: $TAG"
+              git push --delete origin "$TAG" || true
+            fi
+          done
+
       - name: Create Sync Branch (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
         uses: actions/checkout@v6
