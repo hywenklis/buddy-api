@@ -43,7 +43,7 @@ ext {
     spotbugsVersion = "4.9.8"
     micrometerVersion = "1.4.1"
     flywayPostgresVersion = "11.1.0"
-    jwtVersion = "0.12.6"
+    jwtVersion = "0.13.0"
     embeddedRedisVersion = "1.4.3"
     awaitilityVersion = "4.3.0"
     findsecbugsVersion = "1.14.0"
