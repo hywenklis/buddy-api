@@ -21,6 +21,7 @@ public class EmailSenderImpl implements EmailSender {
 
     @Async
     @Override
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public void dispatchVerificationEmail(final UUID accountId,
                                           final String userEmail,
                                           final String token

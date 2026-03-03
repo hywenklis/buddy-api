@@ -13,8 +13,8 @@ public interface ShelterMapperRequest {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "phoneNumber", ignore = true)
     @BeforeMapping
-    default void ignorePets(ShelterRequest shelterRequest,
-                            @MappingTarget ShelterDto.ShelterDtoBuilder shelterDtoBuilder) {
+    default void ignorePets(final ShelterRequest shelterRequest,
+                            @MappingTarget final ShelterDto.ShelterDtoBuilder shelterDtoBuilder) {
         shelterDtoBuilder.pets(null);
     }
 
@@ -22,5 +22,5 @@ public interface ShelterMapperRequest {
     @Mapping(target = "address", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "phoneNumber", ignore = true)
-    ShelterDto mapToDto(ShelterRequest shelterRequest);
+    ShelterDto mapToDto(final ShelterRequest shelterRequest);
 }
