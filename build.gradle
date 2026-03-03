@@ -10,7 +10,7 @@ plugins {
     id 'jacoco'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.4.8'
-    id 'com.palantir.git-version' version '4.3.0'
+    id 'com.palantir.git-version' version '5.0.0'
     id 'pmd'
 }
 
@@ -37,13 +37,13 @@ ext {
     mapstructVersion = "1.6.3"
     springdocOpenApiVersion = "2.8.9"
     springHateoasVersion = "2.5.1"
-    commonsLang3Version = "3.17.0"
+    commonsLang3Version = "3.20.0"
     lombokVersion= "1.18.36"
     postgresqlVersion= "42.7.4"
     spotbugsVersion = "4.9.8"
     micrometerVersion = "1.4.1"
     flywayPostgresVersion = "11.1.0"
-    jwtVersion = "0.12.6"
+    jwtVersion = "0.13.0"
     embeddedRedisVersion = "1.4.3"
     awaitilityVersion = "4.3.0"
     findsecbugsVersion = "1.14.0"
