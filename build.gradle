@@ -33,7 +33,7 @@ configurations {
 }
 
 ext {
-    springCloudVersion = "2025.0.0"
+    springCloudVersion = "2025.1.1"
     mapstructVersion = "1.6.3"
     springdocOpenApiVersion = "2.8.9"
     springHateoasVersion = "2.5.1"
