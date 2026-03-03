@@ -41,7 +41,7 @@ ext {
     lombokVersion= "1.18.36"
     postgresqlVersion= "42.7.4"
     spotbugsVersion = "4.9.8"
-    micrometerVersion = "1.4.1"
+    micrometerVersion = "1.6.3"
     flywayPostgresVersion = "11.1.0"
     jwtVersion = "0.13.0"
     embeddedRedisVersion = "1.4.3"
