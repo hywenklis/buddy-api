@@ -56,7 +56,7 @@ public class ShelterEntity {
         mappedBy = "shelter",
         cascade = CascadeType.ALL,
         orphanRemoval = true,
-        fetch = FetchType.EAGER
+        fetch = FetchType.LAZY
     )
     @Builder.Default
     private List<PetEntity> pets = new ArrayList<>();
