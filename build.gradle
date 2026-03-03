@@ -37,7 +37,7 @@ ext {
     mapstructVersion = "1.6.3"
     springdocOpenApiVersion = "2.8.9"
     springHateoasVersion = "2.5.1"
-    commonsLang3Version = "3.17.0"
+    commonsLang3Version = "3.20.0"
     lombokVersion= "1.18.36"
     postgresqlVersion= "42.7.4"
     spotbugsVersion = "4.9.8"
