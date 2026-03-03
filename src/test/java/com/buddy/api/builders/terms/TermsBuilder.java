@@ -3,6 +3,7 @@ package com.buddy.api.builders.terms;
 import static com.buddy.api.builders.account.AccountBuilder.validAccountDto;
 
 import com.buddy.api.domains.terms.dtos.AcceptTermsDto;
+import com.buddy.api.domains.terms.dtos.CreateTermsVersionDto;
 import com.buddy.api.domains.terms.dtos.TermsAcceptanceDto;
 import com.buddy.api.domains.terms.dtos.TermsVersionDto;
 import com.buddy.api.domains.terms.entities.TermsVersionEntity;
@@ -40,5 +41,13 @@ public class TermsBuilder {
             .termsVersion(validTermsVersionDto().build())
             .ipAddress("0.0.0.1")
             .userAgent("Mozilla/5.0");
+    }
+
+    public static CreateTermsVersionDto.CreateTermsVersionDtoBuilder validCreateTermsVersionDto() {
+        return CreateTermsVersionDto.builder()
+            .versionTag("v" + RandomStringUtils.secure().nextNumeric(2) + ".0")
+            .content("Terms of use content " + RandomStringUtils.secure().nextAlphanumeric(50))
+            .isActive(true)
+            .publishedByAccountEmail(RandomEmailUtils.generateValidEmail());
     }
 }

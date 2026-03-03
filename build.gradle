@@ -1,6 +1,7 @@
 import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.SpotBugsTask
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id 'java'
@@ -9,7 +10,7 @@ plugins {
     id 'jacoco'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.4.8'
-    id 'com.palantir.git-version' version '4.2.0'
+    id 'com.palantir.git-version' version '5.0.0'
     id 'pmd'
 }
 
@@ -32,19 +33,20 @@ configurations {
 }
 
 ext {
-    set('springCloudVersion', "2025.0.0")
-    set('mapstructVersion', "1.6.3")
-    set('springdocOpenApiVersion', "2.8.9")
-    set('springHateoasVersion', "2.5.1")
-    set('commonsLang3Version', "3.17.0")
-    set('lombokVersion', "1.18.36")
-    set('postgresqlVersion', "42.7.4")
-    set('spotbugsVersion', '4.8.6')
-    set('micrometerVersion', '1.4.1')
-    set('flywayPostgresVersion', '11.1.0')
-    set('jwtVersion', '0.12.6')
-    set('embeddedRedisVersion', '1.4.3')
-    set('awaitilityVersion', '4.3.0')
+    springCloudVersion = "2025.0.0"
+    mapstructVersion = "1.6.3"
+    springdocOpenApiVersion = "2.8.9"
+    springHateoasVersion = "2.5.1"
+    commonsLang3Version = "3.20.0"
+    lombokVersion= "1.18.42"
+    postgresqlVersion= "42.7.10"
+    spotbugsVersion = "4.9.8"
+    micrometerVersion = "1.6.3"
+    flywayPostgresVersion = "11.1.0"
+    jwtVersion = "0.13.0"
+    embeddedRedisVersion = "1.4.3"
+    awaitilityVersion = "4.3.0"
+    findsecbugsVersion = "1.14.0"
 }
 
 dependencies {
@@ -74,6 +76,8 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "com.github.spotbugs:spotbugs-annotations:${spotbugsVersion}"
 
+    spotbugsPlugins "com.h3xstream.findsecbugs:findsecbugs-plugin:${findsecbugsVersion}"
+
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
@@ -101,41 +105,39 @@ dependencyManagement {
     }
 }
 
-bootJar {
-    archiveFileName = 'app.jar'
+tasks.named('bootJar', BootJar) {
+    archiveFileName.set('app.jar')
 }
 
-jar {
+tasks.named('jar', Jar) {
     enabled = false
 }
-
-def details = versionDetails()
 
 springBoot {
     buildInfo {
         properties {
             group = "com.buddy.api"
-            version = details.lastTag ?: "0.0.0"
+            version = versionDetails().lastTag ?: "0.0.0"
             additional = ['developers': 'hywenklis.']
         }
     }
 }
 
-tasks.named('test') {
+tasks.named('test', Test) {
     useJUnitPlatform()
     finalizedBy("jacocoTestReport")
 }
 
-tasks.jacocoTestReport {
+tasks.named('jacocoTestReport', JacocoReport) {
     reports {
-        xml.required = true
-        csv.required = true
-        html.required = true
+        xml.required.set(true)
+        csv.required.set(true)
+        html.required.set(true)
     }
 }
 
 checkstyle {
-    toolVersion = '10.17.0'
+    toolVersion = '13.3.0'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     maxWarnings = 0
     showViolations = true
@@ -144,19 +146,23 @@ checkstyle {
 
 tasks.withType(Checkstyle).configureEach {
     reports {
-        xml.required = false
-        html.required = true
-        html.stylesheet resources.text.fromFile('config/checkstyle/xsl/checkstyle-custom.xsl')
+        xml.required.set(false)
+        html.required.set(true)
     }
 }
 
-checkstyleMain.dependsOn compileJava
-checkstyleTest.dependsOn compileTestJava
+tasks.named('checkstyleMain').configure {
+    dependsOn tasks.named('compileJava')
+}
+
+tasks.named('checkstyleTest').configure {
+    dependsOn tasks.named('compileTestJava')
+}
 
 tasks.withType(SpotBugsTask).configureEach {
     reports {
-        xml.required = false
-        html.required = true
+        xml.required.set(false)
+        html.required.set(true)
     }
 }
 
@@ -168,7 +174,6 @@ tasks.withType(JavaCompile).configureEach {
     ])
 }
 
-
 spotbugs {
     ignoreFailures = false
     showStackTraces = true
@@ -179,7 +184,7 @@ spotbugs {
 }
 
 pmd {
-    toolVersion = "7.0.0"
+    toolVersion = "7.22.0"
     ignoreFailures = false
     consoleOutput = true
     sourceSets = [sourceSets.main]
