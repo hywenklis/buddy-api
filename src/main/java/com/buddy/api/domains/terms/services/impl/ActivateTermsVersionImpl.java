@@ -31,8 +31,7 @@ public class ActivateTermsVersionImpl implements ActivateTermsVersion {
             return;
         }
 
-        termsVersionRepository.deactivateAllActive();
-        termsVersionRepository.activateById(termsVersionId);
+        termsVersionRepository.switchActiveById(termsVersionId);
 
         log.info("Terms version activated successfully with id: {}", termsVersionId);
     }

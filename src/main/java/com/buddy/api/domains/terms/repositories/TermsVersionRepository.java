@@ -14,10 +14,10 @@ public interface TermsVersionRepository extends JpaRepository<TermsVersionEntity
     Optional<TermsVersionEntity> findByVersionTag(String versionTag);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE TermsVersionEntity t SET t.isActive = false WHERE t.isActive = true")
-    int deactivateAllActive();
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE TermsVersionEntity t SET t.isActive = true WHERE t.termsVersionId = :id")
-    int activateById(@Param("id") UUID id);
+    @Query("""
+            UPDATE TermsVersionEntity t
+               SET t.isActive = CASE WHEN t.termsVersionId = :id THEN true ELSE false END
+             WHERE t.isActive = true OR t.termsVersionId = :id
+        """)
+    int switchActiveById(@Param("id") UUID id);
 }

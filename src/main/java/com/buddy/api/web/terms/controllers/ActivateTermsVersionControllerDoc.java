@@ -1,10 +1,8 @@
 package com.buddy.api.web.terms.controllers;
 
-import com.buddy.api.web.terms.responses.TermsVersionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,10 +20,9 @@ public interface ActivateTermsVersionControllerDoc {
             "Only ADMIN users can perform this operation.",
         security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200",
+        @ApiResponse(responseCode = "204",
             description = "Terms version activated successfully",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = TermsVersionResponse.class))),
+            content = @Content),
         @ApiResponse(responseCode = "401",
             description = "Unauthorized - missing or invalid JWT token", content = @Content),
         @ApiResponse(responseCode = "403",

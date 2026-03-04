@@ -56,14 +56,12 @@ class ActivateTermsVersionImplTest extends UnitTestAbstract {
             when(findTermsVersion.findById(termsVersionId))
                 .thenReturn(inactiveDto)
                 .thenReturn(activatedDto);
-            when(termsVersionRepository.deactivateAllActive()).thenReturn(1);
-            when(termsVersionRepository.activateById(termsVersionId)).thenReturn(1);
+            when(termsVersionRepository.switchActiveById(termsVersionId)).thenReturn(1);
 
             activateTermsVersion.activate(termsVersionId);
 
             verify(findTermsVersion, times(1)).findById(termsVersionId);
-            verify(termsVersionRepository, times(1)).deactivateAllActive();
-            verify(termsVersionRepository, times(1)).activateById(termsVersionId);
+            verify(termsVersionRepository, times(1)).switchActiveById(termsVersionId);
         }
 
         @Test
@@ -82,8 +80,7 @@ class ActivateTermsVersionImplTest extends UnitTestAbstract {
             activateTermsVersion.activate(termsVersionId);
 
             verify(findTermsVersion, times(1)).findById(termsVersionId);
-            verify(termsVersionRepository, never()).deactivateAllActive();
-            verify(termsVersionRepository, never()).activateById(termsVersionId);
+            verify(termsVersionRepository, never()).switchActiveById(termsVersionId);
         }
     }
 
@@ -108,8 +105,7 @@ class ActivateTermsVersionImplTest extends UnitTestAbstract {
                 );
 
             verify(findTermsVersion, times(1)).findById(nonExistentId);
-            verify(termsVersionRepository, never()).deactivateAllActive();
-            verify(termsVersionRepository, never()).activateById(nonExistentId);
+            verify(termsVersionRepository, never()).switchActiveById(nonExistentId);
         }
     }
 }
