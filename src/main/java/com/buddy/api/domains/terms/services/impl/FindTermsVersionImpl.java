@@ -6,6 +6,7 @@ import com.buddy.api.domains.terms.mappers.TermsMapper;
 import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
 import com.buddy.api.domains.terms.services.FindTermsVersion;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,6 +28,16 @@ public class FindTermsVersionImpl implements FindTermsVersion {
         return termsMapper.toTermsVersionDto(
             termsVersionRepository.findFirstByIsActiveTrueOrderByPublicationDateDesc()
                 .orElseThrow(() -> new NotFoundException("terms", "No active terms found")));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TermsVersionDto findById(final UUID termsVersionId) {
+        final var entity = termsVersionRepository.findById(termsVersionId)
+            .orElseThrow(() -> new NotFoundException(
+                "termsVersionId",
+                "Terms version not found with id: " + termsVersionId));
+        return termsMapper.toTermsVersionDto(entity);
     }
 
     @Override

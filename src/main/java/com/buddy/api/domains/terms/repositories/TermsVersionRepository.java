@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TermsVersionRepository extends JpaRepository<TermsVersionEntity, UUID> {
     Optional<TermsVersionEntity> findFirstByIsActiveTrueOrderByPublicationDateDesc();
@@ -15,4 +16,8 @@ public interface TermsVersionRepository extends JpaRepository<TermsVersionEntity
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE TermsVersionEntity t SET t.isActive = false WHERE t.isActive = true")
     int deactivateAllActive();
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE TermsVersionEntity t SET t.isActive = true WHERE t.termsVersionId = :id")
+    int activateById(@Param("id") UUID id);
 }
