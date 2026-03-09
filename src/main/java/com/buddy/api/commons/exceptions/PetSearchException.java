@@ -1,11 +1,10 @@
 package com.buddy.api.commons.exceptions;
 
 import java.io.Serial;
-import java.io.Serializable;
 import lombok.Getter;
 
 @Getter
-public class PetSearchException extends RuntimeException implements Serializable {
+public class PetSearchException extends RuntimeException {
 
     @Serial
     private static final long serialVersionUID = 1704349073637945329L;
