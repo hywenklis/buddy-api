@@ -16,6 +16,7 @@ import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
 import com.buddy.api.domains.terms.services.impl.FindTermsVersionImpl;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,6 +73,49 @@ class FindTermsVersionTest extends UnitTestAbstract {
 
         verify(termsVersionRepository,
             times(1)).findFirstByIsActiveTrueOrderByPublicationDateDesc();
+    }
+
+    @Test
+    @DisplayName("Should return terms version DTO when found by id")
+    void should_return_dto_when_found_by_id() {
+        final UUID termsVersionId = UUID.randomUUID();
+        final TermsVersionEntity entity = validTermsVersionEntity()
+            .termsVersionId(termsVersionId)
+            .build();
+
+        when(termsVersionRepository.findById(termsVersionId))
+            .thenReturn(Optional.of(entity));
+
+        final var result = findTermsVersion.findById(termsVersionId);
+
+        assertThat(result)
+            .isNotNull()
+            .satisfies(dto -> {
+                assertThat(dto.termsVersionId()).isEqualTo(termsVersionId);
+                assertThat(dto.versionTag()).isEqualTo(entity.getVersionTag());
+                assertThat(dto.content()).isEqualTo(entity.getContent());
+                assertThat(dto.isActive()).isEqualTo(entity.getIsActive());
+            });
+
+        verify(termsVersionRepository, times(1)).findById(termsVersionId);
+        verify(termsMapper, times(1)).toTermsVersionDto(entity);
+    }
+
+    @Test
+    @DisplayName("Should throw NotFoundException when terms version is not found by id")
+    void should_throw_exception_when_not_found_by_id() {
+        final UUID nonExistentId = UUID.randomUUID();
+
+        when(termsVersionRepository.findById(nonExistentId))
+            .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> findTermsVersion.findById(nonExistentId))
+            .isInstanceOf(NotFoundException.class)
+            .hasMessageContaining("Terms version not found with id: " + nonExistentId)
+            .hasFieldOrPropertyWithValue("fieldName", "termsVersionId");
+
+        verify(termsVersionRepository, times(1)).findById(nonExistentId);
+        verify(termsMapper, never()).toTermsVersionDto(any());
     }
 
     @Test
