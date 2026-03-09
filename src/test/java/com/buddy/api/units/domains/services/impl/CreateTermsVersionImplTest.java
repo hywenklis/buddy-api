@@ -20,6 +20,7 @@ import com.buddy.api.domains.terms.dtos.TermsVersionDto;
 import com.buddy.api.domains.terms.entities.TermsVersionEntity;
 import com.buddy.api.domains.terms.mappers.TermsMapper;
 import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
+import com.buddy.api.domains.terms.services.ActivateTermsVersion;
 import com.buddy.api.domains.terms.services.FindTermsVersion;
 import com.buddy.api.domains.terms.services.impl.CreateTermsVersionImpl;
 import com.buddy.api.domains.valueobjects.EmailAddress;
@@ -47,6 +48,9 @@ class CreateTermsVersionImplTest extends UnitTestAbstract {
     @Mock
     private FindTermsVersion findTermsVersion;
 
+    @Mock
+    private ActivateTermsVersion activateTermsVersion;
+
     @Spy
     private TermsMapper termsMapper = Mappers.getMapper(TermsMapper.class);
 
@@ -58,7 +62,7 @@ class CreateTermsVersionImplTest extends UnitTestAbstract {
     class SuccessScenarios {
 
         @Test
-        @DisplayName("Should create version successfully when input is valid and isActive is true")
+        @DisplayName("Should create version as draft and call activate when isActive is true")
         void should_create_version_when_valid_input_and_active() {
             final String adminEmail = RandomEmailUtils.generateValidEmail();
             final CreateTermsVersionDto dto = validCreateTermsVersionDto()
@@ -73,7 +77,7 @@ class CreateTermsVersionImplTest extends UnitTestAbstract {
             final TermsVersionEntity entityToSave = TermsVersionEntity.builder()
                 .versionTag(dto.versionTag())
                 .content(dto.content())
-                .isActive(true)
+                .isActive(false)
                 .publicationDate(LocalDate.now())
                 .publishedBy(AccountEntity.builder().accountId(publisherDto.accountId()).build())
                 .build();
@@ -82,31 +86,30 @@ class CreateTermsVersionImplTest extends UnitTestAbstract {
                 .termsVersionId(UUID.randomUUID())
                 .versionTag(dto.versionTag())
                 .content(dto.content())
-                .isActive(true)
+                .isActive(false)
                 .publicationDate(LocalDate.now())
                 .publishedBy(AccountEntity.builder().accountId(publisherDto.accountId()).build())
                 .build();
 
             when(findTermsVersion.findByTag(dto.versionTag())).thenReturn(Optional.empty());
             when(findAccount.findByEmail(adminEmail)).thenReturn(publisherDto);
-            when(termsVersionRepository.deactivateAllActive()).thenReturn(1);
             when(termsVersionRepository.save(entityToSave)).thenReturn(savedEntity);
 
             final var result = createTermsVersion.create(dto);
 
             assertThat(result).isNotNull();
             assertThat(result.versionTag()).isEqualTo(dto.versionTag());
-            assertThat(result.content()).isEqualTo(dto.content());
             assertThat(result.isActive()).isTrue();
 
             verify(findTermsVersion, times(1)).findByTag(dto.versionTag());
             verify(findAccount, times(1)).findByEmail(adminEmail);
-            verify(termsVersionRepository, times(1)).deactivateAllActive();
             verify(termsVersionRepository, times(1)).save(entityToSave);
+
+            verify(activateTermsVersion, times(1)).activate(savedEntity.getTermsVersionId());
         }
 
         @Test
-        @DisplayName("Should create version without deactivating when isActive is false")
+        @DisplayName("Should create version without calling activate when isActive is false")
         void should_create_version_without_deactivating_when_inactive() {
             final String adminEmail = RandomEmailUtils.generateValidEmail();
             final CreateTermsVersionDto dto = validCreateTermsVersionDto()
@@ -144,8 +147,8 @@ class CreateTermsVersionImplTest extends UnitTestAbstract {
             assertThat(result).isNotNull();
             assertThat(result.isActive()).isFalse();
 
-            verify(termsVersionRepository, never()).deactivateAllActive();
             verify(termsVersionRepository, times(1)).save(entityToSave);
+            verify(activateTermsVersion, never()).activate(any());
         }
     }
 
