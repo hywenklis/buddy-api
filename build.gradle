@@ -39,7 +39,7 @@ ext {
     springHateoasVersion = "2.5.1"
     commonsLang3Version = "3.20.0"
     lombokVersion= "1.18.42"
-    postgresqlVersion= "42.7.4"
+    postgresqlVersion= "42.7.10"
     spotbugsVersion = "4.9.8"
     micrometerVersion = "1.6.3"
     flywayPostgresVersion = "11.1.0"
