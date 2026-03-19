@@ -4,6 +4,7 @@ import com.buddy.api.builders.terms.TermsBuilder;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.terms.entities.TermsVersionEntity;
 import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,17 +20,18 @@ public class TermsComponent {
         return termsVersionRepository.save(
             TermsBuilder.validTermsVersionEntity()
                 .isActive(true)
-                .versionTag("v1.0.0")
+                .versionTag(RandomStringUtils.secure().nextAlphanumeric(10))
                 .publishedBy(account)
                 .build()
         );
     }
 
-    public TermsVersionEntity createInactiveTerm() {
+    public TermsVersionEntity createInactiveTerm(final AccountEntity account) {
         return termsVersionRepository.save(
             TermsBuilder.validTermsVersionEntity()
                 .isActive(false)
-                .versionTag("v0.9.beta")
+                .versionTag(RandomStringUtils.secure().nextAlphanumeric(10))
+                .publishedBy(account)
                 .build()
         );
     }
