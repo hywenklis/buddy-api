@@ -35,7 +35,7 @@ configurations {
 ext {
     springCloudVersion = "2025.0.0"
     mapstructVersion = "1.6.3"
-    springdocOpenApiVersion = "2.8.9"
+    springdocOpenApiVersion = "3.0.2"
     springHateoasVersion = "2.5.1"
     commonsLang3Version = "3.20.0"
     lombokVersion= "1.18.44"
