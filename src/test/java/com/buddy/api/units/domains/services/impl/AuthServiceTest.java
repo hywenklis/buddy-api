@@ -145,6 +145,7 @@ class AuthServiceTest extends UnitTestAbstract {
         );
 
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
         when(jwtUtil.getEmailFromToken(REFRESH_TOKEN)).thenReturn(email);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
@@ -198,6 +199,7 @@ class AuthServiceTest extends UnitTestAbstract {
         );
 
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
         when(jwtUtil.getEmailFromToken(REFRESH_TOKEN)).thenReturn(email);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(false);
@@ -271,6 +273,7 @@ class AuthServiceTest extends UnitTestAbstract {
         + "when JwtException occurs during refresh (e.g. expired token)")
     void should_throw_auth_exception_when_jwt_exception_occurs() {
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
 
         when(jwtUtil.getEmailFromToken(REFRESH_TOKEN))
             .thenThrow(new io.jsonwebtoken.JwtException("Token expired or invalid"));
@@ -281,12 +284,29 @@ class AuthServiceTest extends UnitTestAbstract {
             .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);
+        verify(blocklistService, times(1)).isBlocked(REFRESH_TOKEN);
         verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);
 
         verifyNoMoreInteractions(jwtUtil);
         verifyNoInteractions(userDetailsService);
         verifyNoInteractions(updateAccount);
         verifyNoInteractions(findProfile);
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when refresh token is blocked")
+    void should_throw_auth_exception_when_refresh_token_blocked() {
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.refreshToken(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid refresh token or token expired")
+            .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
+
+        verify(jwtUtil, times(1)).extractRefreshToken(request);
+        verify(blocklistService, times(1)).isBlocked(REFRESH_TOKEN);
+        verifyNoInteractions(userDetailsService, findProfile, updateAccount);
     }
 
     @Test

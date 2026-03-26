@@ -170,7 +170,7 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should throw NullPointerException (from Lombok @NonNull) when arguments are null")
+    @DisplayName("Should throw Exception from jwtUtil when arguments are null")
     void doFilter_withNullParams_throwsException() {
         assertThatThrownBy(() -> jwtAuthenticationFilter.doFilter(
             null, response, filterChain

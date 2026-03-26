@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthServiceImpl implements AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
+    private static final String REFRESH_TOKEN_FIELD = "refresh-token";
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
@@ -74,8 +75,14 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> {
                     log.warn("No valid refresh token found in request");
                     return new AuthenticationException("Refresh token is required",
-                        "refresh-token");
+                        REFRESH_TOKEN_FIELD);
                 });
+
+            if (blocklistService.isBlocked(refreshToken)) {
+                log.warn("Attempt to use blocked refresh token");
+                throw new AuthenticationException("Invalid refresh token or token expired",
+                    REFRESH_TOKEN_FIELD);
+            }
 
 
             String email = jwtUtil.getEmailFromToken(refreshToken);
@@ -83,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
 
             if (!jwtUtil.validateToken(refreshToken, email)) {
                 log.warn("Invalid refresh token for email: {}", email);
-                throw new AuthenticationException("Invalid refresh token", "refresh-token");
+                throw new AuthenticationException("Invalid refresh token", REFRESH_TOKEN_FIELD);
             }
 
             List<String> authorities = extractAuthorities(userDetails);
@@ -95,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
             log.error("Error refreshing token: {}", e.getMessage());
             throw new AuthenticationException(
                 "Invalid refresh token or token expired",
-                "refresh-token"
+                REFRESH_TOKEN_FIELD
             );
         }
     }

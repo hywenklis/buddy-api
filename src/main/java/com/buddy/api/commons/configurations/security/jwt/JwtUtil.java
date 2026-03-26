@@ -66,8 +66,13 @@ public class JwtUtil {
         return parseClaims(token).getSubject();
     }
 
+    @SuppressWarnings("PMD.ReplaceJavaUtilDate")
     public Date getExpirationFromToken(final String token) throws JwtException {
-        return parseClaims(token).getExpiration();
+        Date expiration = parseClaims(token).getExpiration();
+        if (expiration == null) {
+            throw new JwtException("Token with no expiration claim exp");
+        }
+        return expiration;
     }
 
     public boolean validateToken(final String token, final String username) {

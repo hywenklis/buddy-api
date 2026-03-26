@@ -71,6 +71,7 @@ public class AuthController implements AuthControllerDoc {
     public void logout(final HttpServletRequest request,
                        final HttpServletResponse response) {
         jwtUtil.extractAccessToken(request).ifPresent(authenticateService::logout);
+        jwtUtil.extractRefreshToken(request).ifPresent(authenticateService::logout);
         cookieManager.clearCookies(response);
     }
 }
