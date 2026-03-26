@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.configurations.security.jwt.JwtAuthenticationFilter;
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
 import com.buddy.api.units.UnitTestAbstract;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -35,6 +36,9 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
 
     @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private TokenBlocklistService tokenBlocklistService;
 
     @Mock
     private UserDetailsService userDetailsService;
@@ -179,5 +183,18 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
         assertThatThrownBy(() -> jwtAuthenticationFilter.doFilter(
             request, response, null
         )).isInstanceOf(Exception.class);
+    }
+
+    @Test
+    @DisplayName("Should not authenticate when token is blocked")
+    void doFilter_whenTokenBlocked_doesNotAuthenticate() throws Exception {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
+        when(tokenBlocklistService.isBlocked(VALID_JWT)).thenReturn(true);
+
+        jwtAuthenticationFilter.doFilter(request, response, filterChain);
+
+        verify(jwtUtil, never()).getEmailFromToken(any());
+        verify(filterChain, times(1)).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 }

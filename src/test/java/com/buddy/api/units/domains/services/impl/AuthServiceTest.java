@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
 import com.buddy.api.commons.exceptions.AccountBlockedException;
 import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
@@ -23,14 +24,18 @@ import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.profile.services.FindProfile;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.utils.RandomEmailUtils;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -58,6 +63,9 @@ class AuthServiceTest extends UnitTestAbstract {
 
     @Mock
     private UpdateAccount updateAccount;
+
+    @Mock
+    private TokenBlocklistService blocklistService;
 
     @Mock
     private HttpServletRequest request;
@@ -279,5 +287,40 @@ class AuthServiceTest extends UnitTestAbstract {
         verifyNoInteractions(userDetailsService);
         verifyNoInteractions(updateAccount);
         verifyNoInteractions(findProfile);
+    }
+
+    @Test
+    @DisplayName("Should block token successfully when expiration is in the future")
+    void should_logout_successfully_and_block_token() {
+        final var futureDate = Date.from(Instant.now().plusSeconds(3600));
+        when(jwtUtil.getExpirationFromToken(ACCESS_TOKEN)).thenReturn(futureDate);
+
+        authService.logout(ACCESS_TOKEN);
+
+        ArgumentCaptor<Long> timeCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(blocklistService, times(1)).blockToken(eq(ACCESS_TOKEN), timeCaptor.capture());
+        assertThat(timeCaptor.getValue()).isGreaterThan(0L);
+    }
+
+    @Test
+    @DisplayName("Should not block token if it is already expired")
+    void should_not_block_token_if_already_expired() {
+        var pastDate = Date.from(Instant.parse("2020-01-01T00:00:00Z"));
+        when(jwtUtil.getExpirationFromToken(ACCESS_TOKEN)).thenReturn(pastDate);
+
+        authService.logout(ACCESS_TOKEN);
+
+        verifyNoInteractions(blocklistService);
+    }
+
+    @Test
+    @DisplayName("Should handle JwtException gracefully on logout")
+    void should_handle_jwt_exception_on_logout() {
+        when(jwtUtil.getExpirationFromToken(ACCESS_TOKEN))
+            .thenThrow(new JwtException("Invalid JWT"));
+
+        authService.logout(ACCESS_TOKEN);
+
+        verifyNoInteractions(blocklistService);
     }
 }

@@ -1,5 +1,6 @@
 package com.buddy.api.web.profiles.controllers;
 
+import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.profile.services.CreateProfile;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.profiles.mappers.ProfileMapperRequest;
@@ -8,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +27,10 @@ public class CreateProfileController implements CreateProfileControllerDoc {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('SCOPE_VERIFIED')")
-    public CreatedSuccessResponse registration(@Valid @RequestBody final ProfileRequest request) {
-        createProfile.create(mapperRequest.toProfileDto(request));
+    public CreatedSuccessResponse registration(
+        @AuthenticationPrincipal final AuthenticatedUser user,
+        @Valid @RequestBody final ProfileRequest request) {
+        createProfile.create(mapperRequest.toProfileDto(request), user.getAccountId());
         return new CreatedSuccessResponse();
     }
 }

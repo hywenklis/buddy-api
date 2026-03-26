@@ -66,6 +66,10 @@ public class JwtUtil {
         return parseClaims(token).getSubject();
     }
 
+    public Date getExpirationFromToken(final String token) throws JwtException {
+        return parseClaims(token).getExpiration();
+    }
+
     public boolean validateToken(final String token, final String username) {
         try {
             Claims claims = parseClaims(token);

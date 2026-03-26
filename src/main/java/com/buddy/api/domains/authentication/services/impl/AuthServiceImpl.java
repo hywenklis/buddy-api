@@ -3,6 +3,7 @@ package com.buddy.api.domains.authentication.services.impl;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
+import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
 import com.buddy.api.commons.exceptions.AccountBlockedException;
 import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AuthenticationException;
@@ -13,6 +14,8 @@ import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.services.FindProfile;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final FindProfile findProfile;
     private final JwtUtil jwtUtil;
     private final UpdateAccount updateAccount;
+    private final TokenBlocklistService blocklistService;
 
     @Override
     @Transactional
@@ -132,5 +136,19 @@ public class AuthServiceImpl implements AuthService {
 
     private Optional<String> extractRefreshToken(final HttpServletRequest request) {
         return jwtUtil.extractRefreshToken(request);
+    }
+
+    @Override
+    public void logout(final String token) {
+        try {
+            Instant expiration = jwtUtil.getExpirationFromToken(token).toInstant();
+            long secondsLeft =
+                Duration.between(java.time.Instant.now(), expiration).getSeconds();
+            if (secondsLeft > 0) {
+                blocklistService.blockToken(token, secondsLeft);
+            }
+        } catch (JwtException e) {
+            log.warn("Invalid token on logout: {}", e.getMessage());
+        }
     }
 }

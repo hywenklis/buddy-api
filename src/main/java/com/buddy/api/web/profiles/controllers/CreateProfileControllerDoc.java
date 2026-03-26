@@ -1,5 +1,6 @@
 package com.buddy.api.web.profiles.controllers;
 
+import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.web.advice.error.ErrorResponse;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.profiles.requests.ProfileRequest;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "Profile", description = "Endpoint related to profile registration")
 public interface CreateProfileControllerDoc {
@@ -28,6 +30,9 @@ public interface CreateProfileControllerDoc {
             @ApiResponse(responseCode = "500", description = "Internal server error",
                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = ErrorResponse.class)))})
-
-    CreatedSuccessResponse registration(ProfileRequest request);
+    CreatedSuccessResponse registration(
+        @AuthenticationPrincipal
+        AuthenticatedUser user,
+        ProfileRequest request
+    );
 }

@@ -6,7 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import lombok.NonNull;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,12 +25,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TokenBlocklistService tokenBlocklistService;
 
     @Override
     protected void doFilterInternal(
-        @NonNull final HttpServletRequest request,
-        @NonNull final HttpServletResponse response,
-        @NonNull final FilterChain filterChain
+        final HttpServletRequest request,
+        final HttpServletResponse response,
+        final FilterChain filterChain
     ) throws ServletException, IOException {
 
         jwtUtil.extractAccessToken(request)
@@ -44,6 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void processTokenAuthentication(final HttpServletRequest request, final String token) {
         try {
+            if (tokenBlocklistService.isBlocked(token)) {
+                log.warn("Attempt to use blocked token");
+                return;
+            }
+
             final String email = jwtUtil.getEmailFromToken(token);
 
             if (shouldSkipAuthentication(email)) {
