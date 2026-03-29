@@ -332,4 +332,27 @@ class AuthControllerTest extends IntegrationTestAbstract {
             .andExpect(jsonPath("$.refreshToken", equalTo(refreshToken)))
             .andExpect(jsonPath("$.profiles").doesNotExist());
     }
+
+    @Test
+    @DisplayName("Should logout successfully")
+    void logout_success() throws Exception {
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity().password(passwordEncoder.encode(plain))
+            .isVerified(true).build();
+        accountRepository.save(account);
+
+        var req = AuthRequest.builder().email(account.getEmail().value()).password(plain).build();
+        var authResult = performAuthRequest(req).andReturn().getResponse();
+        String token = Objects.requireNonNull(authResult.getCookie(ACCESS_TOKEN_NAME)).getValue();
+        String refreshToken =
+            Objects.requireNonNull(authResult.getCookie(REFRESH_TOKEN_NAME)).getValue();
+
+        mockMvc.perform(post("/v1/auth/logout")
+                .header(ORIGIN, WEB_ORIGIN)
+                .header("Authorization", "Bearer " + token)
+                .cookie(new Cookie(REFRESH_TOKEN_NAME, refreshToken)))
+            .andExpect(status().isNoContent())
+            .andExpect(cookie().maxAge(ACCESS_TOKEN_NAME, 0))
+            .andExpect(cookie().maxAge(REFRESH_TOKEN_NAME, 0));
+    }
 }
