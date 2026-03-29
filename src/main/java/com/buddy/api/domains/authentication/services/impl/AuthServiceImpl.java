@@ -150,7 +150,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             Instant expiration = jwtUtil.getExpirationFromToken(token).toInstant();
             long secondsLeft =
-                Duration.between(java.time.Instant.now(), expiration).getSeconds();
+                Duration.between(Instant.now(), expiration).getSeconds();
             if (secondsLeft > 0) {
                 blocklistService.blockToken(token, secondsLeft);
             }
