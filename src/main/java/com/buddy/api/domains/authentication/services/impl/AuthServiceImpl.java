@@ -154,8 +154,9 @@ public class AuthServiceImpl implements AuthService {
             if (secondsLeft > 0) {
                 blocklistService.blockToken(token, secondsLeft);
             }
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             log.warn("Invalid token on logout: {}", e.getMessage());
+        }
         }
     }
 }
