@@ -39,4 +39,8 @@ out/
 .planning/
 
 GEMINI.md
-.github/
+.github/agents/
+.github/get-shit-done/
+.github/skills/
+.github/copilot-instructions.md
+.github/gsd-file-manifest.json
