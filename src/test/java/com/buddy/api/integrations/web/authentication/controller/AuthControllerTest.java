@@ -355,4 +355,36 @@ class AuthControllerTest extends IntegrationTestAbstract {
             .andExpect(cookie().maxAge(ACCESS_TOKEN_NAME, 0))
             .andExpect(cookie().maxAge(REFRESH_TOKEN_NAME, 0));
     }
+
+    @Test
+    @DisplayName("Should reject refresh after logout - security validation")
+    void should_block_refresh_token_after_logout() throws Exception {
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity()
+            .password(passwordEncoder.encode(plain))
+            .isVerified(true)
+            .build();
+        accountRepository.save(account);
+
+        final var authRequest = AuthRequest.builder()
+            .email(account.getEmail().value())
+            .password(plain)
+            .build();
+        final var authResult = performAuthRequest(authRequest).andReturn().getResponse();
+        String accessToken = Objects.requireNonNull(authResult.getCookie(ACCESS_TOKEN_NAME))
+            .getValue();
+        String refreshToken = Objects.requireNonNull(authResult.getCookie(REFRESH_TOKEN_NAME))
+            .getValue();
+
+        mockMvc.perform(post("/v1/auth/logout")
+                .header(ORIGIN, WEB_ORIGIN)
+                .header("Authorization", "Bearer " + accessToken)
+                .cookie(new Cookie(REFRESH_TOKEN_NAME, refreshToken)))
+            .andExpect(status().isNoContent());
+
+        expectErrorStatusFrom(
+            performRefreshRequest(refreshToken),
+            UNAUTHORIZED)
+            .forField("refresh-token", "Invalid refresh token or token expired");
+    }
 }

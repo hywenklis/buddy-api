@@ -158,4 +158,66 @@ public class AuthServiceImpl implements AuthService {
             log.warn("Invalid token on logout: {}", e.getMessage());
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void logoutComplete(final HttpServletRequest request) {
+        Optional<String> accessTokenOpt = jwtUtil.extractAccessToken(request);
+        Optional<String> refreshTokenOpt = jwtUtil.extractRefreshToken(request);
+
+        if (accessTokenOpt.isEmpty()) {
+            log.warn(
+                "Logout attempted without access token - partial logout detected");
+            throw new AuthenticationException(
+                "Access token is required",
+                "access-token"
+            );
+        }
+
+        if (refreshTokenOpt.isEmpty()) {
+            log.warn(
+                "Logout attempted without refresh token - this is a security risk");
+            throw new AuthenticationException(
+                "Refresh token is required",
+                "refresh-token"
+            );
+        }
+
+        String accessToken = accessTokenOpt.get();
+        String refreshToken = refreshTokenOpt.get();
+
+        try {
+            String userEmail = jwtUtil.getEmailFromToken(accessToken);
+            log.info("User {} initiated logout - blocking all tokens", userEmail);
+
+            blockToken(accessToken);
+            blockToken(refreshToken);
+
+            log.info(
+                "User {} successfully logged out - both access and refresh tokens blocked",
+                userEmail);
+        } catch (JwtException e) {
+            log.warn("Error during logout - invalid token format: {}", e.getMessage());
+            throw new AuthenticationException(
+                "Invalid token format",
+                "token"
+            );
+        }
+    }
+
+    private void blockToken(final String token) {
+        try {
+            Instant expiration = jwtUtil.getExpirationFromToken(token).toInstant();
+            long secondsLeft =
+                Duration.between(Instant.now(), expiration).getSeconds();
+            if (secondsLeft > 0) {
+                blocklistService.blockToken(token, secondsLeft);
+                log.debug("Token blocked successfully for {} seconds", secondsLeft);
+            } else {
+                log.debug("Token already expired, no need to block");
+            }
+        } catch (JwtException e) {
+            log.warn("Failed to block token: {}", e.getMessage());
+        }
+    }
 }

@@ -9,4 +9,6 @@ public interface AuthService {
     AuthDto refreshToken(HttpServletRequest request);
 
     void logout(String token);
+
+    void logoutComplete(HttpServletRequest request);
 }
