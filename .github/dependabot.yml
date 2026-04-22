@@ -15,13 +15,11 @@ updates:
         update-types:
           - "minor"
           - "patch"
-        versioning-strategy: "increase"
       gradle-major:
         patterns:
           - "*"
         update-types:
           - "major"
-        versioning-strategy: "increase"
     labels:
       - "dependencies"
       - "gradle"
