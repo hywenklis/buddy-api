@@ -15,11 +15,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+        versioning-strategy: "increase"
       gradle-major:
         patterns:
           - "*"
         update-types:
           - "major"
+        versioning-strategy: "increase"
     labels:
       - "dependencies"
       - "gradle"
@@ -28,7 +30,6 @@ updates:
     commit-message:
       prefix: "chore(deps): "
       include: "scope"
-    versioning-strategy: "increase"
     allow:
       - dependency-type: "direct"
     assignees:
@@ -69,8 +70,6 @@ updates:
     commit-message:
       prefix: "chore(actions): "
       include: "scope"
-    allow:
-      - dependency-name: "actions/*"
     assignees:
       - "hywenklis"
     reviewers:
