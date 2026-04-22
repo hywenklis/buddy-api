@@ -44,3 +44,7 @@ GEMINI.md
 .github/skills/
 .github/copilot-instructions.md
 .github/gsd-file-manifest.json
+.sentinel/
+.claude/
+AGENTS.md
+.agent
