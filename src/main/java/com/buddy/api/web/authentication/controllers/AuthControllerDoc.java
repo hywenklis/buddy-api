@@ -71,4 +71,19 @@ public interface AuthControllerDoc {
         final HttpServletRequest request,
         final HttpServletResponse response
     );
+
+    @Operation(
+        summary = "Logout user",
+        description = "Invalidates the current access token and clears authentication cookies."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Logged out successfully"
+        )
+    })
+    void logout(
+        HttpServletRequest request,
+        HttpServletResponse response
+    );
 }

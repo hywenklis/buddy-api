@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # Configuração para dependências Gradle
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
@@ -8,10 +7,23 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    groups:
+      gradle-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      gradle-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
     labels:
       - "dependencies"
       - "gradle"
+      - "security"
     target-branch: "develop"
     commit-message:
       prefix: "chore(deps): "
@@ -28,24 +40,34 @@ updates:
       separator: "-"
     rebase-strategy: "auto"
 
-  # Configuração para GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "thursday"
       time: "09:00"
       timezone: "America/Sao_Paulo"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
+    groups:
+      github-actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
     labels:
       - "dependencies"
       - "github-actions"
+      - "security"
     target-branch: "develop"
     commit-message:
       prefix: "chore(actions): "
       include: "scope"
-    allow:
-      - dependency-name: "actions/*"
     assignees:
       - "hywenklis"
     reviewers:
