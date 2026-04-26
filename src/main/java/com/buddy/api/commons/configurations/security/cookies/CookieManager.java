@@ -59,4 +59,9 @@ public class CookieManager {
         log.warn("Invalid origin detected for request");
         throw new InvalidClientOriginException("Invalid origin detected");
     }
+
+    public void clearCookies(final HttpServletResponse response) {
+        log.info("Clearing authentication cookies");
+        cookieFactory.invalidateAuthCookies(response);
+    }
 }
