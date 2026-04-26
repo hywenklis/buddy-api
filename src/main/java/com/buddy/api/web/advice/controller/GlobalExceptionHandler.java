@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-public class ErrorHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
@@ -42,12 +43,12 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler(AuthenticationException.class)
+    @ExceptionHandler({AuthenticationException.class, BadCredentialsException.class})
     public ResponseEntity<ErrorResponse> handleSpringSecurityAuthException(
-        final AuthenticationException ex) {
+        final Exception ex) {
         return buildErrorResponse(
             "credentials",
-            "authentication failed",
+            "Invalid Credentials",
             HttpStatus.UNAUTHORIZED
         );
     }
@@ -58,7 +59,7 @@ public class ErrorHandler {
 
         return buildErrorResponse(
             "server",
-            "An unexpected internal error occurred",
+            "Internal Server Error",
             HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
