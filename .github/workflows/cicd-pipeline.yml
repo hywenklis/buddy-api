@@ -397,7 +397,7 @@ jobs:
 
       - name: Open Pull Request (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

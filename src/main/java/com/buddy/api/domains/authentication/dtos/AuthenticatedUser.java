@@ -13,6 +13,7 @@ public class AuthenticatedUser implements UserDetails {
     @Serial
     private static final long serialVersionUID = -6582441640280677406L;
 
+    private final java.util.UUID accountId;
     private final String email;
     private final String password;
     private final boolean blocked;
@@ -21,6 +22,7 @@ public class AuthenticatedUser implements UserDetails {
 
     public AuthenticatedUser(final AccountDto account,
                              final Collection<? extends GrantedAuthority> authorities) {
+        this.accountId = account.accountId();
         this.email = account.email().value();
         this.password = account.password();
         this.blocked = account.isBlocked();
