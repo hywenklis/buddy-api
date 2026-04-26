@@ -44,8 +44,39 @@ public class EmailSenderImpl implements EmailSender {
         }
     }
 
+    @Async
+    @Override
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
+    public void dispatchPasswordRecoveryEmail(final UUID accountId,
+                                              final String userEmail,
+                                              final String token
+    ) {
+        try {
+            String recoveryUrl = emailProperties.templates().forgotPasswordUrl() + token;
+            String htmlBody = buildPasswordRecoveryEmailBody(recoveryUrl);
+
+            log.info("Sending password recovery email to account={}", accountId);
+            managerService.sendEmailNotification(
+                List.of(userEmail),
+                emailProperties.templates().from(),
+                emailProperties.templates().forgotPasswordSubject(),
+                htmlBody
+            );
+            log.info("Password recovery email successfully sent to account={}", accountId);
+        } catch (Exception e) {
+            log.error("Failed to send password recovery email for account={}", accountId, e);
+            throw e;
+        }
+    }
+
     private String buildConfirmationEmailBody(final String verificationUrl) {
         String template = emailTemplateLoader.load(emailProperties.templates().templatePath());
         return template.replace("{{url}}", verificationUrl);
+    }
+
+    private String buildPasswordRecoveryEmailBody(final String recoveryUrl) {
+        String template = emailTemplateLoader.load(
+            emailProperties.templates().forgotPasswordTemplatePath());
+        return template.replace("{{url}}", recoveryUrl);
     }
 }
