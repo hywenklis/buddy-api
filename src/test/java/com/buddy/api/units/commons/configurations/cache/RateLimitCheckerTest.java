@@ -25,6 +25,7 @@ import org.springframework.data.redis.core.ValueOperations;
 class RateLimitCheckerTest extends UnitTestAbstract {
 
     private static final String RATE_LIMIT_COUNT_KEY_PREFIX = "rate-limit:count:";
+    private static final String VERIFICATION_OPERATION = "verification";
 
     @Mock
     private RedisTemplate<String, String> redisTemplate;
@@ -46,7 +47,7 @@ class RateLimitCheckerTest extends UnitTestAbstract {
     void setUp() {
         email = RandomEmailUtils.generateValidEmail();
         accountId = UUID.randomUUID();
-        countKey = RATE_LIMIT_COUNT_KEY_PREFIX + "verification:" + email;
+        countKey = RATE_LIMIT_COUNT_KEY_PREFIX + VERIFICATION_OPERATION + ":" + email;
 
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }

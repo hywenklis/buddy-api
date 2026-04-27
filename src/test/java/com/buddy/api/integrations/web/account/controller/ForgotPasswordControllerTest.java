@@ -28,7 +28,9 @@ import org.springframework.http.MediaType;
 class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
     private static final String FORGOT_PASSWORD_URL = "/v1/accounts/password/forgot";
-    private static final String RATE_LIMIT_COUNT_KEY_PREFIX = "rate-limit:count:password recovery:";
+    private static final String PASSWORD_RECOVERY_OPERATION = "password recovery";
+    private static final String RATE_LIMIT_COUNT_KEY_PREFIX =
+        "rate-limit:count:" + PASSWORD_RECOVERY_OPERATION + ":";
 
     private String testUserEmail;
     private Cache forgotPasswordTokenCache;
