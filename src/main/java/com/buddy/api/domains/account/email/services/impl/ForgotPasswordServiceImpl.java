@@ -1,12 +1,10 @@
 package com.buddy.api.domains.account.email.services.impl;
 
-import com.buddy.api.commons.configurations.cache.CacheInitializer;
+import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
 import com.buddy.api.commons.configurations.cache.RateLimitChecker;
-import com.buddy.api.commons.configurations.cache.TokenManager;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.ForgotPasswordService;
-import jakarta.annotation.PostConstruct;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,15 +14,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class ForgotPasswordServiceImpl implements ForgotPasswordService {
-    private final CacheInitializer cacheInitializer;
     private final RateLimitChecker rateLimitChecker;
-    private final TokenManager tokenManager;
+    private final ForgotPasswordTokenManager forgotPasswordTokenManager;
     private final EmailSender emailSender;
-
-    @PostConstruct
-    public void init() {
-        cacheInitializer.initializeForgotPasswordTokenCache();
-    }
 
     @Override
     public void requestPasswordRecovery(final AccountDto account) {
@@ -41,7 +33,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
 
         rateLimitChecker.checkPasswordRecoveryRateLimit(userEmail, accountId);
 
-        String token = tokenManager.generateAndStoreToken(userEmail);
+        String token = forgotPasswordTokenManager.generateAndStoreToken(userEmail);
 
         emailSender.dispatchPasswordRecoveryEmail(accountId, userEmail, token);
 
