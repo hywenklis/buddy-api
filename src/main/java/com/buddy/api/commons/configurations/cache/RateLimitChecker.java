@@ -33,12 +33,16 @@ public class RateLimitChecker {
         );
     }
 
+    private String buildCountKey(final String operation, final String email) {
+        return RATE_LIMIT_COUNT_KEY_PREFIX + operation + ":" + email;
+    }
+
     private void checkRateLimit(final String email,
                                 final UUID accountId,
                                 final String operation,
                                 final String limitMessage
     ) {
-        String countKey = RATE_LIMIT_COUNT_KEY_PREFIX + email;
+        String countKey = buildCountKey(operation, email);
         Long count = redisTemplate.opsForValue().increment(countKey, 1);
 
         if (count != null && count == 1) {
