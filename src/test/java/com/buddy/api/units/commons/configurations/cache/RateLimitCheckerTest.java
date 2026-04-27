@@ -46,7 +46,7 @@ class RateLimitCheckerTest extends UnitTestAbstract {
     void setUp() {
         email = RandomEmailUtils.generateValidEmail();
         accountId = UUID.randomUUID();
-        countKey = RATE_LIMIT_COUNT_KEY_PREFIX + email;
+        countKey = RATE_LIMIT_COUNT_KEY_PREFIX + "verification:" + email;
 
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }

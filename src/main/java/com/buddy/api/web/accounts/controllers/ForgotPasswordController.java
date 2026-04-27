@@ -33,7 +33,7 @@ public class ForgotPasswordController {
     ) {
 
         String email = request.email();
-        log.info("Received password recovery request for email: {}", email);
+        log.debug("Received password recovery request");
 
         try {
             AccountDto account = findAccount.findByEmail(email);

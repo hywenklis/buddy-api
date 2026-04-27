@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +16,7 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ForgotPasswordRequest;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,7 +28,7 @@ import org.springframework.http.MediaType;
 class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
     private static final String FORGOT_PASSWORD_URL = "/v1/accounts/password/forgot";
-    private static final String RATE_LIMIT_COUNT_KEY_PREFIX = "rate-limit:count:";
+    private static final String RATE_LIMIT_COUNT_KEY_PREFIX = "rate-limit:count:password recovery:";
 
     private String testUserEmail;
     private Cache forgotPasswordTokenCache;
@@ -70,9 +72,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.message").value("request accepted"));
 
-            waitForAsyncEmailDispatch();
-
-            verify(1, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
+            waitUntilWireMockReceives(1);
         }
 
         @Test
@@ -191,9 +191,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted());
 
-            waitForAsyncEmailDispatch();
-
-            verify(2, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
+            waitUntilWireMockReceives(2);
         }
 
         @Test
@@ -285,7 +283,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted());
 
-            waitForAsyncEmailDispatch();
+            waitUntilWireMockReceives(1);
 
             final var keysAfterRequest = redisTemplate.keys(cacheKeyPattern);
 
@@ -322,7 +320,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                         .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isAccepted());
 
-                waitForAsyncEmailDispatch();
+                waitUntilWireMockReceives(i + 1);
 
                 if (i < 2) {
                     clearRateLimitFor(testUserEmail);
@@ -339,8 +337,13 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
         );
     }
 
-    private void waitForAsyncEmailDispatch() throws InterruptedException {
-        Thread.sleep(500);
+    private void waitUntilWireMockReceives(final int expectedCount) {
+        await()
+            .atMost(5, TimeUnit.SECONDS)
+            .pollInterval(100, TimeUnit.MILLISECONDS)
+            .untilAsserted(() ->
+                verify(expectedCount, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)))
+            );
     }
 
     private void clearRateLimitFor(final String email) {
