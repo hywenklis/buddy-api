@@ -5,7 +5,6 @@ import static com.buddy.api.builders.profile.ProfileBuilder.profileRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectErrorStatusFrom;
-import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.SHELTER;
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.USER;
@@ -35,7 +34,6 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     private static final String VALID_ORIGIN = "550e8400-e29b-41d4-a716-446655440000";
     private static final String FIELD_NAME = "name";
     private static final String ERROR_ACCOUNT_ID_REQUIRED = "Profile account ID is mandatory";
-    private static final String ERROR_ACCOUNT_NOT_FOUND = "Account not found";
     private static final String ERROR_NAME_REQUIRED = "Profile name is mandatory";
     private static final String ERROR_REPEATED_NAME = "Profile name already registered";
     private static final String ERROR_PROFILE_TYPE_REQUIRED = "Profile type is mandatory";
@@ -149,8 +147,10 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
     void should_not_create_profile_when_account_is_not_from_database_account() throws Exception {
         final var request = profileRequest().accountId(UUID.randomUUID()).build();
 
-        expectNotFoundFrom(performCreateProfileRequest(request, accessToken))
-            .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
+        expectErrorStatusFrom(
+            performCreateProfileRequest(request, accessToken), HttpStatus.FORBIDDEN)
+            .forField("authorization",
+                "You cannot create a profile for an account other than your own");
     }
 
     @Test
@@ -162,8 +162,10 @@ class CreateProfileControllerTest extends IntegrationTestAbstract {
             .accountId(deletedAccount.getAccountId())
             .build();
 
-        expectNotFoundFrom(performCreateProfileRequest(request, accessToken))
-            .forField("accountId", ERROR_ACCOUNT_NOT_FOUND);
+        expectErrorStatusFrom(
+            performCreateProfileRequest(request, accessToken), HttpStatus.FORBIDDEN)
+            .forField("authorization",
+                "You cannot create a profile for an account other than your own");
     }
 
     @Test

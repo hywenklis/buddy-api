@@ -14,6 +14,7 @@ import com.buddy.api.builders.profile.ProfileBuilder;
 import com.buddy.api.commons.exceptions.InvalidProfileTypeException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.commons.exceptions.ProfileNameAlreadyRegisteredException;
+import com.buddy.api.commons.exceptions.UnauthorizedEntityAccessException;
 import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
@@ -73,7 +74,7 @@ class CreateProfileTest extends UnitTestAbstract {
         when(findAccount.existsById(accountId)).thenReturn(true);
         when(profileRepository.save(profileEntity)).thenReturn(profileEntity);
 
-        createProfile.create(validProfileDto);
+        createProfile.create(validProfileDto, accountId);
 
         verify(profileRepository, times(1))
             .save(profileEntityCaptor.capture());
@@ -96,7 +97,7 @@ class CreateProfileTest extends UnitTestAbstract {
 
         when(findAccount.existsById(accountId)).thenReturn(false);
 
-        assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
+        assertThatThrownBy(() -> createProfile.create(invalidProfileDto, accountId))
             .isInstanceOf(NotFoundException.class)
             .hasMessage("Account not found")
             .extracting("fieldName")
@@ -112,9 +113,11 @@ class CreateProfileTest extends UnitTestAbstract {
 
         final var invalidProfileDto = profileDto()
             .profileType(ProfileTypeEnum.ADMIN)
+            .accountId(UUID.randomUUID())
             .build();
 
-        assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
+        assertThatThrownBy(() ->
+            createProfile.create(invalidProfileDto, invalidProfileDto.accountId()))
             .isInstanceOf(InvalidProfileTypeException.class)
             .hasMessage("Profile type ADMIN cannot be created by user")
             .extracting("fieldName")
@@ -127,12 +130,14 @@ class CreateProfileTest extends UnitTestAbstract {
     @DisplayName("Should not create profile when name already exists in database")
     void should_not_create_profile_with_repeated_name() {
         final var existingName = RandomStringUtils.secure().nextAlphabetic(10);
-        final var invalidProfileDto = profileDto().name(existingName).build();
+        final var invalidProfileDto = profileDto().name(existingName)
+            .accountId(UUID.randomUUID()).build();
 
         when(findAccount.existsById(invalidProfileDto.accountId())).thenReturn(true);
         when(profileRepository.existsByName(existingName)).thenReturn(true);
 
-        assertThatThrownBy(() -> createProfile.create(invalidProfileDto))
+        assertThatThrownBy(() ->
+            createProfile.create(invalidProfileDto, invalidProfileDto.accountId()))
             .isInstanceOf(ProfileNameAlreadyRegisteredException.class)
             .hasMessage("Profile name already registered")
             .extracting("fieldName")
@@ -158,7 +163,7 @@ class CreateProfileTest extends UnitTestAbstract {
         when(findAccount.existsById(accountId)).thenReturn(true);
         when(profileRepository.existsByName(name)).thenReturn(false);
 
-        createProfile.create(validProfileDto);
+        createProfile.create(validProfileDto, accountId);
 
         verify(profileRepository, times(1))
             .existsByName(name);
@@ -167,5 +172,22 @@ class CreateProfileTest extends UnitTestAbstract {
 
         assertThat(profileEntityCaptor.getValue().getName())
             .isEqualTo(name);
+    }
+
+    @Test
+    @DisplayName("Should not create profile when authenticated userId does not match accountId")
+    void should_not_create_profile_when_unauthorized() {
+        final var accountId = UUID.randomUUID();
+        final var maliciousUserId = UUID.randomUUID();
+
+        final var invalidProfileDto = profileDto()
+            .accountId(accountId)
+            .build();
+
+        assertThatThrownBy(() -> createProfile.create(invalidProfileDto, maliciousUserId))
+            .isInstanceOf(UnauthorizedEntityAccessException.class)
+            .hasMessage("You cannot create a profile for an account other than your own");
+
+        verify(profileRepository, never()).save(any());
     }
 }

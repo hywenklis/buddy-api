@@ -1,6 +1,7 @@
 package com.buddy.api.web.authentication.controllers;
 
 import com.buddy.api.commons.configurations.security.cookies.CookieManager;
+import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
 import com.buddy.api.web.authentication.mappers.AuthenticationMapper;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,11 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController implements AuthControllerDoc {
 
     private final AuthService authenticateService;
     private final AuthenticationMapper mapper;
     private final CookieManager cookieManager;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
@@ -60,5 +64,13 @@ public class AuthController implements AuthControllerDoc {
         );
 
         return mapper.toAuthResponse(authDto);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(final HttpServletRequest request,
+                       final HttpServletResponse response) {
+        authenticateService.logoutComplete(request);
+        cookieManager.clearCookies(response);
     }
 }
