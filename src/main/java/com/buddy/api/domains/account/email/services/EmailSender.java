@@ -7,4 +7,8 @@ public interface EmailSender {
                                    String userEmail,
                                    String token);
 
+    void dispatchPasswordRecoveryEmail(UUID accountId,
+                                       String userEmail,
+                                       String token);
+
 }

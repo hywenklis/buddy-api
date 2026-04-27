@@ -68,6 +68,10 @@ public class CacheConfig {
         cacheConfigs.put("emailVerificationRateLimit",
             defaultConfig.entryTtl(Duration.ofMinutes(1)));
 
+        cacheConfigs.put("forgotPasswordToken", defaultConfig.entryTtl(Duration.ofMinutes(15)));
+        cacheConfigs.put("forgotPasswordRateLimit",
+            defaultConfig.entryTtl(Duration.ofMinutes(1)));
+
         cacheConfigs.put("terms", defaultConfig.entryTtl(Duration.ofHours(24)));
 
         return RedisCacheManager.builder(redisConnectionFactory)
