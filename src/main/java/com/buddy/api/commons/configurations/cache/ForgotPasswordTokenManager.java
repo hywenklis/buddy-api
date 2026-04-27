@@ -29,8 +29,8 @@ public class ForgotPasswordTokenManager {
     public String validateAndGetTokenEmail(final String token, final UUID accountId) {
         String email = forgotPasswordTokenCache.get(token, String.class);
         if (email == null) {
-            log.warn("Invalid or expired forgot-password token for account={}. Token: {}",
-                accountId, token.substring(0, Math.min(token.length(), 8)) + "...");
+            log.warn("Invalid or expired forgot-password token for account={}. Token length: {}",
+                accountId, token.length());
             throw new NotFoundException("token", "Invalid or expired forgot-password token.");
         }
         return email;
