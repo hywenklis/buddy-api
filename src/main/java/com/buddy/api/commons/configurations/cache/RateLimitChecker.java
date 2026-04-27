@@ -33,10 +33,6 @@ public class RateLimitChecker {
         );
     }
 
-    private String buildCountKey(final String operation, final String email) {
-        return RATE_LIMIT_COUNT_KEY_PREFIX + operation + ":" + email;
-    }
-
     private void checkRateLimit(final String email,
                                 final UUID accountId,
                                 final String operation,
@@ -66,5 +62,9 @@ public class RateLimitChecker {
             PASSWORD_RECOVERY_OPERATION,
             PASSWORD_RECOVERY_LIMIT_MESSAGE
         );
+    }
+
+    private String buildCountKey(final String operation, final String email) {
+        return RATE_LIMIT_COUNT_KEY_PREFIX + operation + ":" + email;
     }
 }

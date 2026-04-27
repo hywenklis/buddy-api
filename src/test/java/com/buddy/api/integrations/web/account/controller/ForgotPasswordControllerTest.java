@@ -16,6 +16,7 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ForgotPasswordRequest;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +35,6 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
     private String testUserEmail;
     private Cache forgotPasswordTokenCache;
-    private Cache rateLimitCache;
 
     @BeforeEach
     void setup() {
@@ -43,7 +43,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
         testUserEmail = testUser.getEmail().value();
 
         forgotPasswordTokenCache = cacheManager.getCache("forgotPasswordToken");
-        rateLimitCache = cacheManager.getCache("forgotPasswordRateLimit");
+        Cache rateLimitCache = cacheManager.getCache("forgotPasswordRateLimit");
 
         assertThat(forgotPasswordTokenCache).isNotNull();
         assertThat(rateLimitCache).isNotNull();
@@ -291,9 +291,10 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
             assertThat(forgotPasswordTokenCache).isNotNull();
             assertThat(keysAfterRequest).isNotNull();
-            assertThat(keysAfterRequest.size()).isGreaterThan(keysBeforeRequest == null ? 0 : keysBeforeRequest.size());
+            assertThat(keysAfterRequest.size()).isGreaterThan(
+                keysBeforeRequest == null ? 0 : keysBeforeRequest.size());
 
-            final var newTokenKeys = new java.util.HashSet<>(keysAfterRequest);
+            final var newTokenKeys = new HashSet<>(keysAfterRequest);
             if (keysBeforeRequest != null) {
                 newTokenKeys.removeAll(keysBeforeRequest);
             }
