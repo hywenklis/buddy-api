@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.16.0
+        uses: step-security/harden-runner@v2.19.0
         with:
           egress-policy: audit
 
@@ -52,7 +52,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build and test with Gradle wrapper
         run: |
@@ -87,7 +87,7 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.16.0
+        uses: step-security/harden-runner@v2.19.0
         with:
           egress-policy: audit
       - name: 'Checkout Repository'
@@ -109,19 +109,19 @@ jobs:
         language: [ "java" ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.16.0
+        uses: step-security/harden-runner@v2.19.0
         with:
           egress-policy: audit
       - name: Checkout repository
         uses: actions/checkout@v6
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{matrix.language}}"
 
@@ -136,7 +136,7 @@ jobs:
       actions: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.16.0
+        uses: step-security/harden-runner@v2.19.0
         with:
           egress-policy: audit
       - name: "Checkout code"
@@ -144,7 +144,7 @@ jobs:
         with:
           persist-credentials: false
       - name: "Run analysis"
-        uses: ossf/scorecard-action@v2.4.0
+        uses: ossf/scorecard-action@v2.4.3
         with:
           results_file: results.sarif
           results_format: sarif
@@ -156,7 +156,7 @@ jobs:
           path: results.sarif
           retention-days: 5
       - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
 
@@ -397,7 +397,7 @@ jobs:
 
       - name: Open Pull Request (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

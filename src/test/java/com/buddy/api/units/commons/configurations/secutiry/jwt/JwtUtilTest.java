@@ -84,6 +84,19 @@ class JwtUtilTest extends UnitTestAbstract {
     }
 
     @Test
+    @DisplayName("Should throw JwtException when token lacks expiration claim")
+    void getExpirationFromToken_missingExpiration() {
+        String tokenWithoutExp = Jwts.builder()
+            .subject(EMAIL_VALUE)
+            .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+        assertThatThrownBy(() -> jwtUtil.getExpirationFromToken(tokenWithoutExp))
+            .isInstanceOf(JwtException.class)
+            .hasMessage("Token with no expiration claim exp");
+    }
+
+    @Test
     @DisplayName("Should validate token when it matches username and is not expired")
     void validateToken_valid() {
         String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
