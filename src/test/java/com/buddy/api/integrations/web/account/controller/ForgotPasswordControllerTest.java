@@ -276,13 +276,35 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
             final var request = ForgotPasswordRequest.builder()
                 .email(testUserEmail)
                 .build();
+            final var cacheName = forgotPasswordTokenCache.getName();
+            final var cacheKeyPattern = cacheName + "::*";
+            final var keysBeforeRequest = redisTemplate.keys(cacheKeyPattern);
 
             mockMvc.perform(post(FORGOT_PASSWORD_URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted());
 
+            waitForAsyncEmailDispatch();
+
+            final var keysAfterRequest = redisTemplate.keys(cacheKeyPattern);
+
             assertThat(forgotPasswordTokenCache).isNotNull();
+            assertThat(keysAfterRequest).isNotNull();
+            assertThat(keysAfterRequest.size()).isGreaterThan(keysBeforeRequest == null ? 0 : keysBeforeRequest.size());
+
+            final var newTokenKeys = new java.util.HashSet<>(keysAfterRequest);
+            if (keysBeforeRequest != null) {
+                newTokenKeys.removeAll(keysBeforeRequest);
+            }
+
+            assertThat(newTokenKeys).hasSize(1);
+
+            final var tokenKey = newTokenKeys.iterator().next();
+            final var ttlSeconds = redisTemplate.getExpire(tokenKey);
+
+            assertThat(ttlSeconds).isNotNull();
+            assertThat(ttlSeconds).isPositive();
         }
 
         @Test
