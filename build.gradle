@@ -9,7 +9,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.5.1'
+    id 'com.github.spotbugs' version '6.5.4'
     id 'com.palantir.git-version' version '5.0.0'
     id 'pmd'
 }
@@ -33,13 +33,13 @@ configurations {
 }
 
 ext {
-    springCloudVersion = "2025.0.0"
+    springCloudVersion = "2025.1.1"
     mapstructVersion = "1.6.3"
     springdocOpenApiVersion = "2.8.9"
     springHateoasVersion = "2.5.1"
     commonsLang3Version = "3.20.0"
-    lombokVersion= "1.18.44"
-    postgresqlVersion= "42.7.10"
+    lombokVersion= "1.18.46"
+    postgresqlVersion= "42.7.11"
     spotbugsVersion = "4.9.8"
     micrometerVersion = "1.6.5"
     jwtVersion = "0.13.0"
