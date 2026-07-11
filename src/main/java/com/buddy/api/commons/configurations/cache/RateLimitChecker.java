@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class RateLimitChecker {
     private static final String RATE_LIMIT_COUNT_KEY_PREFIX = "rate-limit:count:";
     private static final String VERIFICATION_OPERATION = "verification";
-    private static final String PASSWORD_RECOVERY_OPERATION = "password recovery";
+    private static final String PASSWORD_RECOVERY_OPERATION = "password-recovery";
     private static final String VERIFICATION_LIMIT_MESSAGE =
         "Too many verification requests. Please wait a minute before trying again.";
     private static final String PASSWORD_RECOVERY_LIMIT_MESSAGE =

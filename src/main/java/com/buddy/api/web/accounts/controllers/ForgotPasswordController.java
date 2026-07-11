@@ -1,10 +1,6 @@
 package com.buddy.api.web.accounts.controllers;
 
-import com.buddy.api.commons.exceptions.AccountUnavailableException;
-import com.buddy.api.commons.exceptions.NotFoundException;
-import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.ForgotPasswordService;
-import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.web.accounts.requests.ForgotPasswordRequest;
 import com.buddy.api.web.defaultresponses.AcceptedSuccessResponse;
 import jakarta.validation.Valid;
@@ -24,26 +20,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ForgotPasswordController {
 
     private final ForgotPasswordService forgotPasswordService;
-    private final FindAccount findAccount;
 
     @PostMapping("/forgot")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public AcceptedSuccessResponse forgotPassword(
         @Valid @RequestBody final ForgotPasswordRequest request
     ) {
-
         String email = request.email();
         log.debug("Received password recovery request");
 
-        try {
-            AccountDto account = findAccount.findByEmail(email);
-            forgotPasswordService.requestPasswordRecovery(account);
-
-        } catch (NotFoundException | AccountUnavailableException e) {
-            log.debug(
-                "Password recovery processed (email existence protected):",
-                e);
-        }
+        forgotPasswordService.requestPasswordRecovery(email);
 
         return new AcceptedSuccessResponse();
     }

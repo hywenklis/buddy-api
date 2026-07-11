@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
 import com.buddy.api.commons.configurations.cache.RateLimitChecker;
+import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.impl.EmailSenderImpl;
 import com.buddy.api.domains.account.email.services.impl.ForgotPasswordServiceImpl;
@@ -33,6 +34,9 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
 
     @Mock
     private EmailSenderImpl emailSender;
+
+    @Mock
+    private com.buddy.api.domains.account.services.FindAccount findAccount;
 
     @InjectMocks
     private ForgotPasswordServiceImpl forgotPasswordService;
@@ -57,13 +61,14 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should dispatch password recovery email when exists")
         void should_dispatch_password_recovery_email_successfully() {
+            when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
             when(forgotPasswordTokenManager.generateAndStoreToken(userEmail))
                 .thenReturn(token);
             doAnswer(invocation -> null)
                 .when(emailSender)
                 .dispatchPasswordRecoveryEmail(accountId, userEmail, token);
 
-            forgotPasswordService.requestPasswordRecovery(validAccount);
+            forgotPasswordService.requestPasswordRecovery(userEmail);
 
             verify(rateLimitChecker, times(1))
                 .checkPasswordRecoveryRateLimit(userEmail, accountId);
@@ -76,6 +81,7 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should handle email sending failure gracefully")
         void should_handle_email_sending_failure_gracefully() {
+            when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
             when(forgotPasswordTokenManager.generateAndStoreToken(userEmail))
                 .thenReturn(token);
             doThrow(new RuntimeException("Email service failure"))
@@ -83,8 +89,8 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
                 .dispatchPasswordRecoveryEmail(accountId, userEmail, token);
 
             assertThatThrownBy(
-                    () -> forgotPasswordService
-                        .requestPasswordRecovery(validAccount))
+                () -> forgotPasswordService
+                    .requestPasswordRecovery(userEmail))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Email service failure");
 
@@ -99,13 +105,14 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should handle rate limit exception")
         void should_handle_rate_limit_exception() {
+            when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
             doThrow(new RuntimeException("Too many requests"))
                 .when(rateLimitChecker)
                 .checkPasswordRecoveryRateLimit(userEmail, accountId);
 
             assertThatThrownBy(
-                    () -> forgotPasswordService
-                        .requestPasswordRecovery(validAccount))
+                () -> forgotPasswordService
+                    .requestPasswordRecovery(userEmail))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Too many requests");
 
@@ -124,7 +131,9 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
         @DisplayName("Should silently ignore when account is null - "
             + "enumeration protection")
         void should_silently_ignore_non_existent_email() {
-            forgotPasswordService.requestPasswordRecovery(null);
+            when(findAccount.findByEmail(userEmail)).thenThrow(
+                new NotFoundException("email", "not found"));
+            forgotPasswordService.requestPasswordRecovery(userEmail);
 
             verifyNoInteractions(rateLimitChecker);
             verifyNoInteractions(forgotPasswordTokenManager);
@@ -142,12 +151,13 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
             String token1 = UUID.randomUUID().toString();
             String token2 = UUID.randomUUID().toString();
 
+            when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
             when(forgotPasswordTokenManager.generateAndStoreToken(userEmail))
                 .thenReturn(token1)
                 .thenReturn(token2);
 
-            forgotPasswordService.requestPasswordRecovery(validAccount);
-            forgotPasswordService.requestPasswordRecovery(validAccount);
+            forgotPasswordService.requestPasswordRecovery(userEmail);
+            forgotPasswordService.requestPasswordRecovery(userEmail);
 
             verify(forgotPasswordTokenManager, times(2))
                 .generateAndStoreToken(userEmail);
@@ -157,10 +167,11 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
         @DisplayName("Token should expire automatically after TTL - "
             + "verified by Redis configuration")
         void should_verify_token_expiration_via_cache_ttl() {
+            when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
             when(forgotPasswordTokenManager.generateAndStoreToken(userEmail))
                 .thenReturn(token);
 
-            forgotPasswordService.requestPasswordRecovery(validAccount);
+            forgotPasswordService.requestPasswordRecovery(userEmail);
 
             verify(forgotPasswordTokenManager, times(1))
                 .generateAndStoreToken(userEmail);

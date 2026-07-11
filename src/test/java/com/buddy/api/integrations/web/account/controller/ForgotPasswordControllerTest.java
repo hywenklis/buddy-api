@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.builders.account.AccountBuilder;
+import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ForgotPasswordRequest;
@@ -22,18 +23,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.http.MediaType;
+
 
 @DisplayName("Forgot Password Controller Tests")
 class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
     private static final String FORGOT_PASSWORD_URL = "/v1/accounts/password/forgot";
-    private static final String PASSWORD_RECOVERY_OPERATION = "password recovery";
+    private static final String PASSWORD_RECOVERY_OPERATION = "password-recovery";
     private static final String RATE_LIMIT_COUNT_KEY_PREFIX =
         "rate-limit:count:" + PASSWORD_RECOVERY_OPERATION + ":";
 
     private String testUserEmail;
+    @Autowired
+    private RateLimitProperties rateLimitProperties;
     private Cache forgotPasswordTokenCache;
 
     @BeforeEach
@@ -50,6 +55,8 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
         forgotPasswordTokenCache.clear();
         rateLimitCache.clear();
+
+        assertThat(rateLimitProperties).isNotNull();
 
         WireMock.resetAllScenarios();
         WireMock.resetAllRequests();
@@ -121,10 +128,14 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                 .email(testUserEmail)
                 .build();
 
-            mockMvc.perform(post(FORGOT_PASSWORD_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isAccepted());
+            final int maxAttempts = rateLimitProperties.maxAttempts();
+
+            for (int i = 0; i < maxAttempts; i++) {
+                mockMvc.perform(post(FORGOT_PASSWORD_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isAccepted());
+            }
 
             expectManyRequestFrom(
                 mockMvc.perform(post(FORGOT_PASSWORD_URL)
