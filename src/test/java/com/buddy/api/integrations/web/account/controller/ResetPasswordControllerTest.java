@@ -59,7 +59,6 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
                 .findById(testUser.getAccountId()).orElseThrow();
             assertThat(passwordEncoder.matches(newPassword, updatedAccount.getPassword())).isTrue();
             
-            // token should be removed
             assertThat(tokenManager.getEmailByToken(token)).isNull();
         }
 
