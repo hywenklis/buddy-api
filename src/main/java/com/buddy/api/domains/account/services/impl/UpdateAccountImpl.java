@@ -50,4 +50,16 @@ public class UpdateAccountImpl implements UpdateAccount {
     private void logWarn(final AccountEntity account) {
         log.warn("No valid account found for account={}", account.getAccountId());
     }
+
+    @Override
+    @Transactional
+    public void updatePassword(final String email, final String encodedPassword) {
+        AccountDto accountDto = findAccount.findByEmail(email);
+        AccountEntity account = accountMapper.toAccountEntityForUpdate(accountDto);
+        int updated = accountRepository.updatePassword(account.getAccountId(), encodedPassword);
+        if (updated == 0) {
+            logWarn(account);
+            throw new AccountUnavailableException("account", "Account is not available");
+        }
+    }
 }
