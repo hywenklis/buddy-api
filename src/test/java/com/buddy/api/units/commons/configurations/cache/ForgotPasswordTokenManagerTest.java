@@ -81,6 +81,19 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
         }
 
         @Test
+        @DisplayName("Should return null if token exists in cache but value is null")
+        void should_return_null_if_token_value_is_null() {
+            String token = "valid-token-null-value";
+            Cache.ValueWrapper valueWrapper = () -> null;
+            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+
+            String email = forgotPasswordTokenManager.getEmailByToken(token);
+
+            assertThat(email).isNull();
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+        }
+
+        @Test
         @DisplayName("Should invalidate token from cache")
         void should_invalidate_token() {
             String token = "token-to-invalidate";

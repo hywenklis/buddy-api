@@ -160,4 +160,42 @@ class UpdateAccountTest extends UnitTestAbstract {
         verify(accountRepository, times(1))
             .updateIsVerified(accountId, true);
     }
+
+    @DisplayName("Should update password successfully")
+    @Test
+    void should_update_password_successfully() {
+        final AccountDto accountDto = AccountBuilder.validAccountDto().build();
+        final String email = accountDto.email().value();
+        final UUID accountId = accountDto.accountId();
+        final String encodedPassword = "encoded-password";
+
+        when(findAccount.findByEmail(email)).thenReturn(accountDto);
+        when(accountRepository.updatePassword(accountId, encodedPassword)).thenReturn(1);
+
+        updateAccount.updatePassword(email, encodedPassword);
+
+        verify(findAccount, times(1)).findByEmail(email);
+        verify(accountMapper, times(1)).toAccountEntityForUpdate(accountDto);
+        verify(accountRepository, times(1)).updatePassword(accountId, encodedPassword);
+    }
+
+    @DisplayName("Should throw AccountUnavailableException when account is not valid for updatePassword")
+    @Test
+    void should_throw_account_unavailable_exception_for_update_password() {
+        final AccountDto accountDto = AccountBuilder.validAccountDto().build();
+        final String email = accountDto.email().value();
+        final UUID accountId = accountDto.accountId();
+        final String encodedPassword = "encoded-password";
+
+        when(findAccount.findByEmail(email)).thenReturn(accountDto);
+        when(accountRepository.updatePassword(accountId, encodedPassword)).thenReturn(0);
+
+        assertThatThrownBy(() -> updateAccount.updatePassword(email, encodedPassword))
+            .isInstanceOf(AccountUnavailableException.class)
+            .hasMessageContaining("Account is not available");
+
+        verify(findAccount, times(1)).findByEmail(email);
+        verify(accountMapper, times(1)).toAccountEntityForUpdate(accountDto);
+        verify(accountRepository, times(1)).updatePassword(accountId, encodedPassword);
+    }
 }
