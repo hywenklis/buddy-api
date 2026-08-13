@@ -54,6 +54,41 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
             assertThat(generatedToken).isNotNull();
             verify(forgotPasswordTokenCache, times(1)).put(generatedToken, userEmail);
         }
+
+        @Test
+        @DisplayName("Should return email by token if it exists in cache")
+        void should_return_email_by_token() {
+            String token = "some-valid-token";
+            Cache.ValueWrapper valueWrapper = () -> userEmail;
+            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+
+            String email = forgotPasswordTokenManager.getEmailByToken(token);
+
+            assertThat(email).isEqualTo(userEmail);
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+        }
+
+        @Test
+        @DisplayName("Should return null if token does not exist in cache")
+        void should_return_null_if_token_not_found() {
+            String token = "invalid-token";
+            when(forgotPasswordTokenCache.get(token)).thenReturn(null);
+
+            String email = forgotPasswordTokenManager.getEmailByToken(token);
+
+            assertThat(email).isNull();
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+        }
+
+        @Test
+        @DisplayName("Should invalidate token from cache")
+        void should_invalidate_token() {
+            String token = "token-to-invalidate";
+
+            forgotPasswordTokenManager.invalidateToken(token);
+
+            verify(forgotPasswordTokenCache, times(1)).evict(token);
+        }
     }
 
     @Test
