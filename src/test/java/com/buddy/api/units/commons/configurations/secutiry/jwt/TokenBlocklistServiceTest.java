@@ -82,6 +82,54 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
         assertThat(result).isFalse();
     }
 
+    @Test
+    @DisplayName("Should block all tokens for a user")
+    void revokeAllUserTokens() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        
+        tokenBlocklistService.revokeAllUserTokens("test@example.com");
+
+        verify(redisTemplate).opsForValue();
+        verify(valueOperations).set(
+            org.mockito.ArgumentMatchers.eq("jwt:revoke_all:test@example.com"),
+            org.mockito.ArgumentMatchers.anyString(),
+            org.mockito.ArgumentMatchers.eq(Duration.ofDays(30))
+        );
+    }
+
+    @Test
+    @DisplayName("Should return true when token was issued before revocation timestamp")
+    void isUserTokensRevoked_true() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn("1000");
+
+        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 500);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should return false when token was issued after revocation timestamp")
+    void isUserTokensRevoked_false() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn("1000");
+
+        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 2000);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should return false when no revocation timestamp exists")
+    void isUserTokensRevoked_null() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn(null);
+
+        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 500);
+
+        assertThat(result).isFalse();
+    }
+
     private String hashToken(final String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
