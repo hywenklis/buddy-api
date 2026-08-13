@@ -21,7 +21,7 @@ spring:
     type: simple
   jpa:
     defer-datasource-initialization: false
-    show-sql: true
+    show-sql: false
     open-in-view: false
     hibernate:
       ddl-auto: none
