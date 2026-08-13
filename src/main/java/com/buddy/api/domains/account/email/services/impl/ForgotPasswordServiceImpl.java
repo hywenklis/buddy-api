@@ -8,6 +8,7 @@ import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.ForgotPasswordService;
 import com.buddy.api.domains.account.services.FindAccount;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +24,9 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     private final FindAccount findAccount;
 
     @Override
-    public void requestPasswordRecovery(final String email) {
+    public void requestPasswordRecovery(final EmailAddress emailAddress) {
         try {
-            AccountDto account = findAccount.findByEmail(email);
+            AccountDto account = findAccount.findByEmail(emailAddress.value());
 
             String userEmail = account.email().value();
             UUID accountId = account.accountId();

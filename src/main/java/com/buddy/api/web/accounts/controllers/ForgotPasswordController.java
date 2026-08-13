@@ -1,6 +1,7 @@
 package com.buddy.api.web.accounts.controllers;
 
 import com.buddy.api.domains.account.email.services.ForgotPasswordService;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.web.accounts.requests.ForgotPasswordRequest;
 import com.buddy.api.web.defaultresponses.AcceptedSuccessResponse;
 import jakarta.validation.Valid;
@@ -26,11 +27,8 @@ public class ForgotPasswordController {
     public AcceptedSuccessResponse forgotPassword(
         @Valid @RequestBody final ForgotPasswordRequest request
     ) {
-        String email = request.email();
         log.debug("Received password recovery request");
-
-        forgotPasswordService.requestPasswordRecovery(email);
-
+        forgotPasswordService.requestPasswordRecovery(new EmailAddress(request.email()));
         return new AcceptedSuccessResponse();
     }
 }

@@ -13,8 +13,9 @@ import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
 import com.buddy.api.commons.configurations.cache.RateLimitChecker;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
-import com.buddy.api.domains.account.email.services.impl.EmailSenderImpl;
+import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.impl.ForgotPasswordServiceImpl;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
     private ForgotPasswordTokenManager forgotPasswordTokenManager;
 
     @Mock
-    private EmailSenderImpl emailSender;
+    private EmailSender emailSender;
 
     @Mock
     private com.buddy.api.domains.account.services.FindAccount findAccount;
@@ -68,7 +69,7 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
                 .when(emailSender)
                 .dispatchPasswordRecoveryEmail(accountId, userEmail, token);
 
-            forgotPasswordService.requestPasswordRecovery(userEmail);
+            forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
             verify(rateLimitChecker, times(1))
                 .checkPasswordRecoveryRateLimit(userEmail, accountId);
@@ -90,7 +91,7 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
 
             assertThatThrownBy(
                 () -> forgotPasswordService
-                    .requestPasswordRecovery(userEmail))
+                    .requestPasswordRecovery(new EmailAddress(userEmail)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Email service failure");
 
@@ -112,7 +113,7 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
 
             assertThatThrownBy(
                 () -> forgotPasswordService
-                    .requestPasswordRecovery(userEmail))
+                    .requestPasswordRecovery(new EmailAddress(userEmail)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Too many requests");
 
@@ -133,7 +134,7 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
         void should_silently_ignore_non_existent_email() {
             when(findAccount.findByEmail(userEmail)).thenThrow(
                 new NotFoundException("email", "not found"));
-            forgotPasswordService.requestPasswordRecovery(userEmail);
+            forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
             verifyNoInteractions(rateLimitChecker);
             verifyNoInteractions(forgotPasswordTokenManager);
@@ -156,22 +157,21 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
                 .thenReturn(token1)
                 .thenReturn(token2);
 
-            forgotPasswordService.requestPasswordRecovery(userEmail);
-            forgotPasswordService.requestPasswordRecovery(userEmail);
+            forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
+            forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
             verify(forgotPasswordTokenManager, times(2))
                 .generateAndStoreToken(userEmail);
         }
 
         @Test
-        @DisplayName("Token should expire automatically after TTL - "
-            + "verified by Redis configuration")
-        void should_verify_token_expiration_via_cache_ttl() {
+        @DisplayName("Should call generateAndStoreToken for each recovery request")
+        void should_call_generate_and_store_token_for_recovery() {
             when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
             when(forgotPasswordTokenManager.generateAndStoreToken(userEmail))
                 .thenReturn(token);
 
-            forgotPasswordService.requestPasswordRecovery(userEmail);
+            forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
             verify(forgotPasswordTokenManager, times(1))
                 .generateAndStoreToken(userEmail);
