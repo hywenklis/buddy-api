@@ -88,6 +88,12 @@ public class AuthServiceImpl implements AuthService {
             String email = jwtUtil.getEmailFromToken(refreshToken);
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
+            Instant issuedAt = jwtUtil.getIssuedAtFromToken(refreshToken);
+            if (blocklistService.isUserTokensRevoked(email, issuedAt.getEpochSecond())) {
+                log.warn("Global token revocation triggered for email: {}", email);
+                throw new AuthenticationException("Invalid refresh token or token expired", REFRESH_TOKEN_FIELD);
+            }
+
             if (!jwtUtil.validateToken(refreshToken, email)) {
                 log.warn("Invalid refresh token for email: {}", email);
                 throw new AuthenticationException("Invalid refresh token", REFRESH_TOKEN_FIELD);
