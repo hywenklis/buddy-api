@@ -57,7 +57,7 @@ jobs:
       - name: Build and test with Gradle wrapper
         run: |
           chmod +x gradlew
-          ./gradlew build --no-daemon
+          ./gradlew build --parallel --build-cache
 
       - name: Publish Test Results
         if: always()
