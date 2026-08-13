@@ -130,6 +130,17 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
         assertThat(result).isFalse();
     }
 
+    @Test
+    @DisplayName("Should return true when token issued at same second but before revocation")
+    void isUserTokensRevoked_sameLogicalInstant() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn("1000500");
+
+        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 1000000L);
+
+        assertThat(result).isTrue();
+    }
+
     private String hashToken(final String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

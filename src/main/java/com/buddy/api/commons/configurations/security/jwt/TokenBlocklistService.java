@@ -34,20 +34,21 @@ public class TokenBlocklistService {
 
     public void revokeAllUserTokens(final String email) {
         final String key = "jwt:revoke_all:" + email;
+        long revokeTimestamp = Instant.now().toEpochMilli();
         redisTemplate.opsForValue().set(
             key,
-            String.valueOf(Instant.now().getEpochSecond()),
+            String.valueOf(revokeTimestamp),
             Duration.ofDays(30)
         );
-        log.debug("All tokens revoked for user {} at {}", email, Instant.now().getEpochSecond());
+        log.debug("All tokens revoked for user {} at {}", email, revokeTimestamp);
     }
 
-    public boolean isUserTokensRevoked(final String email, final long issuedAtEpochSecond) {
+    public boolean isUserTokensRevoked(final String email, final long issuedAtEpochMilli) {
         final String key = "jwt:revoke_all:" + email;
         String revokedTimestampStr = redisTemplate.opsForValue().get(key);
         if (revokedTimestampStr != null) {
             long revokedTimestamp = Long.parseLong(revokedTimestampStr);
-            return issuedAtEpochSecond < revokedTimestamp;
+            return issuedAtEpochMilli < revokedTimestamp;
         }
         return false;
     }

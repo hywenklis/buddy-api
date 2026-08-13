@@ -13,7 +13,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 ## Test Coverage Matrix
 
-> Generated from codebase, project guidelines, and spec - confirm before Execute. Guidelines found: none - strong defaults applied.
+> Generated from codebase, project guidelines, and spec - confirm before Execute. Guidelines found: testes de integração e API em src/test/java/com/buddy/api/integrations/**/*.java devem estender IntegrationTestAbstract, e testes unitários devem estar em src/test/java/com/buddy/api/units/....
 
 | Code Layer | Required Test Type | Coverage Expectation | Location Pattern | Run Command |
 | ---------- | ------------------ | -------------------- | ---------------- | ----------- |
@@ -184,7 +184,7 @@ T6 → T7
 ### T6: [Implement ResetPasswordService]
 
 **What**: Create service that ties token validation, password update, and global token revocation.
-**Where**: `src/main/java/com/buddy/api/domains/account/email/services/impl/ResetPasswordServiceImpl.java`
+**Where**: `src/main/java/com/buddy/api/domains/account/password/services/impl/ResetPasswordServiceImpl.java`
 **Depends on**: T1, T4, T5
 **Reuses**: `FindAccount`, `AccountRepository`, `PasswordEncoder`
 **Requirement**: RESET-01, RESET-02, RESET-03, RESET-04

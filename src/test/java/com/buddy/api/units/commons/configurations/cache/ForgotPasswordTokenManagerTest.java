@@ -102,6 +102,33 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
 
             verify(forgotPasswordTokenCache, times(1)).evict(token);
         }
+
+        @Test
+        @DisplayName("Should consume token by returning email and invalidating it")
+        void should_consume_token_and_return_email() {
+            String token = "token-to-consume";
+            Cache.ValueWrapper valueWrapper = () -> userEmail;
+            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isEqualTo(userEmail);
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(forgotPasswordTokenCache, times(1)).evict(token);
+        }
+
+        @Test
+        @DisplayName("Should return null and not invalidate if token not found when consuming")
+        void should_return_null_when_consuming_invalid_token() {
+            String token = "invalid-token-to-consume";
+            when(forgotPasswordTokenCache.get(token)).thenReturn(null);
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isNull();
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(forgotPasswordTokenCache, times(0)).evict(token);
+        }
     }
 
     @Test

@@ -44,7 +44,7 @@ When a user forgets their password, they receive an email with a reset token. Th
 
 1. WHEN a valid, non-expired token and a valid new password are submitted THEN the system SHALL update the account password hash.
 2. WHEN the password is successfully updated THEN the system SHALL invalidate the used reset token.
-3. WHEN the password is successfully updated THEN the system SHALL delete all active refresh tokens for the account.
+3. WHEN the password is successfully updated THEN the system SHALL require all refresh tokens issued before revocation to be rejected, rather than requiring physical deletion of every active token.
 4. IF the token is invalid, used, or expired THEN the system SHALL return a 400 Bad Request domain-friendly error.
 5. IF the new password does not meet the strong password policy THEN the system SHALL return a 400 Bad Request error.
 
