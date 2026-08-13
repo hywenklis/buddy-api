@@ -162,3 +162,4 @@ class RateLimitCheckerTest extends UnitTestAbstract {
             verify(redisTemplate, times(0)).expire(recoveryCountKey, Duration.ofMinutes(1));
         }
     }
+}
