@@ -179,7 +179,8 @@ class UpdateAccountTest extends UnitTestAbstract {
         verify(accountRepository, times(1)).updatePassword(accountId, encodedPassword);
     }
 
-    @DisplayName("Should throw AccountUnavailableException when account is not valid for updatePassword")
+    @DisplayName("Should throw AccountUnavailableException "
+        + "when account is not valid for updatePassword")
     @Test
     void should_throw_account_unavailable_exception_for_update_password() {
         final AccountDto accountDto = AccountBuilder.validAccountDto().build();
