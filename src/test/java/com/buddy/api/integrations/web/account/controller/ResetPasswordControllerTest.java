@@ -55,7 +55,8 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
-            AccountEntity updatedAccount = accountRepository.findById(testUser.getAccountId()).orElseThrow();
+            AccountEntity updatedAccount = accountRepository
+                .findById(testUser.getAccountId()).orElseThrow();
             assertThat(passwordEncoder.matches(newPassword, updatedAccount.getPassword())).isTrue();
             
             // token should be removed
@@ -65,7 +66,10 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         @Test
         @DisplayName("Should return 404 Not Found when token is invalid")
         void should_return_not_found_when_token_invalid() throws Exception {
-            ResetPasswordRequest request = new ResetPasswordRequest("invalid-token", "NewPassword123!");
+            ResetPasswordRequest request = new ResetPasswordRequest(
+                "invalid-token", 
+                "NewPassword123!"
+            );
 
             expectNotFoundFrom(
                 mockMvc.perform(post(RESET_PASSWORD_URL)

@@ -34,7 +34,11 @@ public class TokenBlocklistService {
 
     public void revokeAllUserTokens(final String email) {
         final String key = "jwt:revoke_all:" + email;
-        redisTemplate.opsForValue().set(key, String.valueOf(Instant.now().getEpochSecond()), Duration.ofDays(30));
+        redisTemplate.opsForValue().set(
+            key,
+            String.valueOf(Instant.now().getEpochSecond()),
+            Duration.ofDays(30)
+        );
         log.debug("All tokens revoked for user {} at {}", email, Instant.now().getEpochSecond());
     }
 
