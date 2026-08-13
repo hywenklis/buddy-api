@@ -14,6 +14,7 @@ import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.account.services.impl.UpdateAccountImpl;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -172,7 +173,7 @@ class UpdateAccountTest extends UnitTestAbstract {
         when(findAccount.findByEmail(email)).thenReturn(accountDto);
         when(accountRepository.updatePassword(accountId, encodedPassword)).thenReturn(1);
 
-        updateAccount.updatePassword(email, encodedPassword);
+        updateAccount.updatePassword(new EmailAddress(email), encodedPassword);
 
         verify(findAccount, times(1)).findByEmail(email);
         verify(accountMapper, times(1)).toAccountEntityForUpdate(accountDto);
@@ -191,7 +192,8 @@ class UpdateAccountTest extends UnitTestAbstract {
         when(findAccount.findByEmail(email)).thenReturn(accountDto);
         when(accountRepository.updatePassword(accountId, encodedPassword)).thenReturn(0);
 
-        assertThatThrownBy(() -> updateAccount.updatePassword(email, encodedPassword))
+        assertThatThrownBy(() -> updateAccount.updatePassword(
+            new com.buddy.api.domains.valueobjects.EmailAddress(email), encodedPassword))
             .isInstanceOf(AccountUnavailableException.class)
             .hasMessageContaining("Account is not available");
 

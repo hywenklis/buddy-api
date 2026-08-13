@@ -1,5 +1,6 @@
 package com.buddy.api.domains.account.services;
 
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import java.time.LocalDateTime;
 
 public interface UpdateAccount {
@@ -7,5 +8,5 @@ public interface UpdateAccount {
 
     void updateIsVerified(String email, Boolean isVerified);
 
-    void updatePassword(String email, String encodedPassword);
+    void updatePassword(EmailAddress email, String encodedPassword);
 }

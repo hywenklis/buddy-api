@@ -1,7 +1,7 @@
 package com.buddy.api.domains.account.password.services;
 
-import com.buddy.api.web.accounts.requests.ResetPasswordRequest;
+import com.buddy.api.domains.account.password.dtos.ResetPasswordDto;
 
 public interface ResetPasswordService {
-    void resetPassword(ResetPasswordRequest request);
+    void resetPassword(ResetPasswordDto request);
 }
