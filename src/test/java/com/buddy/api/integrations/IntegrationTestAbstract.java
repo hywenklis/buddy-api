@@ -18,6 +18,7 @@ import com.buddy.api.integrations.configs.TestContainersConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 @AutoConfigureWireMock(port = 0, stubs = "classpath:/mappings")
 @Import(TestContainersConfig.class)
+@Isolated
 public abstract class IntegrationTestAbstract {
 
     @Autowired
