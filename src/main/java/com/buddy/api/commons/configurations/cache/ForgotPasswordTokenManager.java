@@ -22,4 +22,26 @@ public class ForgotPasswordTokenManager {
         forgotPasswordTokenCache.put(token, userEmail);
         return token;
     }
+
+    public String getEmailByToken(final String token) {
+        Cache.ValueWrapper valueWrapper = forgotPasswordTokenCache.get(token);
+        if (valueWrapper != null && valueWrapper.get() != null) {
+            return (String) valueWrapper.get();
+        }
+        return null;
+    }
+
+    public String consumeToken(final String token) {
+        Cache.ValueWrapper valueWrapper = forgotPasswordTokenCache.get(token);
+        if (valueWrapper != null && valueWrapper.get() != null) {
+            String email = (String) valueWrapper.get();
+            forgotPasswordTokenCache.evict(token);
+            return email;
+        }
+        return null;
+    }
+
+    public void invalidateToken(final String token) {
+        forgotPasswordTokenCache.evict(token);
+    }
 }

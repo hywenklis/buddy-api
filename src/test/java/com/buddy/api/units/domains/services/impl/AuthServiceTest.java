@@ -147,6 +147,8 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
         when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
         when(jwtUtil.getEmailFromToken(REFRESH_TOKEN)).thenReturn(email);
+        when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
+        when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(false);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
         when(jwtUtil.generateAccessToken(email, List.of(ProfileTypeEnum.USER.name())))
@@ -163,12 +165,44 @@ class AuthServiceTest extends UnitTestAbstract {
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);
         verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);
+        verify(jwtUtil, times(1)).getIssuedAtFromToken(REFRESH_TOKEN);
+        verify(blocklistService, times(1)).isUserTokensRevoked(email, 1000000L);
         verify(userDetailsService, times(1)).loadUserByUsername(email);
         verify(jwtUtil, times(1)).validateToken(REFRESH_TOKEN, email);
         verify(jwtUtil, times(1))
             .generateAccessToken(email, List.of(ProfileTypeEnum.USER.name()));
         verify(updateAccount, times(0))
             .updateLastLogin(any(String.class), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when global token revocation is triggered")
+    void should_throw_exception_when_global_token_revoked() {
+        var email = RandomEmailUtils.generateValidEmail();
+        UserDetails userDetails = new User(
+            email,
+            RandomStringUtils.secure().nextAlphanumeric(10),
+            List.of(new SimpleGrantedAuthority(ProfileTypeEnum.USER.name()))
+        );
+
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
+        when(jwtUtil.getEmailFromToken(REFRESH_TOKEN)).thenReturn(email);
+        when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
+        when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
+        when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.refreshToken(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid refresh token or token expired")
+            .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
+
+        verify(jwtUtil, times(1)).extractRefreshToken(request);
+        verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);
+        verify(jwtUtil, times(1)).getIssuedAtFromToken(REFRESH_TOKEN);
+        verify(blocklistService, times(1)).isUserTokensRevoked(email, 1000000L);
+        verify(jwtUtil, never()).validateToken(any(), any());
+        verify(jwtUtil, never()).generateAccessToken(any(), any());
     }
 
     @Test
@@ -201,6 +235,8 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
         when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
         when(jwtUtil.getEmailFromToken(REFRESH_TOKEN)).thenReturn(email);
+        when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
+        when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(false);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(false);
 
@@ -210,6 +246,8 @@ class AuthServiceTest extends UnitTestAbstract {
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);
         verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);
+        verify(jwtUtil, times(1)).getIssuedAtFromToken(REFRESH_TOKEN);
+        verify(blocklistService, times(1)).isUserTokensRevoked(email, 1000000L);
         verify(userDetailsService, times(1)).loadUserByUsername(email);
         verify(jwtUtil, times(1)).validateToken(REFRESH_TOKEN, email);
         verify(jwtUtil, never()).generateAccessToken(any(), any());

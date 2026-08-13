@@ -14,6 +14,7 @@ import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.account.services.impl.UpdateAccountImpl;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -159,5 +160,45 @@ class UpdateAccountTest extends UnitTestAbstract {
 
         verify(accountRepository, times(1))
             .updateIsVerified(accountId, true);
+    }
+
+    @DisplayName("Should update password successfully")
+    @Test
+    void should_update_password_successfully() {
+        final AccountDto accountDto = AccountBuilder.validAccountDto().build();
+        final String email = accountDto.email().value();
+        final UUID accountId = accountDto.accountId();
+        final String encodedPassword = "encoded-password";
+
+        when(findAccount.findByEmail(email)).thenReturn(accountDto);
+        when(accountRepository.updatePassword(accountId, encodedPassword)).thenReturn(1);
+
+        updateAccount.updatePassword(new EmailAddress(email), encodedPassword);
+
+        verify(findAccount, times(1)).findByEmail(email);
+        verify(accountMapper, times(1)).toAccountEntityForUpdate(accountDto);
+        verify(accountRepository, times(1)).updatePassword(accountId, encodedPassword);
+    }
+
+    @DisplayName("Should throw AccountUnavailableException "
+        + "when account is not valid for updatePassword")
+    @Test
+    void should_throw_account_unavailable_exception_for_update_password() {
+        final AccountDto accountDto = AccountBuilder.validAccountDto().build();
+        final String email = accountDto.email().value();
+        final UUID accountId = accountDto.accountId();
+        final String encodedPassword = "encoded-password";
+
+        when(findAccount.findByEmail(email)).thenReturn(accountDto);
+        when(accountRepository.updatePassword(accountId, encodedPassword)).thenReturn(0);
+
+        assertThatThrownBy(() -> updateAccount.updatePassword(
+            new com.buddy.api.domains.valueobjects.EmailAddress(email), encodedPassword))
+            .isInstanceOf(AccountUnavailableException.class)
+            .hasMessageContaining("Account is not available");
+
+        verify(findAccount, times(1)).findByEmail(email);
+        verify(accountMapper, times(1)).toAccountEntityForUpdate(accountDto);
+        verify(accountRepository, times(1)).updatePassword(accountId, encodedPassword);
     }
 }
