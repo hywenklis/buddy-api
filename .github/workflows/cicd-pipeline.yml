@@ -41,7 +41,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
           junit_files: '**/build/test-results/**/*.xml'
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -91,7 +91,7 @@ jobs:
         with:
           egress-policy: audit
       - name: 'Checkout Repository'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@v5
 
@@ -113,7 +113,7 @@ jobs:
         with:
           egress-policy: audit
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -140,7 +140,7 @@ jobs:
         with:
           egress-policy: audit
       - name: "Checkout code"
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: "Run analysis"
@@ -173,7 +173,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -221,7 +221,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -275,7 +275,7 @@ jobs:
       tagged: ${{ steps.create_tag.outputs.should_run }}
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: 'main'
           fetch-depth: 0
@@ -371,7 +371,7 @@ jobs:
 
       - name: Create Sync Branch (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -418,7 +418,7 @@ jobs:
 
       - name: Delete Merged Release or Hotfix Branch
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
       - env:
