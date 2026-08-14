@@ -16,24 +16,28 @@ import com.buddy.api.domains.terms.repositories.TermsAcceptanceRepository;
 import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
 import com.buddy.api.integrations.configs.TestContainersConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.cache.CacheManager;
-import org.wiremock.spring.ConfigureWireMock;
-import org.wiremock.spring.EnableWireMock;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.wiremock.spring.ConfigureWireMock;
+import org.wiremock.spring.EnableWireMock;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@EnableWireMock({@ConfigureWireMock(port = 0, filesUnderClasspath = "/mappings")})
+@AutoConfigureJson
+@EnableWireMock({@ConfigureWireMock(port = 0, filesUnderClasspath = "wiremock")})
 @Import(TestContainersConfig.class)
 @Isolated
 public abstract class IntegrationTestAbstract {
@@ -41,8 +45,14 @@ public abstract class IntegrationTestAbstract {
     @Autowired
     protected CacheManager cacheManager;
 
+    @Autowired(required = false)
+    protected Flyway flyway;
+
     @Autowired
     protected MockMvc mockMvc;
+
+    @Autowired(required = false)
+    protected WireMockServer wireMockServer;
 
     @Autowired
     protected ObjectMapper objectMapper;
@@ -122,6 +132,9 @@ public abstract class IntegrationTestAbstract {
 
     @BeforeEach
     void init() {
+        if (wireMockServer != null) {
+            WireMock.configureFor("localhost", wireMockServer.port());
+        }
         clearRepositories();
 
         redisTemplate.execute((RedisConnection connection) -> {
