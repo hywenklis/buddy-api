@@ -37,7 +37,7 @@ import org.wiremock.spring.EnableWireMock;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @AutoConfigureJson
-@EnableWireMock({@ConfigureWireMock(port = 0, filesUnderClasspath = "wiremock")})
+@EnableWireMock({@ConfigureWireMock(port = 0)})
 @Import(TestContainersConfig.class)
 @Isolated
 public abstract class IntegrationTestAbstract {

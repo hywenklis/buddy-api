@@ -1,0 +1,19 @@
+{
+  "scenarioName": "MANAGER_NOTIFICATION_EMAIL_SCENARIO",
+  "requiredScenarioState": "SUCCESS_STATE",
+  "request": {
+    "method": "POST",
+    "url": "/manager/v1/gateway",
+    "headers": {
+      "Content-Type": {
+        "equalTo": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
