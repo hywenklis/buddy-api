@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,12 +44,6 @@ public class FindPetImpl implements FindPet {
                 .toList();
 
             return new PageImpl<>(dtos, adjustedPageable, petPage.getTotalElements());
-        } catch (PropertyReferenceException ex) {
-            throw new PetSearchException(
-                ex.getPropertyName(),
-                "An error occurred while searching for pets due to an invalid property reference",
-                ex
-            );
         } catch (InvalidDataAccessApiUsageException | IllegalArgumentException ex) {
             String errorMessage = ex.getCause() != null
                 ? ex.getCause().getMessage() : ex.getMessage();

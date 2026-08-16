@@ -30,6 +30,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  hateoas:
+    use-hal-as-default-json-media-type: true
+
   flyway:
     enabled: true
     baseline-on-migrate: true

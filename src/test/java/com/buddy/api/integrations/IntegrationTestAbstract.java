@@ -16,23 +16,28 @@ import com.buddy.api.domains.terms.repositories.TermsAcceptanceRepository;
 import com.buddy.api.domains.terms.repositories.TermsVersionRepository;
 import com.buddy.api.integrations.configs.TestContainersConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.cache.CacheManager;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.wiremock.spring.ConfigureWireMock;
+import org.wiremock.spring.EnableWireMock;
+import org.wiremock.spring.InjectWireMock;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@AutoConfigureWireMock(port = 0, stubs = "classpath:/mappings")
+@AutoConfigureJson
+@EnableWireMock({@ConfigureWireMock(port = 0, filesUnderClasspath = "")})
 @Import(TestContainersConfig.class)
 @Isolated
 public abstract class IntegrationTestAbstract {
@@ -40,8 +45,14 @@ public abstract class IntegrationTestAbstract {
     @Autowired
     protected CacheManager cacheManager;
 
+    @Autowired(required = false)
+    protected Flyway flyway;
+
     @Autowired
     protected MockMvc mockMvc;
+
+    @InjectWireMock
+    protected WireMockServer wireMockServer;
 
     @Autowired
     protected ObjectMapper objectMapper;
@@ -128,7 +139,8 @@ public abstract class IntegrationTestAbstract {
             return "OK";
         });
 
-        WireMock.resetAllRequests();
-        WireMock.resetAllScenarios();
+        if (wireMockServer != null) {
+            wireMockServer.resetAll();
+        }
     }
 }
