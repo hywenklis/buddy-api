@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @DisplayName("GET /v1/pets")
 class FindPetControllerTest extends IntegrationTestAbstract {
 
-    public static final String EMBEDDED = "$.content";
+    public static final String EMBEDDED = "$._embedded";
     public static final String EMBEDDED_PET_RESPONSES = "$._embedded.petParamsResponseList";
 
     @BeforeEach
