@@ -1,0 +1,55 @@
+name: Auto-Publish to Buddy Docs
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - develop
+
+jobs:
+  publish-to-docs:
+    # Roda apenas se o PR foi aceito (mergeado) e não apenas fechado/rejeitado
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create Blog Post Content
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          FILENAME="$DATE-pr-${{ github.event.pull_request.number }}.md"
+          
+          # Gerando o cabeçalho exigido pelo Docusaurus
+          echo "---" > $FILENAME
+          echo "slug: pr-${{ github.event.pull_request.number }}" >> $FILENAME
+          echo "title: 'Atualização API: ${{ github.event.pull_request.title }}'" >> $FILENAME
+          echo "authors: [${{ github.event.pull_request.user.login }}]" >> $FILENAME
+          echo "tags: [backend, automacao, api]" >> $FILENAME
+          echo "---" >> $FILENAME
+          echo "" >> $FILENAME
+          
+          # Corpo da postagem
+          echo "Uma nova funcionalidade ou correção foi integrada à **Buddy API**!" >> $FILENAME
+          echo "<!--truncate-->" >> $FILENAME
+          echo "## Detalhes do PR" >> $FILENAME
+          echo "${{ github.event.pull_request.body }}" >> $FILENAME
+          echo "" >> $FILENAME
+          echo "🔗 [Ver Pull Request original no GitHub](${{ github.event.pull_request.html_url }})" >> $FILENAME
+          
+          # Move para uma pasta temporária
+          mkdir -p .docs_export
+          mv $FILENAME .docs_export/
+
+      - name: Push Post to buddy-docs Repository
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.DOCS_PAT_TOKEN }}
+        with:
+          source_file: '.docs_export/*.md'
+          destination_repo: 'hywenklis/buddy-docs'
+          destination_folder: 'blog'
+          user_email: 'bot@buddy.com'
+          user_name: 'Buddy Automation Bot'
+          commit_message: 'docs: post automático da API (PR #${{ github.event.pull_request.number }})'
