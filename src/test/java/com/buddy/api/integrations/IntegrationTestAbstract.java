@@ -34,10 +34,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.wiremock.spring.ConfigureWireMock;
 import org.wiremock.spring.EnableWireMock;
 
+import org.wiremock.spring.InjectWireMock;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @AutoConfigureJson
-@EnableWireMock({@ConfigureWireMock(port = 0)})
+@EnableWireMock({@ConfigureWireMock(port = 0, filesUnderClasspath = "")})
 @Import(TestContainersConfig.class)
 @Isolated
 public abstract class IntegrationTestAbstract {
@@ -51,7 +53,7 @@ public abstract class IntegrationTestAbstract {
     @Autowired
     protected MockMvc mockMvc;
 
-    @Autowired(required = false)
+    @InjectWireMock
     protected WireMockServer wireMockServer;
 
     @Autowired
@@ -132,9 +134,6 @@ public abstract class IntegrationTestAbstract {
 
     @BeforeEach
     void init() {
-        if (wireMockServer != null) {
-            WireMock.configureFor("localhost", wireMockServer.port());
-        }
         clearRepositories();
 
         redisTemplate.execute((RedisConnection connection) -> {
@@ -142,7 +141,8 @@ public abstract class IntegrationTestAbstract {
             return "OK";
         });
 
-        WireMock.resetAllRequests();
-        WireMock.resetAllScenarios();
+        if (wireMockServer != null) {
+            wireMockServer.resetAll();
+        }
     }
 }

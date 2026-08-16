@@ -1,8 +1,10 @@
 package com.buddy.api.integrations.configs;
 
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -36,12 +38,15 @@ public class TestContainersConfig {
             .withTmpFs(java.util.Collections.singletonMap("/var/lib/postgresql/data", "rw"));
     }
 
+
+
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return Jackson2ObjectMapperBuilder.json()
+            .modules(new JavaTimeModule())
+            .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build();
     }
 
     @Bean(initMethod = "migrate")

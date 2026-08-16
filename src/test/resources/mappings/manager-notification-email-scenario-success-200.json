@@ -8,7 +8,12 @@
       "Content-Type": {
         "equalTo": "application/json"
       }
-    }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.payload[?(@.subject == 'Confirme seu e-mail no Buddy')]"
+      }
+    ]
   },
   "response": {
     "status": 200,

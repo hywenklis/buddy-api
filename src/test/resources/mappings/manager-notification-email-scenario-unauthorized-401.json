@@ -7,8 +7,16 @@
     "headers": {
       "Content-Type": {
         "equalTo": "application/json"
+      },
+      "Authorization": {
+        "matches": "^Bearer .+"
       }
-    }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.payload[?(@.subject == 'Confirme seu e-mail no Buddy')]"
+      }
+    ]
   },
   "response": {
     "status": 401
