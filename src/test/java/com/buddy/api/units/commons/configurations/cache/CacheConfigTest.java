@@ -1,9 +1,12 @@
 package com.buddy.api.units.commons.configurations.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.buddy.api.commons.configurations.cache.CacheConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
@@ -18,45 +21,47 @@ class CacheConfigTest {
     }
 
     @Test
-    void testStringRoundTripSerialization() {
+    @DisplayName("Should successfully serialize and deserialize a string token")
+    void should_serialize_and_deserialize_string_token() {
         ObjectMapper objectMapper = new ObjectMapper();
-
         RedisSerializer<Object> serializer = cacheConfig.jsonSerializer(objectMapper);
-
         String token = "my-secure-token-12345";
+        
         byte[] serialized = serializer.serialize(token);
-
-        Assertions.assertNotNull(serialized);
+        
+        assertThat(serialized).isNotNull();
 
         Object deserialized = serializer.deserialize(serialized);
-        Assertions.assertEquals(token, deserialized);
+        
+        assertThat(deserialized).isEqualTo(token);
     }
 
     @Test
-    void testSerializationException() {
+    @DisplayName("Should handle serialization exceptions correctly")
+    void should_handle_serialization_exceptions() {
         ObjectMapper objectMapper = new ObjectMapper();
         RedisSerializer<Object> serializer = cacheConfig.jsonSerializer(objectMapper);
-
         Object unSerializable = new Object();
-        Assertions.assertThrows(
-            SerializationException.class, () -> serializer.serialize(unSerializable));
+        
+        assertThatThrownBy(() -> serializer.serialize(unSerializable))
+            .isInstanceOf(SerializationException.class);
 
         byte[] empty = serializer.serialize(null);
-        Assertions.assertNotNull(empty);
-        Assertions.assertEquals(0, empty.length);
+        
+        assertThat(empty).isNotNull().isEmpty();
     }
 
     @Test
-    void testDeserializationException() {
+    @DisplayName("Should handle deserialization exceptions correctly")
+    void should_handle_deserialization_exceptions() {
         ObjectMapper objectMapper = new ObjectMapper();
         RedisSerializer<Object> serializer = cacheConfig.jsonSerializer(objectMapper);
-
         byte[] invalidJson = "invalid-json".getBytes();
-        Assertions.assertThrows(
-            org.springframework.data.redis.serializer.SerializationException.class,
-            () -> serializer.deserialize(invalidJson));
+        
+        assertThatThrownBy(() -> serializer.deserialize(invalidJson))
+            .isInstanceOf(SerializationException.class);
 
-        Assertions.assertNull(serializer.deserialize(null));
-        Assertions.assertNull(serializer.deserialize(new byte[0]));
+        assertThat(serializer.deserialize(null)).isNull();
+        assertThat(serializer.deserialize(new byte[0])).isNull();
     }
 }
