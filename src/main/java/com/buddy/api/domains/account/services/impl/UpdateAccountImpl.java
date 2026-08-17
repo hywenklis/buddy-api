@@ -7,6 +7,7 @@ import com.buddy.api.domains.account.mappers.AccountMapper;
 import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.account.services.UpdateAccount;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,5 +50,17 @@ public class UpdateAccountImpl implements UpdateAccount {
 
     private void logWarn(final AccountEntity account) {
         log.warn("No valid account found for account={}", account.getAccountId());
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(final EmailAddress email, final String encodedPassword) {
+        AccountDto accountDto = findAccount.findByEmail(email.value());
+        AccountEntity account = accountMapper.toAccountEntityForUpdate(accountDto);
+        int updated = accountRepository.updatePassword(account.getAccountId(), encodedPassword);
+        if (updated == 0) {
+            logWarn(account);
+            throw new AccountUnavailableException("account", "Account is not available");
+        }
     }
 }

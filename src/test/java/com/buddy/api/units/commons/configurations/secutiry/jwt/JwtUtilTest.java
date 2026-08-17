@@ -14,6 +14,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -94,6 +95,29 @@ class JwtUtilTest extends UnitTestAbstract {
         assertThatThrownBy(() -> jwtUtil.getExpirationFromToken(tokenWithoutExp))
             .isInstanceOf(JwtException.class)
             .hasMessage("Token with no expiration claim exp");
+    }
+
+    @Test
+    @DisplayName("Should extract issuedAt from a valid token")
+    void getIssuedAtFromToken_validToken() {
+        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        Instant issuedAt = jwtUtil.getIssuedAtFromToken(token);
+
+        assertThat(issuedAt).isNotNull();
+        assertThat(issuedAt).isBeforeOrEqualTo(Instant.now());
+    }
+
+    @Test
+    @DisplayName("Should throw JwtException when token lacks issuedAt claim")
+    void getIssuedAtFromToken_missingIssuedAt() {
+        String tokenWithoutIat = Jwts.builder()
+            .subject(EMAIL_VALUE)
+            .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+        assertThatThrownBy(() -> jwtUtil.getIssuedAtFromToken(tokenWithoutIat))
+            .isInstanceOf(JwtException.class)
+            .hasMessage("Token with no issuedAt claim iat");
     }
 
     @Test
