@@ -27,4 +27,9 @@ public interface AccountRepository extends JpaRepository<AccountEntity, UUID> {
     @Query("UPDATE AccountEntity a SET a.isVerified = :isVerified WHERE a.accountId = :accountId"
         + " AND a.isBlocked = false AND a.isDeleted = false")
     int updateIsVerified(UUID accountId, Boolean isVerified);
+
+    @Modifying
+    @Query("UPDATE AccountEntity a SET a.password = :password WHERE a.accountId = :accountId"
+        + " AND a.isBlocked = false AND a.isDeleted = false")
+    int updatePassword(UUID accountId, String password);
 }

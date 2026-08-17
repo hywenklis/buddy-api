@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
             .map(fieldError -> new ErrorDetails(
                 fieldError.getField(),
                 fieldError.getDefaultMessage(),
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.name(),
                 HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now()))
             .toList();
@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
         ErrorDetails error = new ErrorDetails(
             field,
             message,
-            status,
+            status.name(),
             status.value(),
             LocalDateTime.now()
         );
