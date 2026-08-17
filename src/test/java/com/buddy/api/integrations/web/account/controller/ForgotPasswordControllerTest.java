@@ -230,6 +230,8 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.message").value("request accepted"));
+
+            waitUntilWireMockReceives(1);
         }
     }
 
