@@ -1,6 +1,8 @@
 package com.buddy.api.units.domains.services.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -17,11 +19,13 @@ import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.impl.ForgotPasswordServiceImpl;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -160,8 +164,12 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
             forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
             forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
-            verify(forgotPasswordTokenManager, times(2))
-                .generateAndStoreToken(userEmail);
+            ArgumentCaptor<String> tokenCaptor = ArgumentCaptor.forClass(String.class);
+            verify(emailSender, times(2))
+                .dispatchPasswordRecoveryEmail(eq(accountId), eq(userEmail), tokenCaptor.capture());
+
+            List<String> capturedTokens = tokenCaptor.getAllValues();
+            assertThat(capturedTokens).containsExactly(token1, token2);
         }
 
         @Test

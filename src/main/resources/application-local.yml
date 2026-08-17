@@ -54,6 +54,8 @@ spring:
       max-lifetime: 1800000
       connection-test-query: "SELECT 1"
       validation-timeout: 5000
+  hateoas:
+    use-hal-as-default-json-media-type: true
   flyway:
     enabled: true
     url: ${spring.datasource.url}
