@@ -1,12 +1,8 @@
 package com.buddy.api.commons.configurations.cache;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import java.util.HashMap;
@@ -18,13 +14,44 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    public RedisSerializer<Object> jsonSerializer(final ObjectMapper objectMapper) {
+        return new RedisSerializer<Object>() {
+            @Override
+            public byte[] serialize(final Object t) throws SerializationException {
+                if (t == null) {
+                    return new byte[0];
+                }
+                try {
+                    return objectMapper.writeValueAsBytes(t);
+                } catch (com.fasterxml.jackson.core.JsonProcessingException ex) {
+                    throw new SerializationException("Could not write JSON: "
+                        + ex.getMessage(), ex);
+                }
+            }
+
+            @Override
+            public Object deserialize(final byte[] bytes) throws SerializationException {
+                if (bytes == null || bytes.length == 0) {
+                    return null;
+                }
+                try {
+                    return objectMapper.readValue(bytes, Object.class);
+                } catch (java.io.IOException ex) {
+                    throw new SerializationException("Could not read JSON: "
+                        + ex.getMessage(), ex);
+                }
+            }
+        };
+    }
 
     @Bean
     public RedisCacheManager cacheManager(final RedisConnectionFactory redisConnectionFactory) {
@@ -33,28 +60,20 @@ public class CacheConfig {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-            .allowIfBaseType("com.buddy.api")
-            .allowIfBaseType("java.util.ArrayList")
-            .allowIfBaseType("java.util.UUID")
-            .allowIfBaseType("java.util.HashMap")
-            .allowIfBaseType("java.util.HashSet")
-            .allowIfBaseType("java.time")
+            .allowIfSubType("com.buddy.api")
+            .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.UUID")
+            .allowIfSubType("java.util.HashMap")
+            .allowIfSubType("java.util.HashSet")
+            .allowIfSubType("java.time")
+            .allowIfSubType("java.lang.String")
             .build();
 
-        StdTypeResolverBuilder typeResolverBuilder = new StdTypeResolverBuilder() {
-            @Override
-            public PolymorphicTypeValidator subTypeValidator(final MapperConfig<?> config) {
-                return ptv;
-            }
-        };
+        objectMapper.activateDefaultTyping(ptv,
+            com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINAL,
+            com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY);
 
-        typeResolverBuilder.init(JsonTypeInfo.Id.CLASS, null);
-        typeResolverBuilder.inclusion(JsonTypeInfo.As.PROPERTY);
-
-        objectMapper.setDefaultTyping(typeResolverBuilder);
-
-        GenericJackson2JsonRedisSerializer jsonSerializer =
-            new GenericJackson2JsonRedisSerializer(objectMapper);
+        RedisSerializer<Object> jsonSerializer = jsonSerializer(objectMapper);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .disableCachingNullValues()
@@ -66,6 +85,10 @@ public class CacheConfig {
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
         cacheConfigs.put("emailVerificationToken", defaultConfig.entryTtl(Duration.ofMinutes(15)));
         cacheConfigs.put("emailVerificationRateLimit",
+            defaultConfig.entryTtl(Duration.ofMinutes(1)));
+
+        cacheConfigs.put("forgotPasswordToken", defaultConfig.entryTtl(Duration.ofMinutes(15)));
+        cacheConfigs.put("forgotPasswordRateLimit",
             defaultConfig.entryTtl(Duration.ofMinutes(1)));
 
         cacheConfigs.put("terms", defaultConfig.entryTtl(Duration.ofHours(24)));

@@ -3,6 +3,7 @@ package com.buddy.api.commons.configurations.security.jwt;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,27 @@ public class TokenBlocklistService {
 
     public boolean isBlocked(final String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX + tokenHash(token)));
+    }
+
+    public void revokeAllUserTokens(final String email) {
+        final String key = "jwt:revoke_all:" + email;
+        long revokeTimestamp = Instant.now().toEpochMilli();
+        redisTemplate.opsForValue().set(
+            key,
+            String.valueOf(revokeTimestamp),
+            Duration.ofDays(30)
+        );
+        log.debug("All tokens revoked for user {} at {}", email, revokeTimestamp);
+    }
+
+    public boolean isUserTokensRevoked(final String email, final long issuedAtEpochMilli) {
+        final String key = "jwt:revoke_all:" + email;
+        String revokedTimestampStr = redisTemplate.opsForValue().get(key);
+        if (revokedTimestampStr != null) {
+            long revokedTimestamp = Long.parseLong(revokedTimestampStr);
+            return issuedAtEpochMilli < revokedTimestamp;
+        }
+        return false;
     }
 
     @SneakyThrows

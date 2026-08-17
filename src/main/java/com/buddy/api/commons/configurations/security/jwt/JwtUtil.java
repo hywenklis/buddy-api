@@ -75,6 +75,14 @@ public class JwtUtil {
         return expiration;
     }
 
+    public Instant getIssuedAtFromToken(final String token) throws JwtException {
+        var claims = parseClaims(token);
+        if (claims.getIssuedAt() == null) {
+            throw new JwtException("Token with no issuedAt claim iat");
+        }
+        return claims.getIssuedAt().toInstant();
+    }
+
     public boolean validateToken(final String token, final String username) {
         try {
             Claims claims = parseClaims(token);

@@ -5,11 +5,11 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.7'
+    id 'org.springframework.boot' version '4.0.1'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.5.1'
+    id 'com.github.spotbugs' version '6.5.6'
     id 'com.palantir.git-version' version '5.0.0'
     id 'pmd'
 }
@@ -33,19 +33,20 @@ configurations {
 }
 
 ext {
-    springCloudVersion = "2025.0.0"
+    springCloudVersion = "2025.1.2"
     mapstructVersion = "1.6.3"
-    springdocOpenApiVersion = "2.8.9"
-    springHateoasVersion = "2.5.1"
+    springdocOpenApiVersion = "3.1.0"
+    springHateoasVersion = "3.0.2"
     commonsLang3Version = "3.20.0"
-    lombokVersion= "1.18.44"
-    postgresqlVersion= "42.7.10"
-    spotbugsVersion = "4.9.8"
-    micrometerVersion = "1.6.5"
+    lombokVersion= "1.18.46"
+    postgresqlVersion= "42.7.11"
+    spotbugsVersion = "4.10.2"
+    micrometerVersion = "1.7.0"
     jwtVersion = "0.13.0"
     embeddedRedisVersion = "1.4.3"
     awaitilityVersion = "4.3.0"
     findsecbugsVersion = "1.14.0"
+    testcontainersVersion = "1.20.4"
 }
 
 dependencies {
@@ -91,11 +92,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.projectlombok:lombok:${lombokVersion}"
     testImplementation "org.apache.commons:commons-lang3:${commonsLang3Version}"
-    testImplementation "org.springframework.cloud:spring-cloud-contract-wiremock"
+    testImplementation "org.wiremock.integrations:wiremock-spring-boot:4.2.2"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
     testImplementation "org.springframework.boot:spring-boot-testcontainers"
-    testImplementation "org.testcontainers:junit-jupiter"
-    testImplementation "org.testcontainers:postgresql"
+    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
 }
 
 dependencyManagement {

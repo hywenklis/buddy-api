@@ -21,7 +21,7 @@ spring:
     type: simple
   jpa:
     defer-datasource-initialization: false
-    show-sql: true
+    show-sql: false
     open-in-view: false
     hibernate:
       ddl-auto: none
@@ -29,6 +29,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+
+  hateoas:
+    use-hal-as-default-json-media-type: true
 
   flyway:
     enabled: true
@@ -68,6 +71,9 @@ buddy:
       subject: "Confirme seu e-mail no Buddy"
       template-path: "templates/email-verification.html"
       url: https://buddyclient.vercel.app/confirm-email?token=
+      forgot-password-subject: "Recuperar Senha - Buddy"
+      forgot-password-template-path: "templates/email-forgot-password.html"
+      forgot-password-url: https://buddyclient.vercel.app/reset-password?token=
   security:
     encryption-key: "ChangeMeToARandomStringOf32Chars"
     algorithm: "AES/GCM/NoPadding"
