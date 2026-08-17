@@ -1,12 +1,17 @@
 package com.buddy.api.units.domains.services.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+import org.mockito.ArgumentCaptor;
 
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
@@ -160,8 +165,12 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
             forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
             forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
-            verify(forgotPasswordTokenManager, times(2))
-                .generateAndStoreToken(userEmail);
+            ArgumentCaptor<String> tokenCaptor = ArgumentCaptor.forClass(String.class);
+            verify(emailSender, times(2))
+                .dispatchPasswordRecoveryEmail(eq(accountId), eq(userEmail), tokenCaptor.capture());
+
+            List<String> capturedTokens = tokenCaptor.getAllValues();
+            assertThat(capturedTokens).containsExactly(token1, token2);
         }
 
         @Test
