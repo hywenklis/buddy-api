@@ -20,7 +20,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 | Service | unit | All branches; 1:1 to spec ACs; all listed edge cases | `src/test/java/**/units/**/*.java` | `./gradlew test` |
 | Controller | integration | All routes: happy + edge + error | `src/test/java/**/integrations/**/*.java` | `./gradlew test` |
 | Utility/Config | unit | All branches | `src/test/java/**/units/**/*.java` | `./gradlew test` |
-| Entity/DTO | none | - (build gate only) | - | `./gradlew build` |
+| Entity/DTO | unit | Validation annotations | `src/test/java/**/units/**/*.java` | `./gradlew test` |
 
 ## Gate Check Commands
 
@@ -284,7 +284,7 @@ T6 → T7
 | T1   | Service                     | unit            | unit      | ✅ OK  |
 | T2   | Utility                     | unit            | unit      | ✅ OK  |
 | T3   | Service                     | unit            | unit      | ✅ OK  |
-| T4   | Entity/DTO                  | none            | unit      | ✅ OK  |
+| T4   | Entity/DTO                  | unit            | unit      | ✅ OK  |
 | T5   | Utility/Config              | unit            | unit      | ✅ OK  |
 | T6   | Service                     | unit            | unit      | ✅ OK  |
 | T7   | Controller                  | integration     | integration | ✅ OK  |
