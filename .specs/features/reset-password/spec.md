@@ -26,7 +26,7 @@ When a user forgets their password, they receive an email with a reset token. Th
 | Rate limiting         | Same rate limit as login/forgot password | Prevent brute force | y |
 | Strong password policy | Reuse existing policy validator | Keep consistency | y |
 | Token invalidation | Delete token from DB/cache or mark as used | Simplest secure way | y |
-| Refresh token revocation | Delete all refresh tokens for account | Ensures immediate session kill | y |
+| Refresh token revocation | Global revocation by timestamp | Ensures immediate session kill without physical deletion | y |
 
 **Open questions:** none
 
@@ -48,7 +48,7 @@ When a user forgets their password, they receive an email with a reset token. Th
 4. IF the token is invalid, used, or expired THEN the system SHALL return a 400 Bad Request domain-friendly error.
 5. IF the new password does not meet the strong password policy THEN the system SHALL return a 400 Bad Request error.
 
-**Independent Test**: Send a valid token and password, verify DB is updated, token is deleted, and refresh tokens are deleted.
+**Independent Test**: Send a valid token and password, verify DB is updated, token is deleted, and refresh tokens issued before the reset timestamp are rejected.
 
 ---
 
