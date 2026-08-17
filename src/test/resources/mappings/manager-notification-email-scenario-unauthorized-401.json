@@ -6,7 +6,7 @@
     "url": "/manager/v1/gateway",
     "headers": {
       "Content-Type": {
-        "equalTo": "application/json"
+        "contains": "application/json"
       },
       "Authorization": {
         "matches": "^Bearer .+"
