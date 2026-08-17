@@ -1,6 +1,7 @@
 package com.buddy.api.commons.configurations.cache;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
@@ -62,8 +63,9 @@ public class CacheConfig {
                 }
                 try {
                     return objectMapper.writeValueAsBytes(t);
-                } catch (Exception ex) {
-                    throw new SerializationException("Could not write JSON: " + ex.getMessage(), ex);
+                } catch (JsonProcessingException ex) {
+                    throw new SerializationException("Could not write JSON: "
+                        + ex.getMessage(), ex);
                 }
             }
 
@@ -74,8 +76,9 @@ public class CacheConfig {
                 }
                 try {
                     return objectMapper.readValue(bytes, Object.class);
-                } catch (Exception ex) {
-                    throw new SerializationException("Could not read JSON: " + ex.getMessage(), ex);
+                } catch (java.io.IOException ex) {
+                    throw new SerializationException("Could not read JSON: "
+                        + ex.getMessage(), ex);
                 }
             }
         };
