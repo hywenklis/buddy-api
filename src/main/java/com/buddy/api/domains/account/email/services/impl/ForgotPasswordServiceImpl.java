@@ -1,0 +1,47 @@
+package com.buddy.api.domains.account.email.services.impl;
+
+import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
+import com.buddy.api.commons.configurations.cache.RateLimitChecker;
+import com.buddy.api.commons.exceptions.AccountUnavailableException;
+import com.buddy.api.commons.exceptions.NotFoundException;
+import com.buddy.api.domains.account.dtos.AccountDto;
+import com.buddy.api.domains.account.email.services.EmailSender;
+import com.buddy.api.domains.account.email.services.ForgotPasswordService;
+import com.buddy.api.domains.account.services.FindAccount;
+import com.buddy.api.domains.valueobjects.EmailAddress;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class ForgotPasswordServiceImpl implements ForgotPasswordService {
+    private final RateLimitChecker rateLimitChecker;
+    private final ForgotPasswordTokenManager forgotPasswordTokenManager;
+    private final EmailSender emailSender;
+    private final FindAccount findAccount;
+
+    @Override
+    public void requestPasswordRecovery(final EmailAddress emailAddress) {
+        try {
+            AccountDto account = findAccount.findByEmail(emailAddress.value());
+
+            String userEmail = account.email().value();
+            UUID accountId = account.accountId();
+            log.info("Received request for password recovery for account={}", accountId);
+
+            rateLimitChecker.checkPasswordRecoveryRateLimit(userEmail, accountId);
+
+            String token = forgotPasswordTokenManager.generateAndStoreToken(userEmail);
+
+            emailSender.dispatchPasswordRecoveryEmail(accountId, userEmail, token);
+
+            log.info("Password recovery email request for account={} "
+                + "dispatched for async processing.", accountId);
+        } catch (NotFoundException | AccountUnavailableException e) {
+            log.debug("Password recovery processed (email existence protected):", e);
+        }
+    }
+}

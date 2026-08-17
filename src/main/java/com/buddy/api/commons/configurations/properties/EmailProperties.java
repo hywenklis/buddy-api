@@ -17,6 +17,12 @@ public record EmailProperties(
         @NotBlank(message = "from is required") String from,
         @NotBlank(message = "subject is required") String subject,
         @NotBlank(message = "templatePath is required") String templatePath,
-        @NotBlank(message = "url is required") String url
+        @NotBlank(message = "url is required") String url,
+        @NotBlank(message = "forgotPasswordTemplatePath is required")
+        String forgotPasswordTemplatePath,
+        @NotBlank(message = "forgotPasswordUrl is required")
+        String forgotPasswordUrl,
+        @NotBlank(message = "forgotPasswordSubject is required")
+        String forgotPasswordSubject
     ) {}
 }
