@@ -2,6 +2,7 @@ package com.buddy.api.units.commons.configurations.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -129,6 +130,20 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
             verify(forgotPasswordTokenCache, times(1)).get(token);
             verify(forgotPasswordTokenCache, times(0)).evict(token);
         }
+        
+        @Test
+        @DisplayName("Should return null and not invalidate if token value is null when consuming")
+        void should_return_null_and_not_invalidate_if_token_value_is_null_when_consuming() {
+            String token = "valid-token-null-value";
+            Cache.ValueWrapper valueWrapper = () -> null;
+            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isNull();
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(forgotPasswordTokenCache, times(0)).evict(token);
+        }
     }
 
     @Test
@@ -142,6 +157,7 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should throw CacheInitializationException when cache initialization fails")
     void should_throw_cache_initialization_exception() {
+        clearInvocations(cacheInitializer);
         when(cacheInitializer.initializeForgotPasswordTokenCache())
             .thenThrow(new CacheInitializationException("cache", "Failed to initialize cache"));
 
@@ -149,6 +165,6 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
             .isInstanceOf(CacheInitializationException.class)
             .hasMessageContaining("Failed to initialize cache");
 
-        verify(cacheInitializer, times(2)).initializeForgotPasswordTokenCache();
+        verify(cacheInitializer, times(1)).initializeForgotPasswordTokenCache();
     }
 }
