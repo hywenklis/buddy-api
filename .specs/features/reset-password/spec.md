@@ -63,13 +63,13 @@ When a user forgets their password, they receive an email with a reset token. Th
 
 | Requirement ID | Story       | Phase  | Status  |
 | -------------- | ----------- | ------ | ------- |
-| RESET-01       | P1: Reset Password | Design | Pending |
-| RESET-02       | P1: Reset Password | Design | Pending |
-| RESET-03       | P1: Reset Password | Design | Pending |
-| RESET-04       | P1: Reset Password | Design | Pending |
-| RESET-05       | P1: Reset Password | Design | Pending |
+| RESET-01       | P1: Reset Password | Implementation | Done |
+| RESET-02       | P1: Reset Password | Implementation | Done |
+| RESET-03       | P1: Reset Password | Implementation | Done |
+| RESET-04       | P1: Reset Password | Implementation | Done |
+| RESET-05       | P1: Reset Password | Implementation | Done |
 
-**Coverage:** 5 total, 0 mapped to tasks, 5 unmapped ⚠️
+**Coverage:** 5 total, 5 mapped to tasks, 0 unmapped ✅
 
 ---
 
