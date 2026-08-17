@@ -130,6 +130,20 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
             verify(forgotPasswordTokenCache, times(1)).get(token);
             verify(forgotPasswordTokenCache, times(0)).evict(token);
         }
+        
+        @Test
+        @DisplayName("Should return null and not invalidate if token value is null when consuming")
+        void should_return_null_and_not_invalidate_if_token_value_is_null_when_consuming() {
+            String token = "valid-token-null-value";
+            Cache.ValueWrapper valueWrapper = () -> null;
+            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isNull();
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(forgotPasswordTokenCache, times(0)).evict(token);
+        }
     }
 
     @Test
