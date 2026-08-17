@@ -2,6 +2,7 @@ package com.buddy.api.units.commons.configurations.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.cache.Cache;
 
 class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
@@ -142,6 +144,7 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should throw CacheInitializationException when cache initialization fails")
     void should_throw_cache_initialization_exception() {
+        clearInvocations(cacheInitializer);
         when(cacheInitializer.initializeForgotPasswordTokenCache())
             .thenThrow(new CacheInitializationException("cache", "Failed to initialize cache"));
 
@@ -149,6 +152,6 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
             .isInstanceOf(CacheInitializationException.class)
             .hasMessageContaining("Failed to initialize cache");
 
-        verify(cacheInitializer, times(2)).initializeForgotPasswordTokenCache();
+        verify(cacheInitializer, times(1)).initializeForgotPasswordTokenCache();
     }
 }
