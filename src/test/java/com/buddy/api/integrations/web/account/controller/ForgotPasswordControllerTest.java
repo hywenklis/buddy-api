@@ -23,6 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.http.MediaType;
@@ -207,13 +209,17 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
             waitUntilWireMockReceives(2);
         }
 
-        @Test
+        @ParameterizedTest
+        @ValueSource(strings = {
+            "INTERNAL_SERVER_ERROR_STATE",
+            "BAD_REQUEST_STATE",
+            "UNAUTHORIZED_STATE"
+        })
         @DisplayName("Should return 202 Accepted even if email sending fails (async operation)")
-        void forgotPassword_whenEmailSendingFails_shouldReturn202Async()
+        void forgotPassword_whenEmailSendingFails_shouldReturn202Async(String errorState)
             throws Exception {
             WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
-            WireMock.setScenarioState("MANAGER_PASSWORD_RECOVERY_EMAIL_SCENARIO",
-                "INTERNAL_SERVER_ERROR_STATE");
+            WireMock.setScenarioState("MANAGER_PASSWORD_RECOVERY_EMAIL_SCENARIO", errorState);
 
             final var request = ForgotPasswordRequest.builder()
                 .email(testUserEmail)
