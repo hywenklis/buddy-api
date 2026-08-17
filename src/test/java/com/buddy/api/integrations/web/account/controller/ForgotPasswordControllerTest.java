@@ -216,7 +216,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
             "UNAUTHORIZED_STATE"
         })
         @DisplayName("Should return 202 Accepted even if email sending fails (async operation)")
-        void forgotPassword_whenEmailSendingFails_shouldReturn202Async(String errorState)
+        void forgotPassword_whenEmailSendingFails_shouldReturn202Async(final String errorState)
             throws Exception {
             WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
             WireMock.setScenarioState("MANAGER_PASSWORD_RECOVERY_EMAIL_SCENARIO", errorState);

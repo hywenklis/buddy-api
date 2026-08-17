@@ -18,8 +18,9 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -33,12 +34,12 @@ public class CacheConfig {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-            .allowIfBaseType("com.buddy.api")
-            .allowIfBaseType("java.util.ArrayList")
-            .allowIfBaseType("java.util.UUID")
-            .allowIfBaseType("java.util.HashMap")
-            .allowIfBaseType("java.util.HashSet")
-            .allowIfBaseType("java.time")
+            .allowIfSubType("com.buddy.api")
+            .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.UUID")
+            .allowIfSubType("java.util.HashMap")
+            .allowIfSubType("java.util.HashSet")
+            .allowIfSubType("java.time")
             .build();
 
         StdTypeResolverBuilder typeResolverBuilder = new StdTypeResolverBuilder() {
@@ -53,8 +54,31 @@ public class CacheConfig {
 
         objectMapper.setDefaultTyping(typeResolverBuilder);
 
-        GenericJackson2JsonRedisSerializer jsonSerializer =
-            new GenericJackson2JsonRedisSerializer(objectMapper);
+        RedisSerializer<Object> jsonSerializer = new RedisSerializer<Object>() {
+            @Override
+            public byte[] serialize(final Object t) throws SerializationException {
+                if (t == null) {
+                    return new byte[0];
+                }
+                try {
+                    return objectMapper.writeValueAsBytes(t);
+                } catch (Exception ex) {
+                    throw new SerializationException("Could not write JSON: " + ex.getMessage(), ex);
+                }
+            }
+
+            @Override
+            public Object deserialize(final byte[] bytes) throws SerializationException {
+                if (bytes == null || bytes.length == 0) {
+                    return null;
+                }
+                try {
+                    return objectMapper.readValue(bytes, Object.class);
+                } catch (Exception ex) {
+                    throw new SerializationException("Could not read JSON: " + ex.getMessage(), ex);
+                }
+            }
+        };
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .disableCachingNullValues()

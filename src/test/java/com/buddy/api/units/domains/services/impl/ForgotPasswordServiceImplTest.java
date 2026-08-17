@@ -10,9 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import org.mockito.ArgumentCaptor;
-
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
 import com.buddy.api.commons.configurations.cache.RateLimitChecker;
@@ -22,11 +19,13 @@ import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.impl.ForgotPasswordServiceImpl;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
