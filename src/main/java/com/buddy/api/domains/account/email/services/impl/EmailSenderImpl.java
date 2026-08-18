@@ -69,6 +69,27 @@ public class EmailSenderImpl implements EmailSender {
         }
     }
 
+    @Async
+    @Override
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
+    public void dispatchPasswordChangedNotification(final UUID accountId, final String userEmail) {
+        try {
+            String htmlBody = buildPasswordChangedEmailBody();
+
+            log.info("Sending password changed notification email to account={}", accountId);
+            managerService.sendEmailNotification(
+                List.of(userEmail),
+                emailProperties.templates().from(),
+                emailProperties.templates().passwordChangedSubject(),
+                htmlBody
+            );
+            log.info("Password changed notification successfully sent to account={}", accountId);
+        } catch (Exception e) {
+            log.error("Failed to send password changed notification for account={}", accountId, e);
+            throw e;
+        }
+    }
+
     private String buildConfirmationEmailBody(final String verificationUrl) {
         String template = emailTemplateLoader.load(emailProperties.templates().templatePath());
         return template.replace("{{url}}", verificationUrl);
@@ -78,5 +99,9 @@ public class EmailSenderImpl implements EmailSender {
         String template = emailTemplateLoader.load(
             emailProperties.templates().forgotPasswordTemplatePath());
         return template.replace("{{url}}", recoveryUrl);
+    }
+
+    private String buildPasswordChangedEmailBody() {
+        return emailTemplateLoader.load(emailProperties.templates().passwordChangedTemplatePath());
     }
 }

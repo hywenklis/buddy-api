@@ -72,6 +72,8 @@ buddy:
       template-path: "templates/email-verification.html"
       url: https://buddyclient.vercel.app/confirm-email?token=
       forgot-password-subject: "Recuperar Senha - Buddy"
+      password-changed-template-path: "templates/email-password-changed.html"
+      password-changed-subject: "Sua senha foi alterada com sucesso"
       forgot-password-template-path: "templates/email-forgot-password.html"
       forgot-password-url: https://buddyclient.vercel.app/reset-password?token=
   security:

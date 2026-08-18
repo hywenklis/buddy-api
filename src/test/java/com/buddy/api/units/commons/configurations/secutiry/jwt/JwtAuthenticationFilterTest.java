@@ -68,6 +68,8 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
     void doFilter_withValidToken_authenticatesUser() throws Exception {
         when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
         when(jwtUtil.getEmailFromToken(VALID_JWT)).thenReturn(EMAIL_VALUE);
+        when(jwtUtil.getIssuedAtFromToken(org.mockito.ArgumentMatchers.anyString())).thenReturn(
+            java.time.Instant.now());
         when(userDetailsService.loadUserByUsername(EMAIL_VALUE)).thenReturn(userDetails);
         when(jwtUtil.validateToken(VALID_JWT, EMAIL_VALUE)).thenReturn(true);
         when(userDetails.getUsername()).thenReturn(EMAIL_VALUE);
@@ -104,6 +106,8 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
     void doFilter_withNullEmail_skipsAuthentication() throws Exception {
         when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
         when(jwtUtil.getEmailFromToken(VALID_JWT)).thenReturn(null);
+        when(jwtUtil.getIssuedAtFromToken(org.mockito.ArgumentMatchers.anyString())).thenReturn(
+            java.time.Instant.now());
 
         jwtAuthenticationFilter.doFilter(request, response, filterChain);
 
@@ -117,6 +121,8 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
     void doFilter_withExistingAuthentication_skipsAuthentication() throws Exception {
         when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
         when(jwtUtil.getEmailFromToken(VALID_JWT)).thenReturn(EMAIL_VALUE);
+        when(jwtUtil.getIssuedAtFromToken(org.mockito.ArgumentMatchers.anyString())).thenReturn(
+            java.time.Instant.now());
 
         SecurityContextHolder.getContext().setAuthentication(mock(Authentication.class));
 
@@ -132,6 +138,8 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
         when(userDetails.getUsername()).thenReturn(EMAIL_VALUE);
         when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
         when(jwtUtil.getEmailFromToken(VALID_JWT)).thenReturn(EMAIL_VALUE);
+        when(jwtUtil.getIssuedAtFromToken(org.mockito.ArgumentMatchers.anyString())).thenReturn(
+            java.time.Instant.now());
         when(userDetailsService.loadUserByUsername(EMAIL_VALUE)).thenReturn(userDetails);
         when(jwtUtil.validateToken(VALID_JWT, EMAIL_VALUE)).thenReturn(false);
 
@@ -160,6 +168,8 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
     void doFilter_withUserNotFound_proceedsWithoutAuthentication() throws Exception {
         when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
         when(jwtUtil.getEmailFromToken(VALID_JWT)).thenReturn(EMAIL_VALUE);
+        when(jwtUtil.getIssuedAtFromToken(org.mockito.ArgumentMatchers.anyString())).thenReturn(
+            java.time.Instant.now());
         when(userDetailsService.loadUserByUsername(EMAIL_VALUE))
             .thenThrow(new UsernameNotFoundException("User deleted"));
 

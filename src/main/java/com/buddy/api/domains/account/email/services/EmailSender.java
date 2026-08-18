@@ -11,4 +11,5 @@ public interface EmailSender {
                                        String userEmail,
                                        String token);
 
+    void dispatchPasswordChangedNotification(UUID accountId, String userEmail);
 }
