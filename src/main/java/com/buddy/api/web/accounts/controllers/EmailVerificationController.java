@@ -1,5 +1,6 @@
 package com.buddy.api.web.accounts.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailVerificationService;
 import com.buddy.api.domains.account.services.FindAccount;
@@ -25,6 +26,11 @@ public class EmailVerificationController implements EmailVerificationControllerD
 
     @PostMapping("/request")
     @ResponseStatus(HttpStatus.ACCEPTED)
+    @RateLimited(
+        operation = "verification",
+        emailSpel = "#user.email",
+        limitMessage = "Too many verification requests. Please wait a minute before trying again."
+    )
     public void requestVerification(
         final @AuthenticationPrincipal AuthenticatedUser user) {
         AccountDto account = accountService.findByEmail(user.getEmail());

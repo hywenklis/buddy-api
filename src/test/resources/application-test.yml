@@ -63,19 +63,22 @@ manager:
 buddy:
   rate:
     limit:
-      max-attempts: 1
+      max-attempts: 5
       window-minutes: 1
   email:
+    from: "buddy.contato.app@gmail.com"
     templates:
-      from: "buddy.contato.app@gmail.com"
-      subject: "Confirme seu e-mail no Buddy"
-      template-path: "templates/email-verification.html"
-      url: https://buddyclient.vercel.app/confirm-email?token=
-      forgot-password-subject: "Recuperar Senha - Buddy"
-      password-changed-template-path: "templates/email-password-changed.html"
-      password-changed-subject: "Sua senha foi alterada com sucesso"
-      forgot-password-template-path: "templates/email-forgot-password.html"
-      forgot-password-url: https://buddyclient.vercel.app/reset-password?token=
+      verification:
+        subject: "Confirme seu e-mail no Buddy"
+        template-path: "templates/email-verification.html"
+        url: https://buddyclient.vercel.app/confirm-email?token=
+      forgot-password:
+        subject: "Recuperar Senha - Buddy"
+        template-path: "templates/email-forgot-password.html"
+        url: https://buddyclient.vercel.app/reset-password?token=
+      password-changed:
+        subject: "Sua senha foi alterada com sucesso"
+        template-path: "templates/email-password-changed.html"
   security:
     encryption-key: "ChangeMeToARandomStringOf32Chars"
     algorithm: "AES/GCM/NoPadding"

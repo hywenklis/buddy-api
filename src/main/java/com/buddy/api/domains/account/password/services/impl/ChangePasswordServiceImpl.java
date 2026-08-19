@@ -2,13 +2,14 @@ package com.buddy.api.domains.account.password.services.impl;
 
 import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
 import com.buddy.api.commons.exceptions.InvalidCurrentPasswordException;
-import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.password.dtos.ChangePasswordDto;
 import com.buddy.api.domains.account.password.services.ChangePasswordService;
-import com.buddy.api.domains.account.repositories.AccountRepository;
+import com.buddy.api.domains.account.services.FindAccount;
+import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.audit.enums.SecurityEventType;
 import com.buddy.api.domains.audit.services.SecurityAuditService;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ChangePasswordServiceImpl implements ChangePasswordService {
 
-    private final AccountRepository accountRepository;
+    private final FindAccount findAccount;
+    private final UpdateAccount updateAccount;
     private final PasswordEncoder passwordEncoder;
     private final TokenBlocklistService blocklistService;
     private final EmailSender emailSender;
@@ -31,16 +33,16 @@ public class ChangePasswordServiceImpl implements ChangePasswordService {
     public void changePassword(final ChangePasswordDto dto) {
         log.info("Changing password for account: {}", dto.accountId());
 
-        final var account = accountRepository.findById(dto.accountId())
-            .orElseThrow(() -> new NotFoundException("accountId", "Account not found"));
 
-        if (!passwordEncoder.matches(dto.currentPassword(), account.getPassword())) {
+        final var accountDto = findAccount.findById(dto.accountId());
+
+        if (!passwordEncoder.matches(dto.currentPassword(), accountDto.password())) {
             log.warn("Invalid current password for account: {}", dto.accountId());
             throw new InvalidCurrentPasswordException();
         }
 
-        account.setPassword(passwordEncoder.encode(dto.newPassword()));
-        accountRepository.save(account);
+        updateAccount.updatePassword(new EmailAddress(dto.email()),
+            passwordEncoder.encode(dto.newPassword()));
 
         blocklistService.revokeAllUserTokens(dto.email());
         log.info("All tokens revoked for user: {}", dto.email());

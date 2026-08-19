@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 class ResetPasswordServiceImplTest extends UnitTestAbstract {
+    private static final String NEW_PASSWORD = "NewPassword123!";
 
     @Mock
     private ForgotPasswordTokenManager tokenManager;
@@ -44,7 +45,7 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
     void should_reset_password_successfully() {
         String token = "valid-token";
         String email = RandomEmailUtils.generateValidEmail();
-        String newPassword = "NewPassword123!";
+        String newPassword = NEW_PASSWORD;
         String encodedPassword = "encodedPassword";
         
         ResetPasswordDto request = new ResetPasswordDto(token, newPassword);
@@ -64,7 +65,7 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
     @DisplayName("Should throw NotFoundException when token is invalid or expired")
     void should_throw_when_token_invalid() {
         String token = "invalid-token";
-        ResetPasswordDto request = new ResetPasswordDto(token, "NewPassword123!");
+        ResetPasswordDto request = new ResetPasswordDto(token, NEW_PASSWORD);
 
         when(tokenManager.consumeToken(token)).thenReturn(null);
 
@@ -83,7 +84,7 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
     void should_propagate_exception_when_update_password_fails() {
         String token = "valid-token";
         String email = RandomEmailUtils.generateValidEmail();
-        String newPassword = "NewPassword123!";
+        String newPassword = NEW_PASSWORD;
         String encodedPassword = "encodedPassword";
         
         ResetPasswordDto request = new ResetPasswordDto(token, newPassword);
@@ -110,7 +111,7 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
     void should_propagate_exception_when_revoke_tokens_fails() {
         String token = "valid-token";
         String email = RandomEmailUtils.generateValidEmail();
-        String newPassword = "NewPassword123!";
+        String newPassword = NEW_PASSWORD;
         String encodedPassword = "encodedPassword";
         
         ResetPasswordDto request = new ResetPasswordDto(token, newPassword);

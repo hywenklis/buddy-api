@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
-import com.buddy.api.commons.configurations.cache.RateLimitChecker;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.EmailSender;
@@ -30,9 +29,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 class ForgotPasswordServiceImplTest extends UnitTestAbstract {
-
-    @Mock
-    private RateLimitChecker rateLimitChecker;
 
     @Mock
     private ForgotPasswordTokenManager forgotPasswordTokenManager;
@@ -75,8 +71,6 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
 
             forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
-            verify(rateLimitChecker, times(1))
-                .checkPasswordRecoveryRateLimit(userEmail, accountId);
             verify(forgotPasswordTokenManager, times(1))
                 .generateAndStoreToken(userEmail);
             verify(emailSender, times(1))
@@ -99,33 +93,12 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Email service failure");
 
-            verify(rateLimitChecker, times(1))
-                .checkPasswordRecoveryRateLimit(userEmail, accountId);
             verify(forgotPasswordTokenManager, times(1))
                 .generateAndStoreToken(userEmail);
             verify(emailSender, times(1))
                 .dispatchPasswordRecoveryEmail(accountId, userEmail, token);
         }
 
-        @Test
-        @DisplayName("Should handle rate limit exception")
-        void should_handle_rate_limit_exception() {
-            when(findAccount.findByEmail(userEmail)).thenReturn(validAccount);
-            doThrow(new RuntimeException("Too many requests"))
-                .when(rateLimitChecker)
-                .checkPasswordRecoveryRateLimit(userEmail, accountId);
-
-            assertThatThrownBy(
-                () -> forgotPasswordService
-                    .requestPasswordRecovery(new EmailAddress(userEmail)))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Too many requests");
-
-            verify(rateLimitChecker, times(1))
-                .checkPasswordRecoveryRateLimit(userEmail, accountId);
-            verifyNoInteractions(forgotPasswordTokenManager);
-            verifyNoInteractions(emailSender);
-        }
     }
 
     @Nested
@@ -140,7 +113,6 @@ class ForgotPasswordServiceImplTest extends UnitTestAbstract {
                 new NotFoundException("email", "not found"));
             forgotPasswordService.requestPasswordRecovery(new EmailAddress(userEmail));
 
-            verifyNoInteractions(rateLimitChecker);
             verifyNoInteractions(forgotPasswordTokenManager);
             verifyNoInteractions(emailSender);
         }

@@ -16,6 +16,7 @@ import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ChangePasswordRequest;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -48,7 +49,7 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
             WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
             WireMock.setScenarioState("MANAGER_PASSWORD_CHANGED_EMAIL_SCENARIO", "SUCCESS_STATE");
 
-            String newPassword = "NewPassword123!";
+            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "A1!";
             ChangePasswordRequest request = new ChangePasswordRequest(
                 testUser.plainPassword(),
                 newPassword
@@ -58,7 +59,7 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
                     .header(AUTHORIZATION, BEARER + testUser.jwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
             AccountEntity updatedAccount = accountRepository
                 .findById(testUser.account().getAccountId()).orElseThrow();
@@ -70,11 +71,11 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
         }
 
         @Test
-        @DisplayName("Should return 400 Bad Request when current password is wrong")
-        void shouldReturnBadRequestWhenCurrentPasswordIsWrong() throws Exception {
+        @DisplayName("Should return 400 Bad Request when current password does not match")
+        void shouldReturnBadRequestWhenCurrentPasswordIsInvalid() throws Exception {
             ChangePasswordRequest request = new ChangePasswordRequest(
-                "wrongPassword123",
-                "NewPassword123!"
+                RandomStringUtils.secure().nextAlphanumeric(10) + "A1!",
+                RandomStringUtils.secure().nextAlphanumeric(10) + "A1!"
             );
 
             expectBadRequestFrom(

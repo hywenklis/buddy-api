@@ -20,7 +20,9 @@ public interface ChangePasswordMapperRequest {
     @Mapping(target = "userAgent", source = "request", qualifiedByName = "extractUserAgent")
     @Mapping(target = "currentPassword", source = "body.currentPassword")
     @Mapping(target = "newPassword", source = "body.newPassword")
-    ChangePasswordDto toDto(ChangePasswordRequest body, HttpServletRequest request, UserDetails userDetails);
+    ChangePasswordDto toDto(ChangePasswordRequest body,
+                            HttpServletRequest request,
+                            UserDetails userDetails);
 
     @Named("extractEmail")
     default String extractEmail(final UserDetails userDetails) {

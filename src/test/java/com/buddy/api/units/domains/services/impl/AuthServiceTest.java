@@ -37,8 +37,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,28 +49,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 class AuthServiceTest extends UnitTestAbstract {
-    @Mock
     private AuthenticationManager authenticationManager;
 
-    @Mock
     private UserDetailsService userDetailsService;
 
-    @Mock
     private FindProfile findProfile;
 
-    @Mock
     private JwtUtil jwtUtil;
 
-    @Mock
     private UpdateAccount updateAccount;
 
-    @Mock
     private TokenBlocklistService blocklistService;
 
-    @Mock
     private HttpServletRequest request;
 
-    @Mock
     private Authentication authResult;
 
 
@@ -291,15 +283,15 @@ class AuthServiceTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should throw AuthenticationException for generic errors")
-    void should_throw_authentication_exception_generic() {
+    @DisplayName("Should throw AuthenticationException for bad credentials")
+    void should_throw_authentication_exception_bad_credentials() {
         final var authDto = AuthDto.builder()
             .email(RandomEmailUtils.generateValidEmail())
             .password(UUID.randomUUID().toString())
             .build();
 
         when(authenticationManager.authenticate(any()))
-            .thenThrow(new RuntimeException("Database down"));
+            .thenThrow(new BadCredentialsException("Bad credentials"));
 
         assertThatThrownBy(() -> authService.authenticate(authDto))
             .isInstanceOf(AuthenticationException.class)

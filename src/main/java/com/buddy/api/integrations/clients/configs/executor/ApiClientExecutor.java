@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApiClientExecutor {
 
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public <T> T execute(final String integrationName, final Supplier<T> action) {
         try {
             return action.get();
@@ -44,7 +43,7 @@ public class ApiClientExecutor {
                 HttpStatus.valueOf(e.getStatus()), e
             );
 
-        } catch (final Exception e) {
+        } catch (final feign.FeignException e) {
             log.error("Unexpected error during [{}] integration call.", integrationName, e);
             throw new ManagerApiException(
                 "Unexpected error while communicating with external service: " + integrationName,

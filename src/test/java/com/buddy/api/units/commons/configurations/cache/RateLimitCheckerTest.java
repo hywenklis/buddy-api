@@ -2,55 +2,55 @@ package com.buddy.api.units.commons.configurations.cache;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 
 import com.buddy.api.commons.configurations.cache.RateLimitChecker;
 import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.utils.RandomEmailUtils;
-import java.time.Duration;
+import io.github.bucket4j.distributed.BucketProxy;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
+import io.github.bucket4j.distributed.proxy.RemoteBucketBuilder;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 
 class RateLimitCheckerTest extends UnitTestAbstract {
 
-    private static final String RATE_LIMIT_COUNT_KEY_PREFIX = "rate-limit:count:";
-    private static final String VERIFICATION_OPERATION = "verification";
-    private static final String PASSWORD_RECOVERY_OPERATION = "password-recovery";
+    @Mock
+    private ProxyManager<byte[]> proxyManager;
 
     @Mock
-    private RedisTemplate<String, String> redisTemplate;
+    private RemoteBucketBuilder<byte[]> bucketBuilder;
+
+    @Mock
+    private BucketProxy bucket;
 
     @Mock
     private RateLimitProperties rateLimitProperties;
-
-    @Mock
-    private ValueOperations<String, String> valueOperations;
 
     @InjectMocks
     private RateLimitChecker rateLimitChecker;
 
     private String email;
     private UUID accountId;
-    private String countKey;
 
     @BeforeEach
     void setUp() {
         email = RandomEmailUtils.generateValidEmail();
         accountId = UUID.randomUUID();
-        countKey = RATE_LIMIT_COUNT_KEY_PREFIX + VERIFICATION_OPERATION + ":" + email;
 
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        lenient().when(proxyManager.builder()).thenReturn(bucketBuilder);
+        lenient().when(bucketBuilder.build(any(byte[].class), any(Supplier.class)))
+            .thenReturn(bucket);
     }
 
     @Nested
@@ -58,48 +58,23 @@ class RateLimitCheckerTest extends UnitTestAbstract {
     class CheckRateLimitTests {
 
         @Test
-        @DisplayName("Should set expiration on first attempt (count == 1)")
-        void should_set_expiration_on_first_attempt() {
-            when(rateLimitProperties.windowMinutes()).thenReturn(1);
-            when(rateLimitProperties.maxAttempts()).thenReturn(3);
-            when(valueOperations.increment(countKey, 1)).thenReturn(1L);
-            when(redisTemplate.expire(countKey, Duration.ofMinutes(1))).thenReturn(true);
+        @DisplayName("Should allow request when bucket tryConsume is true")
+        void should_allow_request() {
+            lenient().when(bucket.tryConsume(1)).thenReturn(true);
 
             assertThatNoException().isThrownBy(
                 () -> rateLimitChecker.checkRateLimit(email, accountId));
-
-            verify(redisTemplate, times(1)).opsForValue();
-            verify(valueOperations, times(1)).increment(countKey, 1);
-            verify(redisTemplate, times(1)).expire(countKey, Duration.ofMinutes(1));
         }
 
         @Test
-        @DisplayName("Should throw TooManyRequestsException when rate limit is exceeded")
+        @DisplayName("Should throw TooManyRequestsException when limit exceeded")
         void should_throw_too_many_requests_exception_when_limit_exceeded() {
-            when(valueOperations.increment(countKey, 1)).thenReturn(4L);
-            when(rateLimitProperties.maxAttempts()).thenReturn(3);
+            lenient().when(bucket.tryConsume(1)).thenReturn(false);
 
             assertThatThrownBy(() -> rateLimitChecker.checkRateLimit(email, accountId))
                 .isInstanceOf(TooManyRequestsException.class)
                 .hasMessage(
                     "Too many verification requests. Please wait a minute before trying again.");
-
-            verify(redisTemplate, times(1)).opsForValue();
-            verify(valueOperations, times(1)).increment(countKey, 1);
-            verify(redisTemplate, times(0)).expire(countKey, Duration.ofMinutes(1));
-        }
-
-        @Test
-        @DisplayName("Should handle null count from Redis")
-        void should_handle_null_count_from_redis() {
-            when(valueOperations.increment(countKey, 1)).thenReturn(null);
-
-            assertThatNoException().isThrownBy(
-                () -> rateLimitChecker.checkRateLimit(email, accountId));
-
-            verify(redisTemplate, times(1)).opsForValue();
-            verify(valueOperations, times(1)).increment(countKey, 1);
-            verify(redisTemplate, times(0)).expire(countKey, Duration.ofMinutes(1));
         }
     }
 
@@ -107,59 +82,26 @@ class RateLimitCheckerTest extends UnitTestAbstract {
     @DisplayName("Tests for checkPasswordRecoveryRateLimit method")
     class CheckPasswordRecoveryRateLimitTests {
 
-        private String recoveryCountKey;
-
-        @BeforeEach
-        void setUpRecovery() {
-            recoveryCountKey = RATE_LIMIT_COUNT_KEY_PREFIX
-                + PASSWORD_RECOVERY_OPERATION + ":" + email;
-        }
-
         @Test
-        @DisplayName("Should set expiration on first attempt (count == 1)")
-        void should_set_expiration_on_first_attempt() {
-            when(rateLimitProperties.windowMinutes()).thenReturn(1);
-            when(rateLimitProperties.maxAttempts()).thenReturn(3);
-            when(valueOperations.increment(recoveryCountKey, 1)).thenReturn(1L);
-            when(redisTemplate.expire(recoveryCountKey, Duration.ofMinutes(1))).thenReturn(true);
+        @DisplayName("Should allow request when bucket tryConsume is true")
+        void should_allow_request() {
+            lenient().when(bucket.tryConsume(1)).thenReturn(true);
 
             assertThatNoException().isThrownBy(
                 () -> rateLimitChecker.checkPasswordRecoveryRateLimit(email, accountId));
-
-            verify(redisTemplate, times(1)).opsForValue();
-            verify(valueOperations, times(1)).increment(recoveryCountKey, 1);
-            verify(redisTemplate, times(1)).expire(recoveryCountKey, Duration.ofMinutes(1));
         }
 
         @Test
-        @DisplayName("Should throw TooManyRequestsException when rate limit is exceeded")
+        @DisplayName("Should throw TooManyRequestsException when limit exceeded")
         void should_throw_too_many_requests_exception_when_limit_exceeded() {
-            when(valueOperations.increment(recoveryCountKey, 1)).thenReturn(4L);
-            when(rateLimitProperties.maxAttempts()).thenReturn(3);
+            lenient().when(bucket.tryConsume(1)).thenReturn(false);
 
             assertThatThrownBy(
                 () -> rateLimitChecker.checkPasswordRecoveryRateLimit(email, accountId))
                 .isInstanceOf(TooManyRequestsException.class)
                 .hasMessage(
                     "Too many password recovery requests. "
-                        + "Please wait a minute before trying again.");
-
-            verify(redisTemplate, times(1)).opsForValue();
-            verify(valueOperations, times(1)).increment(recoveryCountKey, 1);
-            verify(redisTemplate, times(0)).expire(recoveryCountKey, Duration.ofMinutes(1));
-        }
-
-        @Test
-        @DisplayName("Should handle null count from Redis")
-        void should_handle_null_count_from_redis() {
-            when(valueOperations.increment(recoveryCountKey, 1)).thenReturn(null);
-
-            assertThatNoException().isThrownBy(
-                () -> rateLimitChecker.checkPasswordRecoveryRateLimit(email, accountId));
-
-            verify(redisTemplate, times(1)).opsForValue();
-            verify(valueOperations, times(1)).increment(recoveryCountKey, 1);
-            verify(redisTemplate, times(0)).expire(recoveryCountKey, Duration.ofMinutes(1));
+                    + "Please wait a minute before trying again.");
         }
     }
 }

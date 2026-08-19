@@ -11,22 +11,26 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "buddy.email")
 @Builder
 public record EmailProperties(
+    @NotBlank(message = "from is required") String from,
     @NotNull(message = "templates is required") @Valid Templates templates
 ) {
     public record Templates(
-        @NotBlank(message = "from is required") String from,
+        @NotNull(message = "verification is required") @Valid TemplateWithUrl verification,
+        @NotNull(message = "forgotPassword is required") @Valid TemplateWithUrl forgotPassword,
+        @NotNull(message = "passwordChanged is required") @Valid Template passwordChanged
+    ) {
+    }
+
+    public record Template(
+        @NotBlank(message = "subject is required") String subject,
+        @NotBlank(message = "templatePath is required") String templatePath
+    ) {
+    }
+
+    public record TemplateWithUrl(
         @NotBlank(message = "subject is required") String subject,
         @NotBlank(message = "templatePath is required") String templatePath,
-        @NotBlank(message = "url is required") String url,
-        @NotBlank(message = "forgotPasswordTemplatePath is required")
-        String forgotPasswordTemplatePath,
-        @NotBlank(message = "forgotPasswordUrl is required")
-        String forgotPasswordUrl,
-        @NotBlank(message = "forgotPasswordSubject is required")
-        String forgotPasswordSubject,
-        @NotBlank(message = "passwordChangedTemplatePath is required")
-        String passwordChangedTemplatePath,
-        @NotBlank(message = "passwordChangedSubject is required")
-        String passwordChangedSubject
-    ) {}
+        @NotBlank(message = "url is required") String url
+    ) {
+    }
 }

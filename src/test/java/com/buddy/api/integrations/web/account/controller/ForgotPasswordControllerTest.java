@@ -29,9 +29,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.http.MediaType;
 
-
 @DisplayName("Forgot Password Controller Tests")
 class ForgotPasswordControllerTest extends IntegrationTestAbstract {
+    private static final String JSON_PATH_MESSAGE = "$.message";
+    private static final String REQUEST_ACCEPTED_MESSAGE = "request accepted";
+    private static final int EXPECTED_CALL_COUNT = 2;
+
+
 
     private static final String FORGOT_PASSWORD_URL = "/v1/accounts/password/forgot";
     private static final String PASSWORD_RECOVERY_OPERATION = "password-recovery";
@@ -81,7 +85,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.message").value("request accepted"));
+                .andExpect(jsonPath(JSON_PATH_MESSAGE).value(REQUEST_ACCEPTED_MESSAGE));
 
             waitUntilWireMockReceives(1);
         }
@@ -98,7 +102,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.message").value("request accepted"));
+                .andExpect(jsonPath(JSON_PATH_MESSAGE).value(REQUEST_ACCEPTED_MESSAGE));
 
             verify(0, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)));
         }
@@ -117,7 +121,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.message").value("request accepted"));
+                .andExpect(jsonPath(JSON_PATH_MESSAGE).value(REQUEST_ACCEPTED_MESSAGE));
         }
 
         @Test
@@ -130,14 +134,14 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                 .email(testUserEmail)
                 .build();
 
-            final int maxAttempts = rateLimitProperties.maxAttempts();
-
+            int maxAttempts = rateLimitProperties.maxAttempts();
             for (int i = 0; i < maxAttempts; i++) {
                 mockMvc.perform(post(FORGOT_PASSWORD_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isAccepted());
             }
+
 
             expectManyRequestFrom(
                 mockMvc.perform(post(FORGOT_PASSWORD_URL)
@@ -229,7 +233,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.message").value("request accepted"));
+                .andExpect(jsonPath(JSON_PATH_MESSAGE).value(REQUEST_ACCEPTED_MESSAGE));
 
             waitUntilWireMockReceives(1);
         }
@@ -344,7 +348,7 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
 
                 waitUntilWireMockReceives(i + 1);
 
-                if (i < 2) {
+                if (i < EXPECTED_CALL_COUNT) {
                     clearRateLimitFor(testUserEmail);
                 }
             }

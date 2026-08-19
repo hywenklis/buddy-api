@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.cache.CacheInitializer;
-import com.buddy.api.commons.configurations.cache.RateLimitChecker;
 import com.buddy.api.commons.configurations.cache.TokenManager;
 import com.buddy.api.commons.exceptions.CacheInitializationException;
 import com.buddy.api.commons.exceptions.NotFoundException;
@@ -38,9 +37,6 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
 
     @Mock
     private CacheInitializer cacheInitializer;
-
-    @Mock
-    private RateLimitChecker rateLimitChecker;
 
     @Mock
     private TokenManager tokenManager;
@@ -107,7 +103,6 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
             emailVerificationService.requestEmail(unverifiedAccount);
 
             verify(accountValidator, times(1)).validateAccountNotVerified(unverifiedAccount);
-            verify(rateLimitChecker, times(1)).checkRateLimit(userEmail, accountId);
             verify(tokenManager, times(1)).generateAndStoreToken(userEmail);
             verify(emailSender, times(1)).dispatchVerificationEmail(accountId, userEmail, token);
         }
@@ -124,7 +119,6 @@ class EmailVerificationServiceImplTest extends UnitTestAbstract {
                 .hasMessage("Email service failure");
 
             verify(accountValidator, times(1)).validateAccountNotVerified(unverifiedAccount);
-            verify(rateLimitChecker, times(1)).checkRateLimit(userEmail, accountId);
             verify(tokenManager, times(1)).generateAndStoreToken(userEmail);
             verify(emailSender, times(1)).dispatchVerificationEmail(accountId, userEmail, token);
         }

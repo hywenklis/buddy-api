@@ -1,5 +1,7 @@
 package com.buddy.api.web.accounts.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
+import com.buddy.api.commons.configurations.security.cookies.annotations.ClearCookiesOnSuccess;
 import com.buddy.api.domains.account.password.services.ChangePasswordService;
 import com.buddy.api.web.accounts.mappers.ChangePasswordMapperRequest;
 import com.buddy.api.web.accounts.requests.ChangePasswordRequest;
@@ -25,9 +27,16 @@ public class ChangePasswordController implements ChangePasswordControllerDoc {
     private final ChangePasswordService changePasswordService;
     private final ChangePasswordMapperRequest mapper;
 
+    @ClearCookiesOnSuccess
     @Override
     @PatchMapping
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @RateLimited(
+        operation = "password-change",
+        emailSpel = "#userDetails.username",
+        limitMessage = "Too many password change attempts. " 
+            + "Please wait a minute before trying again."
+    )
     public void changePassword(
         @Valid @RequestBody final ChangePasswordRequest request,
         final HttpServletRequest httpRequest,

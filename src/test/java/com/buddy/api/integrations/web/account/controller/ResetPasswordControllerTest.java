@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @DisplayName("Reset Password Controller Tests")
 class ResetPasswordControllerTest extends IntegrationTestAbstract {
+    private static final String NEW_PASSWORD = "NewPassword123!";
 
     private static final String RESET_PASSWORD_URL = "/v1/accounts/password/reset";
 
@@ -46,7 +47,7 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         @DisplayName("Should return 200 OK on valid reset password request")
         void should_reset_password_successfully() throws Exception {
             String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
-            String newPassword = "NewPassword123!";
+            String newPassword = NEW_PASSWORD;
 
             ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
 
@@ -67,7 +68,7 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         void should_return_not_found_when_token_invalid() throws Exception {
             ResetPasswordRequest request = new ResetPasswordRequest(
                 "invalid-token", 
-                "NewPassword123!"
+                NEW_PASSWORD
             );
 
             expectNotFoundFrom(
@@ -93,7 +94,7 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         @Test
         @DisplayName("Should return 400 Bad Request when token is blank")
         void should_return_bad_request_when_token_blank() throws Exception {
-            ResetPasswordRequest request = new ResetPasswordRequest("", "NewPassword123!");
+            ResetPasswordRequest request = new ResetPasswordRequest("", NEW_PASSWORD);
 
             expectBadRequestFrom(
                 mockMvc.perform(post(RESET_PASSWORD_URL)
@@ -106,7 +107,7 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         @DisplayName("Should return 404 on second attempt with same token (single-use)")
         void should_return_not_found_on_second_attempt() throws Exception {
             String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
-            ResetPasswordRequest request = new ResetPasswordRequest(token, "NewPassword123!");
+            ResetPasswordRequest request = new ResetPasswordRequest(token, NEW_PASSWORD);
 
             mockMvc.perform(post(RESET_PASSWORD_URL)
                     .contentType(MediaType.APPLICATION_JSON)

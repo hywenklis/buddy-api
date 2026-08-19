@@ -116,7 +116,6 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private UserDetails authenticateUser(final String email, final String password) {
         try {
             final var authResult = authenticationManager.authenticate(
@@ -130,7 +129,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AccountNotVerifiedException("email", "account no longer active");
         } catch (LockedException ex) {
             throw new AccountBlockedException("email", "account blocked contact support");
-        } catch (Exception ex) {
+        } catch (org.springframework.security.core.AuthenticationException ex) {
             log.error("Authentication failed for user: {}", email, ex);
             throw new AuthenticationException("incorrect email or password", "credentials");
         }
