@@ -61,33 +61,6 @@ public class RateLimitChecker {
         );
     }
 
-    public void checkPasswordChangeRateLimit(final String email, final UUID accountId) {
-        checkRateLimit(
-            email,
-            accountId,
-            "password-change",
-            "Too many password change attempts. Please wait a minute before trying again."
-        );
-    }
-
-    public void checkLoginRateLimit(final String email) {
-        checkRateLimit(
-            email,
-            null,
-            "login",
-            "Too many login attempts. Please wait a minute before trying again."
-        );
-    }
-
-    public void checkRegistrationRateLimit(final String email) {
-        checkRateLimit(
-            email,
-            null,
-            "registration",
-            "Too many registration attempts. Please wait a minute before trying again."
-        );
-    }
-
     private BucketConfiguration bucketConfiguration() {
         return BucketConfiguration.builder()
             .addLimit(Bandwidth.builder()
