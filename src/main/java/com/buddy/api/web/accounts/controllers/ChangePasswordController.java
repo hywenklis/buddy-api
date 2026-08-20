@@ -31,7 +31,7 @@ public class ChangePasswordController implements ChangePasswordControllerDoc {
     @Override
     @PatchMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RateLimited(
+    @RateLimited(useIp = true, 
         operation = "password-change",
         emailSpel = "#userDetails.username",
         limitMessage = "Too many password change attempts. " 

@@ -104,9 +104,12 @@ public class AuthServiceImpl implements AuthService {
 
             List<String> authorities = extractAuthorities(userDetails);
             String newAccessToken = jwtUtil.generateAccessToken(email, authorities);
+            String newRefreshToken = jwtUtil.generateRefreshToken(email);
+
+            blockToken(refreshToken);
 
             log.info("Refresh token successful for email: {}", email);
-            return new AuthDto(email, null, null, newAccessToken, refreshToken);
+            return new AuthDto(email, null, null, newAccessToken, newRefreshToken);
         } catch (JwtException e) {
             log.error("Error refreshing token: {}", e.getMessage());
             throw new AuthenticationException(

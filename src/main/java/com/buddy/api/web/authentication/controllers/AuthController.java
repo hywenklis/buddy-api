@@ -31,7 +31,7 @@ public class AuthController implements AuthControllerDoc {
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    @RateLimited(
+    @RateLimited(useIp = true, 
         operation = "login",
         emailSpel = "#request.email",
         limitMessage = "Too many login attempts. Please wait a minute before trying again."

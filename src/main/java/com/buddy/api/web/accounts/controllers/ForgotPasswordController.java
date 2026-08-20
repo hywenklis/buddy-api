@@ -25,7 +25,7 @@ public class ForgotPasswordController {
 
     @PostMapping("/forgot")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @RateLimited(
+    @RateLimited(useIp = true, 
         operation = "password-recovery",
         emailSpel = "#request.email",
         limitMessage = "Too many password recovery requests. "

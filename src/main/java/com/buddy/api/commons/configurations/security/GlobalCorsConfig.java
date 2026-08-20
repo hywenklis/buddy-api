@@ -1,5 +1,7 @@
 package com.buddy.api.commons.configurations.security;
 
+import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -10,10 +12,12 @@ import org.springframework.web.filter.CorsFilter;
 public class GlobalCorsConfig {
 
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsFilter corsFilter(
+        @Value("${buddy.security.cors.allowed-origins:*}") final List<String> allowedOrigins
+    ) {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOriginPattern("*");
+        allowedOrigins.forEach(config::addAllowedOriginPattern);
         config.setAllowCredentials(true);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

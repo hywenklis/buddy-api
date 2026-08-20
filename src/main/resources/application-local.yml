@@ -105,7 +105,7 @@ manager:
 buddy:
   rate:
     limit:
-      max-attempts: 1
+      max-attempts: 5
       window-minutes: 1
   email:
     from: "buddy.contato.app@gmail.com"

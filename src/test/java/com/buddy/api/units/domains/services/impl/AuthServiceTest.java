@@ -3,6 +3,7 @@ package com.buddy.api.units.domains.services.impl;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -150,9 +151,12 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
         when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(false);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
+        when(jwtUtil.getExpirationFromToken(REFRESH_TOKEN))
+            .thenReturn(java.util.Date.from(java.time.Instant.now().plusSeconds(3600)));
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
         when(jwtUtil.generateAccessToken(email, List.of(ProfileTypeEnum.USER.name())))
             .thenReturn(ACCESS_TOKEN);
+        when(jwtUtil.generateRefreshToken(email)).thenReturn("new-refresh-token");
 
         AuthDto result = authService.refreshToken(request);
 
@@ -161,7 +165,9 @@ class AuthServiceTest extends UnitTestAbstract {
         assertThat(result.password()).isNull();
         assertThat(result.profiles()).isNull();
         assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
-        assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
+        assertThat(result.refreshToken()).isEqualTo("new-refresh-token");
+        
+        verify(blocklistService, times(1)).blockToken(eq(REFRESH_TOKEN), anyLong());
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);
         verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);

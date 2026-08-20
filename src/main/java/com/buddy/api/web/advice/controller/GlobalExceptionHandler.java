@@ -16,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -61,6 +62,15 @@ public class GlobalExceptionHandler {
             "server",
             "Internal Server Error",
             HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(final Exception ex) {
+        return buildErrorResponse(
+            "request",
+            "Invalid request parameter format",
+            HttpStatus.BAD_REQUEST
         );
     }
 

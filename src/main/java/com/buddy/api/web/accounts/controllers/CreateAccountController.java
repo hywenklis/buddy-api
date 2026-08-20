@@ -23,7 +23,7 @@ public class CreateAccountController implements CreateAccountControllerDoc {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    @RateLimited(
+    @RateLimited(useIp = true, 
         operation = "registration",
         emailSpel = "#accountRequest.email",
         limitMessage = "Too many registration attempts. Please wait a minute before trying again."

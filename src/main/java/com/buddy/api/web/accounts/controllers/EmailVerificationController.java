@@ -26,7 +26,7 @@ public class EmailVerificationController implements EmailVerificationControllerD
 
     @PostMapping("/request")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    @RateLimited(
+    @RateLimited(useIp = true, 
         operation = "verification",
         emailSpel = "#user.email",
         limitMessage = "Too many verification requests. Please wait a minute before trying again."
