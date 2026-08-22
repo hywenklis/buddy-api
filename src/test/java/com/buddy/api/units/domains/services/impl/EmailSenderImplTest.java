@@ -12,6 +12,7 @@ import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.commons.configurations.properties.EmailProperties.Template;
 import com.buddy.api.commons.configurations.properties.EmailProperties.TemplateWithUrl;
 import com.buddy.api.commons.configurations.properties.EmailProperties.Templates;
+import com.buddy.api.commons.exceptions.ManagerApiException;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.impl.EmailSenderImpl;
 import com.buddy.api.integrations.clients.manager.ManagerService;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.http.HttpStatus;
 
 class EmailSenderImplTest extends UnitTestAbstract {
     private static final String EMAIL_SERVICE_FAILURE = "Email service failure";
@@ -168,6 +170,47 @@ class EmailSenderImplTest extends UnitTestAbstract {
             assertThatThrownBy(
                 () -> emailSender.dispatchPasswordRecoveryEmail(accountId, userEmail, token))
                 .isInstanceOf(com.buddy.api.commons.exceptions.ManagerApiException.class)
+                .hasMessage(EMAIL_SERVICE_FAILURE);
+        }
+    }
+
+    @Nested
+    @DisplayName("Tests for dispatchPasswordChangedNotification method")
+    class DispatchPasswordChangedNotificationTests {
+
+        @BeforeEach
+        void setupPasswordChangedStubs() {
+            when(templates.passwordChanged()).thenReturn(passwordChangedTemplate);
+            when(passwordChangedTemplate.templatePath())
+                .thenReturn("/templates/password-changed.html");
+            when(passwordChangedTemplate.subject()).thenReturn("Password changed");
+            when(emailTemplateLoader.load("/templates/password-changed.html"))
+                .thenReturn("<html>Password changed</html>");
+        }
+
+        @Test
+        @DisplayName("Should send password changed notification successfully")
+        void should_send_password_changed_notification_successfully() {
+            emailSender.dispatchPasswordChangedNotification(accountId, userEmail);
+
+            verify(managerService).sendEmailNotification(
+                List.of(userEmail), from, "Password changed", "<html>Password changed</html>");
+        }
+
+        @Test
+        @DisplayName("Should throw exception when password changed notification fails")
+        void should_throw_exception_when_password_changed_notification_fails() {
+            final var exception = new ManagerApiException(
+                EMAIL_SERVICE_FAILURE, "email",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                new RuntimeException()
+            );
+            doThrow(exception).when(managerService)
+                .sendEmailNotification(anyList(), anyString(), anyString(), anyString());
+
+            assertThatThrownBy(
+                () -> emailSender.dispatchPasswordChangedNotification(accountId, userEmail))
+                .isInstanceOf(ManagerApiException.class)
                 .hasMessage(EMAIL_SERVICE_FAILURE);
         }
     }

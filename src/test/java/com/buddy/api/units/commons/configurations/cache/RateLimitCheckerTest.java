@@ -1,15 +1,20 @@
 package com.buddy.api.units.commons.configurations.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatNoException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.configurations.cache.RateLimitChecker;
 import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.utils.RandomEmailUtils;
+import io.github.bucket4j.BucketConfiguration;
 import io.github.bucket4j.distributed.BucketProxy;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.distributed.proxy.RemoteBucketBuilder;
@@ -51,6 +56,26 @@ class RateLimitCheckerTest extends UnitTestAbstract {
         lenient().when(proxyManager.builder()).thenReturn(bucketBuilder);
         lenient().when(bucketBuilder.build(any(byte[].class), any(Supplier.class)))
             .thenReturn(bucket);
+    }
+
+    @Test
+    @DisplayName("Should build bucket configuration from rate limit properties")
+    void should_build_bucket_configuration() {
+        when(rateLimitProperties.maxAttempts()).thenReturn(7);
+        when(rateLimitProperties.windowMinutes()).thenReturn(3);
+        when(bucket.tryConsume(1)).thenReturn(true);
+
+        rateLimitChecker.checkRateLimit(email, accountId);
+
+        var configurationCaptor =
+            org.mockito.ArgumentCaptor.forClass(Supplier.class);
+        verify(bucketBuilder, atLeastOnce()).build(any(byte[].class),
+            configurationCaptor.capture());
+        BucketConfiguration configuration =
+            (BucketConfiguration) configurationCaptor.getValue().get();
+
+        assertThat(configuration.getBandwidths()).hasSize(1);
+        assertThat(configuration.getBandwidths()[0].getCapacity()).isEqualTo(7);
     }
 
     @Nested
@@ -101,7 +126,7 @@ class RateLimitCheckerTest extends UnitTestAbstract {
                 .isInstanceOf(TooManyRequestsException.class)
                 .hasMessage(
                     "Too many password recovery requests. "
-                    + "Please wait a minute before trying again.");
+                        + "Please wait a minute before trying again.");
         }
     }
 }

@@ -208,4 +208,21 @@ class JwtAuthenticationFilterTest extends UnitTestAbstract {
         verify(filterChain, times(1)).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
+
+    @Test
+    @DisplayName("Should not authenticate when user tokens were revoked after token issuance")
+    void doFilter_whenUserTokensRevoked_doesNotAuthenticate() throws Exception {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(VALID_JWT));
+        when(jwtUtil.getEmailFromToken(VALID_JWT)).thenReturn(EMAIL_VALUE);
+        Instant issuedAt = Instant.now();
+        when(jwtUtil.getIssuedAtFromToken(VALID_JWT)).thenReturn(issuedAt);
+        when(tokenBlocklistService.isUserTokensRevoked(EMAIL_VALUE, issuedAt.toEpochMilli()))
+            .thenReturn(true);
+
+        jwtAuthenticationFilter.doFilter(request, response, filterChain);
+
+        verify(userDetailsService, never()).loadUserByUsername(any());
+        verify(filterChain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
 }
