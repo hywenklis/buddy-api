@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.20.1
+        uses: step-security/harden-runner@v2.21.0
         with:
           egress-policy: audit
 
@@ -88,7 +88,7 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.20.1
+        uses: step-security/harden-runner@v2.21.0
         with:
           egress-policy: audit
       - name: 'Checkout Repository'
@@ -112,7 +112,7 @@ jobs:
         language: [ "java" ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.20.1
+        uses: step-security/harden-runner@v2.21.0
         with:
           egress-policy: audit
       - name: Checkout repository
@@ -141,7 +141,7 @@ jobs:
       actions: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.20.1
+        uses: step-security/harden-runner@v2.21.0
         with:
           egress-policy: audit
       - name: "Checkout code"
