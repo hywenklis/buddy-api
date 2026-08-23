@@ -67,8 +67,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({IllegalArgumentException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(final Exception ex) {
+        String fieldName = (ex instanceof MethodArgumentTypeMismatchException mismatchEx)
+            ? mismatchEx.getName()
+            : "request";
         return buildErrorResponse(
-            "request",
+            fieldName,
             "Invalid request parameter format",
             HttpStatus.BAD_REQUEST
         );

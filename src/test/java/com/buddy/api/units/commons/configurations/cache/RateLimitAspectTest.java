@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
@@ -11,10 +13,12 @@ import com.buddy.api.commons.configurations.cache.aspects.RateLimitAspect;
 import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
 import com.buddy.api.units.UnitTestAbstract;
+import com.buddy.api.utils.RandomEmailUtils;
 import io.github.bucket4j.distributed.BucketProxy;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.distributed.proxy.RemoteBucketBuilder;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -84,8 +88,70 @@ class RateLimitAspectTest extends UnitTestAbstract {
         aspect.checkRateLimit(joinPoint("email@example.com"),
             method().getAnnotation(RateLimited.class));
         var captor = org.mockito.ArgumentCaptor.forClass(Supplier.class);
-        org.mockito.Mockito.verify(bucketBuilder).build(any(byte[].class), captor.capture());
-        assertThat((io.github.bucket4j.BucketConfiguration) captor.getValue().get()).isNotNull();
+        org.mockito.Mockito.verify(bucketBuilder, times(2))
+            .build(any(byte[].class), captor.capture());
+        assertThat(captor.getAllValues()).allSatisfy(configuration ->
+            assertThat((io.github.bucket4j.BucketConfiguration) configuration.get()).isNotNull());
+    }
+
+    @Test
+    @DisplayName("Should create independent email and IP buckets")
+    void should_create_independent_buckets() throws Exception {
+        final String email = RandomEmailUtils.generateValidEmail();
+        when(proxyManager.builder()).thenReturn(bucketBuilder);
+        when(bucketBuilder.build(any(byte[].class), any(Supplier.class))).thenReturn(bucket);
+        when(bucket.tryConsume(1)).thenReturn(true);
+
+        aspect.checkRateLimit(joinPoint(email),
+            method().getAnnotation(RateLimited.class));
+
+        var keyCaptor = org.mockito.ArgumentCaptor.forClass(byte[].class);
+        verify(bucketBuilder, times(2)).build(keyCaptor.capture(), any(Supplier.class));
+
+        assertThat(keyCaptor.getAllValues())
+            .extracting(key -> new String(key, StandardCharsets.UTF_8))
+            .containsExactlyInAnyOrder(
+                "rate-limit:count:test:email:" + email,
+                "rate-limit:count:test:ip:0.0.0.0"
+            );
+    }
+
+    @Test
+    @DisplayName("Should preserve email-only rate limiting when IP limiting is disabled")
+    void should_skip_ip_bucket_when_disabled() throws Exception {
+        when(proxyManager.builder()).thenReturn(bucketBuilder);
+        when(bucketBuilder.build(any(byte[].class), any(Supplier.class))).thenReturn(bucket);
+        when(bucket.tryConsume(1)).thenReturn(true);
+
+        aspect.checkRateLimit(joinPoint("email@example.com"),
+            methodWithIpDisabled().getAnnotation(RateLimited.class));
+
+        verify(bucketBuilder, times(1)).build(any(byte[].class), any(Supplier.class));
+    }
+
+    @Test
+    @DisplayName("Should reject requests when the IP bucket is exhausted")
+    void should_reject_when_ip_bucket_is_exhausted() throws Exception {
+        when(proxyManager.builder()).thenReturn(bucketBuilder);
+        when(bucketBuilder.build(any(byte[].class), any(Supplier.class))).thenReturn(bucket);
+        when(bucket.tryConsume(1)).thenReturn(true, false);
+
+        assertThatThrownBy(() -> aspect.checkRateLimit(joinPoint("email@example.com"),
+            method().getAnnotation(RateLimited.class)))
+            .isInstanceOf(TooManyRequestsException.class);
+    }
+
+    @Test
+    @DisplayName("Should accept requests when emailSpel is blank without logging errors")
+    void should_accept_requests_when_email_spel_is_blank() throws Exception {
+        when(proxyManager.builder()).thenReturn(bucketBuilder);
+        when(bucketBuilder.build(any(byte[].class), any(Supplier.class))).thenReturn(bucket);
+        when(bucket.tryConsume(1)).thenReturn(true);
+
+        aspect.checkRateLimit(mock(JoinPoint.class),
+            methodWithBlankEmailSpel().getAnnotation(RateLimited.class));
+
+        verify(bucketBuilder, times(2)).build(any(byte[].class), any(Supplier.class));
     }
 
     private JoinPoint joinPoint(final String email) throws Exception {
@@ -105,6 +171,14 @@ class RateLimitAspectTest extends UnitTestAbstract {
         return Fixture.class.getDeclaredMethod("invalid", String.class);
     }
 
+    private Method methodWithIpDisabled() throws Exception {
+        return Fixture.class.getDeclaredMethod("emailOnly", String.class);
+    }
+
+    private Method methodWithBlankEmailSpel() throws Exception {
+        return Fixture.class.getDeclaredMethod("ipOnly", String.class);
+    }
+
     static class Fixture {
         @RateLimited(operation = "test", emailSpel = "#email", useIp = true)
         void limited(final String email) {
@@ -112,6 +186,14 @@ class RateLimitAspectTest extends UnitTestAbstract {
 
         @RateLimited(operation = "test", emailSpel = "#[", useIp = false)
         void invalid(final String email) {
+        }
+
+        @RateLimited(operation = "test", emailSpel = "#email", useIp = false)
+        void emailOnly(final String email) {
+        }
+
+        @RateLimited(operation = "test", emailSpel = "", useIp = true)
+        void ipOnly(final String email) {
         }
     }
 }

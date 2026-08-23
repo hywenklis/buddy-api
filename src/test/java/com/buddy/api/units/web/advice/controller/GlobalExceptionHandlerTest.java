@@ -136,7 +136,7 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should handle method argument type mismatches")
+    @DisplayName("Should extract exact parameter name from MethodArgumentTypeMismatchException")
     void handleMethodArgumentTypeMismatchException() {
         MethodArgumentTypeMismatchException exception =
             new MethodArgumentTypeMismatchException("value", String.class, "parameter", null,
@@ -148,6 +148,8 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(
             Objects.requireNonNull(response.getBody()).errors().getFirst().field()).isEqualTo(
-            "request");
+            "parameter");
+        assertThat(response.getBody().errors().getFirst().message())
+            .isEqualTo("Invalid request parameter format");
     }
 }

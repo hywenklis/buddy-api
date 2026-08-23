@@ -1,10 +1,13 @@
 package com.buddy.api.units.domains.account.password.services.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
+import com.buddy.api.commons.exceptions.DomainException;
 import com.buddy.api.commons.exceptions.InvalidCurrentPasswordException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
@@ -22,9 +25,11 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,12 +53,14 @@ class ChangePasswordServiceImplTest {
     @Mock
     private SecurityAuditService securityAuditService;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private ChangePasswordServiceImpl service;
 
     @Test
-    @DisplayName("Should change password, revoke tokens, log audit event, "
-        + "and send email successfully")
+    @DisplayName("Should change password and publish a password changed event")
     void shouldChangePasswordSuccessfully() {
         UUID accountId = UUID.randomUUID();
         String currentPassword = RandomStringUtils.secure().nextAlphanumeric(10);
@@ -84,10 +91,39 @@ class ChangePasswordServiceImplTest {
         service.changePassword(dto);
 
         verify(updateAccount).updatePassword(new EmailAddress(email), encodedNewPassword);
-        verify(blocklistService).revokeAllUserTokens(email);
+        ArgumentCaptor<ChangePasswordServiceImpl.PasswordChangedEvent> eventCaptor =
+            ArgumentCaptor.forClass(ChangePasswordServiceImpl.PasswordChangedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        assertThat(eventCaptor.getValue().accountId()).isEqualTo(accountId);
+        assertThat(eventCaptor.getValue().email()).isEqualTo(new EmailAddress(email));
+        assertThat(eventCaptor.getValue().ipAddress()).isEqualTo(ipAddress);
+        assertThat(eventCaptor.getValue().userAgent()).isEqualTo(userAgent);
+        verifyNoInteractions(blocklistService, securityAuditService, emailSender);
+    }
+
+    @Test
+    @DisplayName("Should apply password change effects after transaction commit event")
+    void shouldApplyPasswordChangeEffectsAfterTransactionCommitEvent() {
+        UUID accountId = UUID.randomUUID();
+        String email = RandomEmailUtils.generateValidEmail();
+        String ipAddress = "192.168.0." + RandomStringUtils.secure().nextNumeric(1, 3);
+        String userAgent = RandomStringUtils.secure().nextAlphanumeric(20);
+        ChangePasswordServiceImpl.PasswordChangedEvent event =
+            new ChangePasswordServiceImpl.PasswordChangedEvent(
+                accountId,
+                new EmailAddress(email),
+                ipAddress,
+                userAgent
+            );
+
+        service.handlePasswordChanged(event);
+
+        verify(blocklistService).revokeAllUserTokens(new EmailAddress(email).value());
         verify(securityAuditService).logEvent(accountId, SecurityEventType.PASSWORD_CHANGED,
             ipAddress, userAgent);
-        verify(emailSender).dispatchPasswordChangedNotification(accountId, email);
+        verify(emailSender).dispatchPasswordChangedNotification(accountId,
+            new EmailAddress(email));
     }
 
     @Test
@@ -105,6 +141,8 @@ class ChangePasswordServiceImplTest {
         assertThatThrownBy(() -> service.changePassword(dto))
             .isInstanceOf(NotFoundException.class)
             .hasMessageContaining("Account not found");
+        verifyNoInteractions(updateAccount, passwordEncoder, blocklistService,
+            securityAuditService, emailSender, eventPublisher);
     }
 
     @Test
@@ -121,7 +159,7 @@ class ChangePasswordServiceImplTest {
 
         ChangePasswordDto dto = ChangePasswordDto.builder()
             .accountId(accountId)
-            .email("test@example.com")
+            .email(RandomEmailUtils.generateValidEmail())
             .currentPassword(currentPassword)
             .build();
 
@@ -131,5 +169,39 @@ class ChangePasswordServiceImplTest {
         assertThatThrownBy(() -> service.changePassword(dto))
             .isInstanceOf(InvalidCurrentPasswordException.class)
             .hasMessageContaining("Invalid current password");
+        verifyNoInteractions(updateAccount, blocklistService, securityAuditService, emailSender,
+            eventPublisher);
+        verify(passwordEncoder).matches(currentPassword, accountDto.password());
+        verify(passwordEncoder, org.mockito.Mockito.never())
+            .encode(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @DisplayName("Should throw DomainException when new password is the same as current password")
+    void shouldThrowDomainExceptionWhenNewPasswordIsSameAsCurrentPassword() {
+        UUID accountId = UUID.randomUUID();
+        String currentPassword = RandomStringUtils.secure().nextAlphanumeric(10);
+        String encodedCurrentPassword = RandomStringUtils.secure().nextAlphanumeric(15);
+
+        AccountDto accountDto = AccountDto.builder()
+            .accountId(accountId)
+            .password(encodedCurrentPassword)
+            .build();
+
+        ChangePasswordDto dto = ChangePasswordDto.builder()
+            .accountId(accountId)
+            .email(RandomEmailUtils.generateValidEmail())
+            .currentPassword(currentPassword)
+            .newPassword(currentPassword)
+            .build();
+
+        when(findAccount.findById(accountId)).thenReturn(accountDto);
+        when(passwordEncoder.matches(currentPassword, encodedCurrentPassword)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.changePassword(dto))
+            .isInstanceOf(DomainException.class)
+            .hasMessageContaining("New password cannot be the same as current password");
+        verifyNoInteractions(updateAccount, blocklistService, securityAuditService, emailSender,
+            eventPublisher);
     }
 }
