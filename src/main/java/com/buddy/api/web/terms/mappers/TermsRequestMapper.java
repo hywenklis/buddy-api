@@ -1,26 +1,29 @@
 package com.buddy.api.web.terms.mappers;
 
+import com.buddy.api.commons.http.ClientIpResolver;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.terms.dtos.AcceptTermsDto;
 import com.buddy.api.domains.terms.dtos.CreateTermsVersionDto;
 import com.buddy.api.web.terms.requests.CreateTermsVersionRequest;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Mapper(componentModel = "spring")
-public interface TermsRequestMapper {
+public abstract class TermsRequestMapper {
+
+    @Value("${buddy.security.trusted-proxy-addresses:}")
+    private List<String> trustedProxyAddresses = List.of();
 
     @Mapping(target = "email", source = "userDetails", qualifiedByName = "extractEmail")
     @Mapping(target = "ipAddress", source = "request", qualifiedByName = "extractIp")
     @Mapping(target = "userAgent", source = "request", qualifiedByName = "extractUserAgent")
-    AcceptTermsDto toDto(final HttpServletRequest request,
-                         final UserDetails userDetails
-    );
+    public abstract AcceptTermsDto toDto(HttpServletRequest request, UserDetails userDetails);
 
     @Mapping(
         target = "publishedByAccountEmail",
@@ -30,12 +33,11 @@ public interface TermsRequestMapper {
     @Mapping(target = "versionTag", source = "request.versionTag")
     @Mapping(target = "content", source = "request.content")
     @Mapping(target = "isActive", source = "request.isActive")
-    CreateTermsVersionDto toCreateDto(final CreateTermsVersionRequest request,
-                                      final UserDetails userDetails
-    );
+    public abstract CreateTermsVersionDto toCreateDto(CreateTermsVersionRequest request,
+                                                      UserDetails userDetails);
 
     @Named("extractEmail")
-    default String extractEmail(final UserDetails userDetails) {
+    public String extractEmail(final UserDetails userDetails) {
         return Optional.ofNullable(userDetails)
             .filter(AuthenticatedUser.class::isInstance)
             .map(AuthenticatedUser.class::cast)
@@ -46,27 +48,12 @@ public interface TermsRequestMapper {
     }
 
     @Named("extractIp")
-    default String extractIp(final HttpServletRequest request) {
-        final String unknownIp = "0.0.0.0";
-
-        return Optional.ofNullable(request)
-            .map(req -> req.getHeader("X-Forwarded-For"))
-            .filter(Predicate.not(String::isBlank))
-            .map(header -> header.split(",")[0].trim())
-
-            .or(() -> Optional.ofNullable(request)
-                .map(req -> req.getHeader("X-Real-IP"))
-                .filter(Predicate.not(String::isBlank)))
-
-            .or(() -> Optional.ofNullable(request)
-                .map(HttpServletRequest::getRemoteAddr)
-                .filter(Predicate.not(String::isBlank)))
-
-            .orElse(unknownIp);
+    public String extractIp(final HttpServletRequest request) {
+        return ClientIpResolver.extract(request, trustedProxyAddresses);
     }
 
     @Named("extractUserAgent")
-    default String extractUserAgent(final HttpServletRequest request) {
+    public String extractUserAgent(final HttpServletRequest request) {
         return Optional.ofNullable(request)
             .map(req -> req.getHeader("User-Agent"))
             .orElse("Unknown");

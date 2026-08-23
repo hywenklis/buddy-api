@@ -1,5 +1,5 @@
 server:
-  forward-headers-strategy: framework
+  forward-headers-strategy: none
   compression:
     enabled: true
     mime-types: [ "application/json", "application/xml", "text/xml", "text/html", "text/plain" ]
@@ -84,3 +84,8 @@ buddy:
     algorithm: "AES/GCM/NoPadding"
     tag-length: 128
     iv-length: 12
+    trusted-proxy-addresses: []
+    cors:
+      allowed-origins:
+        - "http://localhost:3000"
+        - "https://buddyclient.vercel.app"

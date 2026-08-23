@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,10 @@ public class AuthServiceImpl implements AuthService {
         List<ProfileDto> filteredProfiles = fetchAndFilterProfiles(userDetails.getUsername());
 
         String accessToken = jwtUtil.generateAccessToken(authDto.email(), profileAuthorities);
-        String refreshToken = jwtUtil.generateRefreshToken(authDto.email());
+        String refreshToken = jwtUtil.generateRefreshToken(
+            authDto.email(),
+            UUID.randomUUID().toString()
+        );
 
         updateAccount.updateLastLogin(userDetails.getUsername(), LocalDateTime.now());
         log.info("Authentication successful for user: {}", authDto.email());
@@ -104,7 +108,10 @@ public class AuthServiceImpl implements AuthService {
 
             List<String> authorities = extractAuthorities(userDetails);
             String newAccessToken = jwtUtil.generateAccessToken(email, authorities);
-            String newRefreshToken = jwtUtil.generateRefreshToken(email);
+            String newRefreshToken = jwtUtil.generateRefreshToken(
+                email,
+                UUID.randomUUID().toString()
+            );
 
             blockToken(refreshToken);
 

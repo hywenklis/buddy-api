@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 
 class TermsRequestMapperTest extends UnitTestAbstract {
 
@@ -53,5 +54,25 @@ class TermsRequestMapperTest extends UnitTestAbstract {
     void should_return_null_email_when_userdetails_is_null() {
         AcceptTermsDto result = mapper.toDto(request, null);
         assertThat(result.email()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should ignore forwarded headers when request is not from a trusted proxy")
+    void should_ignore_forwarded_headers_for_untrusted_proxy() {
+        when(request.getRemoteAddr()).thenReturn("192.0.2.10");
+
+        assertThat(mapper.extractIp(request)).isEqualTo("192.0.2.10");
+    }
+
+    @Test
+    @DisplayName("Should use forwarded address when request is from a trusted proxy")
+    void should_use_forwarded_address_for_trusted_proxy() {
+        ReflectionTestUtils.setField(mapper, "trustedProxyAddresses",
+            java.util.List.of("192.0.2.10"));
+        when(request.getRemoteAddr()).thenReturn("192.0.2.10");
+        when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+        when(request.getHeader("X-Real-IP")).thenReturn("198.51.100.20");
+
+        assertThat(mapper.extractIp(request)).isEqualTo("198.51.100.20");
     }
 }

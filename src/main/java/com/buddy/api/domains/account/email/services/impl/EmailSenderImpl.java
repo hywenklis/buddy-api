@@ -3,6 +3,7 @@ package com.buddy.api.domains.account.email.services.impl;
 import com.buddy.api.commons.configurations.properties.EmailProperties;
 import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.clients.manager.ManagerService;
 import java.util.List;
 import java.util.UUID;
@@ -69,13 +70,14 @@ public class EmailSenderImpl implements EmailSender {
 
     @Async
     @Override
-    public void dispatchPasswordChangedNotification(final UUID accountId, final String userEmail) {
+    public void dispatchPasswordChangedNotification(final UUID accountId,
+                                                     final EmailAddress userEmail) {
         try {
             String htmlBody = buildPasswordChangedEmailBody();
 
             log.info("Sending password changed notification email to account={}", accountId);
             managerService.sendEmailNotification(
-                List.of(userEmail),
+                List.of(userEmail.value()),
                 emailProperties.from(),
                 emailProperties.templates().passwordChanged().subject(),
                 htmlBody

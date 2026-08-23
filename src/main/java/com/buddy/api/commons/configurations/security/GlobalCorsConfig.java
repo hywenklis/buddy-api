@@ -13,7 +13,7 @@ public class GlobalCorsConfig {
 
     @Bean
     public CorsFilter corsFilter(
-        @Value("${buddy.security.cors.allowed-origins:*}") final List<String> allowedOrigins
+        @Value("${buddy.security.cors.allowed-origins}") final List<String> allowedOrigins
     ) {
         CorsConfiguration config = new CorsConfiguration();
 

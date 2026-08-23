@@ -28,8 +28,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
 @DisplayName("Forgot Password Controller Tests")
+@ActiveProfiles("test")
 class ForgotPasswordControllerTest extends IntegrationTestAbstract {
     private static final String JSON_PATH_MESSAGE = "$.message";
     private static final String REQUEST_ACCEPTED_MESSAGE = "request accepted";
@@ -373,7 +375,9 @@ class ForgotPasswordControllerTest extends IntegrationTestAbstract {
     }
 
     private void clearRateLimitFor(final String email) {
-        redisTemplate.delete(RATE_LIMIT_COUNT_KEY_PREFIX + email);
+        final var keys = redisTemplate.keys(RATE_LIMIT_COUNT_KEY_PREFIX + "*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 }
-

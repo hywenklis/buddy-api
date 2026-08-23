@@ -3,23 +3,41 @@ package com.buddy.api.integrations.web.account.controller;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.builders.account.AccountBuilder;
 import com.buddy.api.commons.configurations.cache.ForgotPasswordTokenManager;
+import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ResetPasswordRequest;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 @DisplayName("Reset Password Controller Tests")
+@Import(ResetPasswordControllerTest.TokenBlocklistTestConfiguration.class)
+@ActiveProfiles("test")
 class ResetPasswordControllerTest extends IntegrationTestAbstract {
     private static final String NEW_PASSWORD = "NewPassword123!";
 
@@ -31,10 +49,14 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private TokenBlocklistService tokenBlocklistService;
+
     private AccountEntity testUser;
 
     @BeforeEach
     void setup() {
+        reset(tokenBlocklistService);
         testUser = AccountBuilder.validAccountEntity().build();
         testUser = accountRepository.save(testUser);
     }
@@ -82,13 +104,16 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         @DisplayName("Should return 400 Bad Request when password is weak")
         void should_return_bad_request_when_password_weak() throws Exception {
             String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
-            ResetPasswordRequest request = new ResetPasswordRequest(token, "weak");
+            String weakPassword = RandomStringUtils.secure().nextAlphabetic(6)
+                .toLowerCase(Locale.ROOT);
+            ResetPasswordRequest request = new ResetPasswordRequest(token, weakPassword);
 
             expectBadRequestFrom(
                 mockMvc.perform(post(RESET_PASSWORD_URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-            ).forField("newPassword", "New password must have between 6 and 16 characters");
+            ).forField("newPassword",
+                "New password must contain uppercase, lowercase, number, and special character");
         }
         
         @Test
@@ -119,6 +144,79 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             ).forField("token", "Invalid or expired reset token");
+        }
+
+        @Test
+        @DisplayName("Should allow only one concurrent request to consume a reset token")
+        void should_allow_only_one_concurrent_token_consumer() throws Exception {
+            String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
+            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "A1!";
+            ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
+            ExecutorService executor = Executors.newFixedThreadPool(2);
+            CountDownLatch ready = new CountDownLatch(2);
+            CountDownLatch start = new CountDownLatch(1);
+
+            try {
+                Future<Integer> first = submitResetRequest(executor, ready, start, request);
+                Future<Integer> second = submitResetRequest(executor, ready, start, request);
+
+                ready.await();
+                start.countDown();
+
+                assertThat(List.of(first.get(), second.get()))
+                    .containsExactlyInAnyOrder(200, 404);
+            } finally {
+                executor.shutdownNow();
+            }
+        }
+
+        @Test
+        @DisplayName("Should roll back the password when token revocation fails")
+        void should_roll_back_password_when_token_revocation_fails() throws Exception {
+            String previousPassword = testUser.getPassword();
+            String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
+            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "A1!";
+            ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
+            doThrow(new IllegalStateException("Redis error"))
+                .when(tokenBlocklistService)
+                .revokeAllUserTokens(testUser.getEmail().value());
+
+            mockMvc.perform(post(RESET_PASSWORD_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError());
+
+            AccountEntity unchangedAccount = accountRepository
+                .findById(testUser.getAccountId()).orElseThrow();
+            assertThat(unchangedAccount.getPassword()).isEqualTo(previousPassword);
+        }
+
+        private Future<Integer> submitResetRequest(
+            final ExecutorService executor,
+            final CountDownLatch ready,
+            final CountDownLatch start,
+            final ResetPasswordRequest request
+        ) {
+            return executor.submit(() -> {
+                ready.countDown();
+                start.await();
+                return mockMvc.perform(post(RESET_PASSWORD_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                    .andReturn()
+                    .getResponse()
+                    .getStatus();
+            });
+        }
+
+    }
+
+    @TestConfiguration
+    static class TokenBlocklistTestConfiguration {
+        @Bean
+        @Primary
+        TokenBlocklistService tokenBlocklistService() {
+            return mock(TokenBlocklistService.class);
         }
     }
 }

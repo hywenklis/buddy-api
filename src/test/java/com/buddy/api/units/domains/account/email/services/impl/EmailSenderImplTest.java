@@ -1,4 +1,4 @@
-package com.buddy.api.units.domains.services.impl;
+package com.buddy.api.units.domains.account.email.services.impl;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -15,6 +15,7 @@ import com.buddy.api.commons.configurations.properties.EmailProperties.Templates
 import com.buddy.api.commons.exceptions.ManagerApiException;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.impl.EmailSenderImpl;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.clients.manager.ManagerService;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.utils.RandomEmailUtils;
@@ -191,10 +192,11 @@ class EmailSenderImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should send password changed notification successfully")
         void should_send_password_changed_notification_successfully() {
-            emailSender.dispatchPasswordChangedNotification(accountId, userEmail);
+            emailSender.dispatchPasswordChangedNotification(accountId, new EmailAddress(userEmail));
 
             verify(managerService).sendEmailNotification(
-                List.of(userEmail), from, "Password changed", "<html>Password changed</html>");
+                List.of(new EmailAddress(userEmail).value()), from, "Password changed",
+                "<html>Password changed</html>");
         }
 
         @Test
@@ -209,7 +211,8 @@ class EmailSenderImplTest extends UnitTestAbstract {
                 .sendEmailNotification(anyList(), anyString(), anyString(), anyString());
 
             assertThatThrownBy(
-                () -> emailSender.dispatchPasswordChangedNotification(accountId, userEmail))
+                () -> emailSender.dispatchPasswordChangedNotification(
+                    accountId, new EmailAddress(userEmail)))
                 .isInstanceOf(ManagerApiException.class)
                 .hasMessage(EMAIL_SERVICE_FAILURE);
         }

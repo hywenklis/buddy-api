@@ -15,6 +15,7 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ChangePasswordRequest;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +24,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
 @DisplayName("Change Password Controller Tests")
+@ActiveProfiles("test")
 class ChangePasswordControllerTest extends IntegrationTestAbstract {
 
     private static final String CHANGE_PASSWORD_URL = "/v1/accounts/password";
@@ -67,6 +70,12 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
             String key = "jwt:revoke_all:" + testUser.account().getEmail().value();
             assertThat(redisTemplate.hasKey(key)).isTrue();
 
+            mockMvc.perform(patch(CHANGE_PASSWORD_URL)
+                    .header(AUTHORIZATION, BEARER + testUser.jwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+
             waitUntilWireMockReceives(1);
         }
 
@@ -89,9 +98,11 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
         @Test
         @DisplayName("Should return 400 Bad Request when new password is weak")
         void shouldReturnBadRequestWhenNewPasswordIsWeak() throws Exception {
+            String weakPassword = RandomStringUtils.secure().nextAlphabetic(6)
+                .toLowerCase(Locale.ROOT);
             ChangePasswordRequest request = new ChangePasswordRequest(
                 testUser.plainPassword(),
-                "weak"
+                weakPassword
             );
 
             expectBadRequestFrom(
@@ -99,7 +110,8 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
                     .header(AUTHORIZATION, BEARER + testUser.jwt())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
-            ).forField("newPassword", "New password must have between 6 and 16 characters");
+            ).forField("newPassword",
+                "New password must contain uppercase, lowercase, number, and special character");
         }
 
         @Test

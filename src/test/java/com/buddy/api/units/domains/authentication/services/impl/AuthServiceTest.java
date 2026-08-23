@@ -1,9 +1,10 @@
-package com.buddy.api.units.domains.services.impl;
+package com.buddy.api.units.domains.authentication.services.impl;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -110,7 +111,8 @@ class AuthServiceTest extends UnitTestAbstract {
             List.of(ProfileTypeEnum.USER.name()))
         ).thenReturn(ACCESS_TOKEN);
 
-        when(jwtUtil.generateRefreshToken(authDto.email())).thenReturn(REFRESH_TOKEN);
+        when(jwtUtil.generateRefreshToken(eq(authDto.email()), anyString()))
+            .thenReturn(REFRESH_TOKEN);
 
         AuthDto result = authService.authenticate(authDto);
 
@@ -132,7 +134,7 @@ class AuthServiceTest extends UnitTestAbstract {
             .generateAccessToken(authDto.email(), List.of(ProfileTypeEnum.USER.name()));
 
         verify(jwtUtil, times(1))
-            .generateRefreshToken(authDto.email());
+            .generateRefreshToken(eq(authDto.email()), anyString());
     }
 
     @Test
@@ -156,7 +158,8 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
         when(jwtUtil.generateAccessToken(email, List.of(ProfileTypeEnum.USER.name())))
             .thenReturn(ACCESS_TOKEN);
-        when(jwtUtil.generateRefreshToken(email)).thenReturn("new-refresh-token");
+        when(jwtUtil.generateRefreshToken(eq(email), anyString()))
+            .thenReturn("new-refresh-token");
 
         AuthDto result = authService.refreshToken(request);
 

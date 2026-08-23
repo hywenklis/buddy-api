@@ -1,4 +1,4 @@
-package com.buddy.api.units.commons.configurations.secutiry.jwt;
+package com.buddy.api.units.commons.configurations.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,7 +64,17 @@ class JwtUtilTest extends UnitTestAbstract {
         Claims claims = parseClaims(token);
 
         assertThat(claims.getSubject()).isEqualTo(EMAIL_VALUE);
+        assertThat(claims.getId()).isNotBlank();
         assertThat(claims.getExpiration().toInstant()).isAfter(Instant.now());
+    }
+
+    @Test
+    @DisplayName("Should generate unique jti values for refresh tokens created in succession")
+    void generateRefreshToken_uniqueJti() {
+        Claims firstClaims = parseClaims(jwtUtil.generateRefreshToken(EMAIL_VALUE));
+        Claims secondClaims = parseClaims(jwtUtil.generateRefreshToken(EMAIL_VALUE));
+
+        assertThat(firstClaims.getId()).isNotEqualTo(secondClaims.getId());
     }
 
     @Test

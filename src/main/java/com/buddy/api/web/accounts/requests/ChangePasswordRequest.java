@@ -2,6 +2,7 @@ package com.buddy.api.web.accounts.requests;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record ChangePasswordRequest(
@@ -15,6 +16,10 @@ public record ChangePasswordRequest(
         message = "New password must have between 6 and 16 characters",
         min = 6,
         max = 16
+    )
+    @Pattern(
+        regexp = PasswordPolicy.STRONG_PASSWORD_REGEX,
+        message = PasswordPolicy.STRONG_PASSWORD_MESSAGE
     )
     String newPassword
 ) { }

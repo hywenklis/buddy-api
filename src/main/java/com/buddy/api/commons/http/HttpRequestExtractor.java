@@ -1,26 +1,22 @@
 package com.buddy.api.commons.http;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HttpRequestExtractor {
 
-    private static final String UNKNOWN_IP = "0.0.0.0";
     private static final String UNKNOWN_AGENT = "Unknown";
 
+    @Value("${buddy.security.trusted-proxy-addresses:}")
+    private List<String> trustedProxyAddresses = List.of();
+
     public String extractIp(final HttpServletRequest request) {
-        return Optional.ofNullable(request)
-            .map(req -> StringUtils.defaultIfBlank(req.getHeader("X-Forwarded-For"), null))
-            .map(header -> header.split(",")[0].trim())
-            .or(() -> Optional.ofNullable(request)
-                .map(req -> StringUtils.defaultIfBlank(req.getHeader("X-Real-IP"), null)))
-            .or(() -> Optional.ofNullable(request)
-                .map(req -> StringUtils.defaultIfBlank(req.getRemoteAddr(), null)))
-            .orElse(UNKNOWN_IP);
+        return ClientIpResolver.extract(request, trustedProxyAddresses);
     }
 
     public String extractUserAgent(final HttpServletRequest request) {
