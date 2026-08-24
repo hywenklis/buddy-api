@@ -10,7 +10,7 @@ public record ResetPasswordRequest(
     @NotBlank(message = "Reset token is mandatory")
     String token,
 
-    @Schema(description = "New password", example = "newPassword123")
+    @Schema(description = "New password", example = "NewPassword123!")
     @NotBlank(message = "New password is mandatory")
     @Size(
         message = "New password must have between 6 and 16 characters",

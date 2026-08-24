@@ -10,7 +10,7 @@ public record ChangePasswordRequest(
     @NotBlank(message = "currentPassword is required")
     String currentPassword,
 
-    @Schema(description = "New password", example = "newPassword123")
+    @Schema(description = "New password", example = "NewPassword123!")
     @NotBlank(message = "newPassword is required")
     @Size(
         message = "New password must have between 6 and 16 characters",
