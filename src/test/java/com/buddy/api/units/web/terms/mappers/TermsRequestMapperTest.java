@@ -1,4 +1,4 @@
-package com.buddy.api.units.mappers;
+package com.buddy.api.units.web.terms.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
