@@ -15,7 +15,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 @Configuration
 public class Bucket4jConfig {
 
-    @Bean(destroyMethod = "")
+    @Bean(destroyMethod = "shutdown")
     public RedisClient bucket4jRedisClient(final RedisConnectionFactory connectionFactory) {
         if (connectionFactory instanceof LettuceConnectionFactory lettuceConnectionFactory) {
             RedisStandaloneConfiguration redisConfiguration =
