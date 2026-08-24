@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ConfirmEmailRequest;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,9 @@ import org.springframework.http.MediaType;
 
 @DisplayName("Email Verification Controller Tests")
 class EmailVerificationControllerTest extends IntegrationTestAbstract {
+
+    @Autowired
+    private RateLimitProperties rateLimitProperties;
 
     private AccountEntity testUser;
     private String userJwt;
@@ -84,9 +89,12 @@ class EmailVerificationControllerTest extends IntegrationTestAbstract {
         void requestVerification_whenRateLimited_shouldReturnTooManyRequests() throws Exception {
             setupSuccessScenario();
 
-            mockMvc.perform(post(VERIFICATION_URL + PATH_EMAIL_VERIFICATION_REQUEST)
-                    .header(HttpHeaders.AUTHORIZATION, BEARER + userJwt))
-                .andExpect(status().isAccepted());
+            int maxAttempts = rateLimitProperties.maxAttempts();
+            for (int i = 0; i < maxAttempts; i++) {
+                mockMvc.perform(post(VERIFICATION_URL + PATH_EMAIL_VERIFICATION_REQUEST)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER + userJwt))
+                    .andExpect(status().isAccepted());
+            }
 
             expectManyRequestFrom(
                 mockMvc.perform(post(VERIFICATION_URL + PATH_EMAIL_VERIFICATION_REQUEST)

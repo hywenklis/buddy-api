@@ -114,10 +114,10 @@ class ApiClientExecutorTest {
 
         @Test
         @DisplayName(
-            "should catch any other Exception and throw ManagerApiException with 500 status"
+            "should catch feign.FeignException and throw ManagerApiException with 500 status"
         )
         void execute_whenActionThrowsUnexpectedException_shouldThrowManagerApiException() {
-            final var cause = new RuntimeException("Something went wrong");
+            final var cause = org.mockito.Mockito.mock(feign.FeignException.class);
             Supplier<Void> failingAction = () -> {
                 throw cause;
             };

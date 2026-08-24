@@ -5,11 +5,11 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.1'
+    id 'org.springframework.boot' version '4.1.0'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'jacoco'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '6.5.6'
+    id 'com.github.spotbugs' version '6.5.10'
     id 'com.palantir.git-version' version '5.0.0'
     id 'pmd'
 }
@@ -36,17 +36,17 @@ ext {
     springCloudVersion = "2025.1.2"
     mapstructVersion = "1.6.3"
     springdocOpenApiVersion = "3.1.0"
-    springHateoasVersion = "3.0.2"
+    springHateoasVersion = "3.1.1"
     commonsLang3Version = "3.20.0"
     lombokVersion= "1.18.46"
-    postgresqlVersion= "42.7.11"
-    spotbugsVersion = "4.10.2"
+    postgresqlVersion= "42.7.13"
+    spotbugsVersion = "4.10.3"
     micrometerVersion = "1.7.0"
     jwtVersion = "0.13.0"
     embeddedRedisVersion = "1.4.3"
     awaitilityVersion = "4.3.0"
     findsecbugsVersion = "1.14.0"
-    testcontainersVersion = "1.20.4"
+    testcontainersVersion = "1.21.4"
 }
 
 dependencies {
@@ -54,9 +54,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation "org.aspectj:aspectjweaver"
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'com.bucket4j:bucket4j-core:8.10.1'
+    implementation 'com.bucket4j:bucket4j-redis:8.10.1'
 
     // Spring Cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'

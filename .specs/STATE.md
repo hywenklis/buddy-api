@@ -4,7 +4,7 @@
 
 | ID | Decision | Rationale | Date |
 |----|----------|-----------|------|
-| AD-001 | Java 21 with Spring Boot 4.0.1 as the runtime platform | LTS release with virtual threads support, modern language features (records, sealed classes, pattern matching). Spring Boot 4.x. | 2026-08-12 |
+| AD-001 | Java 21 with Spring Boot 4.1.0 and `spring-boot-starter-webmvc` as the runtime platform | LTS release with virtual threads support, modern language features (records, sealed classes, pattern matching), and the current Spring MVC starter. | 2026-08-12 |
 | AD-002 | Domain-Driven package layout under `com.buddy.api.domains.<context>` with layered sub-packages (`.dtos`, `.entities`, `.enums`, `.mappers`, `.repositories`, `.services`, `.specifications`) | Bounded contexts isolate business domains (account, pet, shelter, adoption, terms, authentication, profile, address, image). Each context owns its full vertical slice. | 2026-08-12 |
 | AD-003 | Web controllers live in `com.buddy.api.web.<resource>`, separate from domain packages | Clean separation between HTTP concerns and business logic. Controllers handle request/response mapping only. | 2026-08-12 |
 | AD-004 | DTOs are Java `record`s — no business or conversion logic inside them | Records enforce immutability and conciseness. Mapping logic belongs exclusively in MapStruct `@Mapper` interfaces with `componentModel = "spring"`. | 2026-08-12 |
@@ -20,6 +20,7 @@
 | AD-014 | Lombok with `addLombokGeneratedAnnotation = true` | Jacoco and static analysis tools skip Lombok-generated code, producing accurate coverage and quality metrics. | 2026-08-12 |
 | AD-015 | SpringDoc OpenAPI 2.8.9 for interactive API documentation | Auto-generated Swagger UI from annotations keeps docs synchronized with code. | 2026-08-12 |
 | AD-016 | Cross-cutting concerns centralized in `com.buddy.api.commons` (security, cache, exceptions, converters, enums, pagination) | Shared infrastructure code lives in one place. Domain packages never depend on each other — only on `commons`. | 2026-08-12 |
+| AD-017 | Rate-limit buckets use independent operation/email and operation/IP keys, with IP buckets disabled when `useIp=false` | Separate dimensions prevent changing one identifier from bypassing the other limit while preserving email-only use cases. | 2026-08-22 |
 
 ## Handoff
 

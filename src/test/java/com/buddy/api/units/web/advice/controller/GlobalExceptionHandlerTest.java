@@ -10,6 +10,7 @@ import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.web.advice.controller.GlobalExceptionHandler;
 import com.buddy.api.web.advice.error.ErrorResponse;
 import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -21,6 +22,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 class GlobalExceptionHandlerTest extends UnitTestAbstract {
 
@@ -41,9 +43,9 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().errors().get(0).message())
+        assertThat(response.getBody().errors().getFirst().message())
             .isEqualTo("default message");
-        assertThat(response.getBody().errors().get(0).field()).isEqualTo("field");
+        assertThat(response.getBody().errors().getFirst().field()).isEqualTo("field");
     }
 
     @Test
@@ -55,8 +57,10 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
             globalExceptionHandler.handlePetSearchException(ex);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().errors().get(0).message()).isEqualTo(ex.getMessage());
-        assertThat(response.getBody().errors().get(0).field()).isEqualTo("query");
+        assertThat(
+            Objects.requireNonNull(response.getBody()).errors().getFirst().message()).isEqualTo(
+            ex.getMessage());
+        assertThat(response.getBody().errors().getFirst().field()).isEqualTo("query");
     }
 
     @Test
@@ -82,9 +86,9 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
             globalExceptionHandler.handleSpringSecurityAuthException(authEx);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody().errors().get(0).message())
+        assertThat(Objects.requireNonNull(response.getBody()).errors().getFirst().message())
             .isEqualTo("Invalid Credentials");
-        assertThat(response.getBody().errors().get(0).field()).isEqualTo("credentials");
+        assertThat(response.getBody().errors().getFirst().field()).isEqualTo("credentials");
     }
 
     @Test
@@ -96,16 +100,18 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
             globalExceptionHandler.handleUnexpectedException(genericEx);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        // The exact message must be "Internal Server Error"
-        assertThat(response.getBody().errors().get(0).message()).isEqualTo("Internal Server Error");
-        assertThat(response.getBody().errors().get(0).field()).isEqualTo("server");
+        assertThat(
+            Objects.requireNonNull(response.getBody()).errors().getFirst().message()).isEqualTo(
+            "Internal Server Error");
+        assertThat(response.getBody().errors().getFirst().field()).isEqualTo("server");
     }
 
     @Test
     @DisplayName("Should handle DomainException and propagate its native HTTP status")
     void handleDomainException() {
         DomainException ex = new DomainException(
-            "Some error", "Some field", HttpStatus.CONFLICT, new RuntimeException()) {};
+            "Some error", "Some field", HttpStatus.CONFLICT, new RuntimeException()) {
+        };
 
         ResponseEntity<ErrorResponse> response =
             globalExceptionHandler.handleDomainException(ex);
@@ -113,5 +119,37 @@ class GlobalExceptionHandlerTest extends UnitTestAbstract {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(response.getBody().errors().get(0).message()).isEqualTo("Some error");
         assertThat(response.getBody().errors().get(0).field()).isEqualTo("Some field");
+    }
+
+    @Test
+    @DisplayName("Should handle invalid request parameter formats")
+    void handleIllegalArgumentException() {
+        ResponseEntity<ErrorResponse> response =
+            globalExceptionHandler.handleIllegalArgumentException(new IllegalArgumentException());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(
+            Objects.requireNonNull(response.getBody()).errors().getFirst().field()).isEqualTo(
+            "request");
+        assertThat(response.getBody().errors().getFirst().message())
+            .isEqualTo("Invalid request parameter format");
+    }
+
+    @Test
+    @DisplayName("Should extract exact parameter name from MethodArgumentTypeMismatchException")
+    void handleMethodArgumentTypeMismatchException() {
+        MethodArgumentTypeMismatchException exception =
+            new MethodArgumentTypeMismatchException("value", String.class, "parameter", null,
+                new IllegalArgumentException());
+
+        ResponseEntity<ErrorResponse> response =
+            globalExceptionHandler.handleIllegalArgumentException(exception);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(
+            Objects.requireNonNull(response.getBody()).errors().getFirst().field()).isEqualTo(
+            "parameter");
+        assertThat(response.getBody().errors().getFirst().message())
+            .isEqualTo("Invalid request parameter format");
     }
 }

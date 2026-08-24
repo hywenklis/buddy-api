@@ -1,8 +1,8 @@
 package com.buddy.api.commons.configurations.cache;
 
+import com.buddy.api.domains.terms.dtos.TermsVersionDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import java.util.HashMap;
@@ -14,43 +14,17 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
-    public RedisSerializer<Object> jsonSerializer(final ObjectMapper objectMapper) {
-        return new RedisSerializer<Object>() {
-            @Override
-            public byte[] serialize(final Object t) throws SerializationException {
-                if (t == null) {
-                    return new byte[0];
-                }
-                try {
-                    return objectMapper.writeValueAsBytes(t);
-                } catch (com.fasterxml.jackson.core.JsonProcessingException ex) {
-                    throw new SerializationException("Could not write JSON: "
-                        + ex.getMessage(), ex);
-                }
-            }
-
-            @Override
-            public Object deserialize(final byte[] bytes) throws SerializationException {
-                if (bytes == null || bytes.length == 0) {
-                    return null;
-                }
-                try {
-                    return objectMapper.readValue(bytes, Object.class);
-                } catch (java.io.IOException ex) {
-                    throw new SerializationException("Could not read JSON: "
-                        + ex.getMessage(), ex);
-                }
-            }
-        };
+    public RedisSerializer<TermsVersionDto> termsSerializer(final ObjectMapper objectMapper) {
+        return new Jackson2JsonRedisSerializer<>(objectMapper, TermsVersionDto.class);
     }
 
     @Bean
@@ -59,28 +33,18 @@ public class CacheConfig {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-            .allowIfSubType("com.buddy.api")
-            .allowIfSubType("java.util.ArrayList")
-            .allowIfSubType("java.util.UUID")
-            .allowIfSubType("java.util.HashMap")
-            .allowIfSubType("java.util.HashSet")
-            .allowIfSubType("java.time")
-            .allowIfSubType("java.lang.String")
-            .build();
-
-        objectMapper.activateDefaultTyping(ptv,
-            com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINAL,
-            com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY);
-
-        RedisSerializer<Object> jsonSerializer = jsonSerializer(objectMapper);
+        RedisSerializer<String> stringSerializer = new StringRedisSerializer();
+        RedisSerializer<TermsVersionDto> termsSerializer = termsSerializer(objectMapper);
 
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
             .disableCachingNullValues()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
                 new StringRedisSerializer()))
             .serializeValuesWith(
-                RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer));
+                RedisSerializationContext.SerializationPair.fromSerializer(stringSerializer));
+
+        RedisCacheConfiguration termsConfig = defaultConfig.serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(termsSerializer));
 
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
         cacheConfigs.put("emailVerificationToken", defaultConfig.entryTtl(Duration.ofMinutes(15)));
@@ -91,7 +55,7 @@ public class CacheConfig {
         cacheConfigs.put("forgotPasswordRateLimit",
             defaultConfig.entryTtl(Duration.ofMinutes(1)));
 
-        cacheConfigs.put("terms", defaultConfig.entryTtl(Duration.ofHours(24)));
+        cacheConfigs.put("terms", termsConfig.entryTtl(Duration.ofHours(24)));
 
         return RedisCacheManager.builder(redisConnectionFactory)
             .cacheDefaults(defaultConfig)

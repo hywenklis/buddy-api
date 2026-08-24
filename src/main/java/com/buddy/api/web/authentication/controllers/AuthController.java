@@ -1,6 +1,7 @@
 package com.buddy.api.web.authentication.controllers;
 
-import com.buddy.api.commons.configurations.security.cookies.CookieManager;
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
+import com.buddy.api.commons.configurations.security.cookies.annotations.ClearCookiesOnSuccess;
 import com.buddy.api.commons.configurations.security.jwt.JwtUtil;
 import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
@@ -8,7 +9,6 @@ import com.buddy.api.web.authentication.mappers.AuthenticationMapper;
 import com.buddy.api.web.authentication.requests.AuthRequest;
 import com.buddy.api.web.authentication.responses.AuthResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,50 +27,36 @@ public class AuthController implements AuthControllerDoc {
 
     private final AuthService authenticateService;
     private final AuthenticationMapper mapper;
-    private final CookieManager cookieManager;
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
+    @RateLimited(useIp = true, 
+        operation = "login",
+        emailSpel = "#request.email",
+        limitMessage = "Too many login attempts. Please wait a minute before trying again."
+    )
     public AuthResponse authenticate(
         @Valid @RequestBody final AuthRequest request,
-        final HttpServletRequest httpRequest,
-        final HttpServletResponse response
+        final HttpServletRequest httpRequest
     ) {
         AuthDto authDto = authenticateService.authenticate(mapper.toAuthDto(request));
-
-        cookieManager.handleCookies(
-            httpRequest,
-            response,
-            authDto.accessToken(),
-            authDto.refreshToken()
-        );
-
         return mapper.toAuthResponse(authDto);
     }
 
     @PostMapping("/refresh")
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse refreshToken(
-        final HttpServletRequest request,
-        final HttpServletResponse response
+        final HttpServletRequest request
     ) {
         AuthDto authDto = authenticateService.refreshToken(request);
-        cookieManager.handleCookies(
-            request,
-            response,
-            authDto.accessToken(),
-            authDto.refreshToken()
-        );
-
         return mapper.toAuthResponse(authDto);
     }
 
+    @ClearCookiesOnSuccess
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(final HttpServletRequest request,
-                       final HttpServletResponse response) {
+    public void logout(final HttpServletRequest request) {
         authenticateService.logoutComplete(request);
-        cookieManager.clearCookies(response);
     }
 }

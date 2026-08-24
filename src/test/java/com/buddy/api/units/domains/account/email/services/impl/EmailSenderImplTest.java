@@ -1,4 +1,4 @@
-package com.buddy.api.units.domains.services.impl;
+package com.buddy.api.units.domains.account.email.services.impl;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -9,8 +9,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.configurations.properties.EmailProperties;
+import com.buddy.api.commons.configurations.properties.EmailProperties.Template;
+import com.buddy.api.commons.configurations.properties.EmailProperties.TemplateWithUrl;
+import com.buddy.api.commons.configurations.properties.EmailProperties.Templates;
+import com.buddy.api.commons.exceptions.ManagerApiException;
 import com.buddy.api.domains.account.email.services.EmailTemplateLoaderService;
 import com.buddy.api.domains.account.email.services.impl.EmailSenderImpl;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.clients.manager.ManagerService;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.utils.RandomEmailUtils;
@@ -22,8 +27,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.http.HttpStatus;
 
 class EmailSenderImplTest extends UnitTestAbstract {
+    private static final String EMAIL_SERVICE_FAILURE = "Email service failure";
 
     @Mock
     private ManagerService managerService;
@@ -32,7 +39,16 @@ class EmailSenderImplTest extends UnitTestAbstract {
     private EmailProperties emailProperties;
 
     @Mock
-    private EmailProperties.Templates templates;
+    private Templates templates;
+
+    @Mock
+    private TemplateWithUrl verificationTemplate;
+
+    @Mock
+    private TemplateWithUrl forgotPasswordTemplate;
+
+    @Mock
+    private Template passwordChangedTemplate;
 
     @Mock
     private EmailTemplateLoaderService emailTemplateLoader;
@@ -51,7 +67,7 @@ class EmailSenderImplTest extends UnitTestAbstract {
     private String forgotPasswordUrl;
     private String forgotPasswordTemplatePath;
     private String forgotPasswordSubject;
-    private String forgotPasswordTemplate;
+    private String forgotPasswordTemplateBody;
 
     @BeforeEach
     void setUp() {
@@ -66,10 +82,10 @@ class EmailSenderImplTest extends UnitTestAbstract {
         forgotPasswordUrl = "http://example.com/recover?token=" + token;
         forgotPasswordTemplatePath = "/templates/forgot-password.html";
         forgotPasswordSubject = "Recover Your Password";
-        forgotPasswordTemplate = "<html><a href='{{url}}'>Recover</a></html>";
+        forgotPasswordTemplateBody = "<html><a href='{{url}}'>Recover</a></html>";
 
         when(emailProperties.templates()).thenReturn(templates);
-        when(templates.from()).thenReturn(from);
+        when(emailProperties.from()).thenReturn(from);
     }
 
     @Nested
@@ -78,9 +94,10 @@ class EmailSenderImplTest extends UnitTestAbstract {
 
         @BeforeEach
         void setupVerificationStubs() {
-            when(templates.url()).thenReturn("http://example.com/verify?token=");
-            when(templates.templatePath()).thenReturn(templatePath);
-            when(templates.subject()).thenReturn(subject);
+            when(templates.verification()).thenReturn(verificationTemplate);
+            when(verificationTemplate.url()).thenReturn("http://example.com/verify?token=");
+            when(verificationTemplate.templatePath()).thenReturn(templatePath);
+            when(verificationTemplate.subject()).thenReturn(subject);
             when(emailTemplateLoader.load(templatePath)).thenReturn(template);
         }
 
@@ -89,11 +106,6 @@ class EmailSenderImplTest extends UnitTestAbstract {
         void should_send_verification_email_successfully() {
             emailSender.dispatchVerificationEmail(accountId, userEmail, token);
 
-            verify(emailProperties, times(4)).templates();
-            verify(templates, times(1)).url();
-            verify(templates, times(1)).from();
-            verify(templates, times(1)).subject();
-            verify(emailTemplateLoader, times(1)).load(templatePath);
             verify(managerService, times(1)).sendEmailNotification(
                 List.of(userEmail),
                 from,
@@ -105,26 +117,17 @@ class EmailSenderImplTest extends UnitTestAbstract {
         @Test
         @DisplayName("Should throw exception and log error when email sending fails")
         void should_throw_exception_and_log_error_when_email_sending_fails() {
-            RuntimeException exception = new RuntimeException("Email service failure");
+            var exception = new com.buddy.api.commons.exceptions.ManagerApiException(
+                EMAIL_SERVICE_FAILURE, "email",
+                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                new RuntimeException());
             doThrow(exception).when(managerService)
                 .sendEmailNotification(anyList(), anyString(), anyString(), anyString());
 
             assertThatThrownBy(
                 () -> emailSender.dispatchVerificationEmail(accountId, userEmail, token))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Email service failure");
-
-            verify(emailProperties, times(4)).templates();
-            verify(templates, times(1)).url();
-            verify(templates, times(1)).from();
-            verify(templates, times(1)).subject();
-            verify(emailTemplateLoader, times(1)).load(templatePath);
-            verify(managerService, times(1)).sendEmailNotification(
-                List.of(userEmail),
-                from,
-                subject,
-                template.replace("{{url}}", verificationUrl)
-            );
+                .isInstanceOf(com.buddy.api.commons.exceptions.ManagerApiException.class)
+                .hasMessage(EMAIL_SERVICE_FAILURE);
         }
     }
 
@@ -134,11 +137,12 @@ class EmailSenderImplTest extends UnitTestAbstract {
 
         @BeforeEach
         void setupForgotPasswordStubs() {
-            when(templates.forgotPasswordUrl()).thenReturn("http://example.com/recover?token=");
-            when(templates.forgotPasswordTemplatePath()).thenReturn(forgotPasswordTemplatePath);
-            when(templates.forgotPasswordSubject()).thenReturn(forgotPasswordSubject);
+            when(templates.forgotPassword()).thenReturn(forgotPasswordTemplate);
+            when(forgotPasswordTemplate.url()).thenReturn("http://example.com/recover?token=");
+            when(forgotPasswordTemplate.templatePath()).thenReturn(forgotPasswordTemplatePath);
+            when(forgotPasswordTemplate.subject()).thenReturn(forgotPasswordSubject);
             when(emailTemplateLoader.load(forgotPasswordTemplatePath)).thenReturn(
-                forgotPasswordTemplate);
+                forgotPasswordTemplateBody);
         }
 
         @Test
@@ -146,42 +150,71 @@ class EmailSenderImplTest extends UnitTestAbstract {
         void should_send_password_recovery_email_successfully() {
             emailSender.dispatchPasswordRecoveryEmail(accountId, userEmail, token);
 
-            verify(emailProperties, times(4)).templates();
-            verify(templates, times(1)).forgotPasswordUrl();
-            verify(templates, times(1)).from();
-            verify(templates, times(1)).forgotPasswordSubject();
-            verify(emailTemplateLoader, times(1)).load(forgotPasswordTemplatePath);
             verify(managerService, times(1)).sendEmailNotification(
                 List.of(userEmail),
                 from,
                 forgotPasswordSubject,
-                forgotPasswordTemplate.replace("{{url}}", forgotPasswordUrl)
+                forgotPasswordTemplateBody.replace("{{url}}", forgotPasswordUrl)
             );
         }
 
         @Test
         @DisplayName("Should throw exception and log error when password recovery fails")
         void should_throw_exception_and_log_error_when_password_recovery_fails() {
-            RuntimeException exception = new RuntimeException("Email service failure");
+            var exception = new com.buddy.api.commons.exceptions.ManagerApiException(
+                EMAIL_SERVICE_FAILURE, "email",
+                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                new RuntimeException());
             doThrow(exception).when(managerService)
                 .sendEmailNotification(anyList(), anyString(), anyString(), anyString());
 
             assertThatThrownBy(
                 () -> emailSender.dispatchPasswordRecoveryEmail(accountId, userEmail, token))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Email service failure");
+                .isInstanceOf(com.buddy.api.commons.exceptions.ManagerApiException.class)
+                .hasMessage(EMAIL_SERVICE_FAILURE);
+        }
+    }
 
-            verify(emailProperties, times(4)).templates();
-            verify(templates, times(1)).forgotPasswordUrl();
-            verify(templates, times(1)).from();
-            verify(templates, times(1)).forgotPasswordSubject();
-            verify(emailTemplateLoader, times(1)).load(forgotPasswordTemplatePath);
-            verify(managerService, times(1)).sendEmailNotification(
-                List.of(userEmail),
-                from,
-                forgotPasswordSubject,
-                forgotPasswordTemplate.replace("{{url}}", forgotPasswordUrl)
+    @Nested
+    @DisplayName("Tests for dispatchPasswordChangedNotification method")
+    class DispatchPasswordChangedNotificationTests {
+
+        @BeforeEach
+        void setupPasswordChangedStubs() {
+            when(templates.passwordChanged()).thenReturn(passwordChangedTemplate);
+            when(passwordChangedTemplate.templatePath())
+                .thenReturn("/templates/password-changed.html");
+            when(passwordChangedTemplate.subject()).thenReturn("Password changed");
+            when(emailTemplateLoader.load("/templates/password-changed.html"))
+                .thenReturn("<html>Password changed</html>");
+        }
+
+        @Test
+        @DisplayName("Should send password changed notification successfully")
+        void should_send_password_changed_notification_successfully() {
+            emailSender.dispatchPasswordChangedNotification(accountId, new EmailAddress(userEmail));
+
+            verify(managerService).sendEmailNotification(
+                List.of(new EmailAddress(userEmail).value()), from, "Password changed",
+                "<html>Password changed</html>");
+        }
+
+        @Test
+        @DisplayName("Should throw exception when password changed notification fails")
+        void should_throw_exception_when_password_changed_notification_fails() {
+            final var exception = new ManagerApiException(
+                EMAIL_SERVICE_FAILURE, "email",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                new RuntimeException()
             );
+            doThrow(exception).when(managerService)
+                .sendEmailNotification(anyList(), anyString(), anyString(), anyString());
+
+            assertThatThrownBy(
+                () -> emailSender.dispatchPasswordChangedNotification(
+                    accountId, new EmailAddress(userEmail)))
+                .isInstanceOf(ManagerApiException.class)
+                .hasMessage(EMAIL_SERVICE_FAILURE);
         }
     }
 }

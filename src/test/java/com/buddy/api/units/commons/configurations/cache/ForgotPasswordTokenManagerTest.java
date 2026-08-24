@@ -2,7 +2,10 @@ package com.buddy.api.units.commons.configurations.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,7 +21,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.cache.Cache;
+import org.springframework.data.redis.cache.RedisCache;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisScriptingCommands;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
 
@@ -26,7 +38,19 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
     private CacheInitializer cacheInitializer;
 
     @Mock
-    private Cache forgotPasswordTokenCache;
+    private RedisCache forgotPasswordTokenCache;
+
+    @Mock
+    private RedisConnectionFactory redisConnectionFactory;
+
+    @Mock
+    private RedisConnection redisConnection;
+
+    @Mock
+    private RedisStringCommands redisStringCommands;
+
+    @Mock
+    private RedisScriptingCommands redisScriptingCommands;
 
     @InjectMocks
     private ForgotPasswordTokenManager forgotPasswordTokenManager;
@@ -39,6 +63,16 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
 
         when(cacheInitializer.initializeForgotPasswordTokenCache()).thenReturn(
             forgotPasswordTokenCache);
+        Mockito.lenient().when(forgotPasswordTokenCache.getName())
+            .thenReturn("forgotPasswordToken");
+        Mockito.lenient().when(forgotPasswordTokenCache.getCacheConfiguration()).thenReturn(
+            RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                    new StringRedisSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                    new StringRedisSerializer())));
+        Mockito.lenient().when(redisConnectionFactory.getConnection()).thenReturn(redisConnection);
+        Mockito.lenient().when(redisConnection.stringCommands()).thenReturn(redisStringCommands);
 
         forgotPasswordTokenManager.init();
     }
@@ -108,26 +142,33 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
         @DisplayName("Should consume token by returning email and invalidating it")
         void should_consume_token_and_return_email() {
             String token = "token-to-consume";
-            Cache.ValueWrapper valueWrapper = () -> userEmail;
-            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+            byte[] serializedEmail = new StringRedisSerializer().serialize(userEmail);
+            when(redisStringCommands.getDel(
+                ("forgotPasswordToken::" + token).getBytes()))
+                .thenReturn(serializedEmail);
 
             String email = forgotPasswordTokenManager.consumeToken(token);
 
             assertThat(email).isEqualTo(userEmail);
-            verify(forgotPasswordTokenCache, times(1)).get(token);
-            verify(forgotPasswordTokenCache, times(1)).evict(token);
+            verify(redisStringCommands, times(1)).getDel(
+                ("forgotPasswordToken::" + token).getBytes());
+            verify(forgotPasswordTokenCache, times(0)).get(token);
+            verify(forgotPasswordTokenCache, times(0)).evict(token);
         }
 
         @Test
         @DisplayName("Should return null and not invalidate if token not found when consuming")
         void should_return_null_when_consuming_invalid_token() {
             String token = "invalid-token-to-consume";
-            when(forgotPasswordTokenCache.get(token)).thenReturn(null);
+            when(redisStringCommands.getDel(
+                ("forgotPasswordToken::" + token).getBytes())).thenReturn(null);
 
             String email = forgotPasswordTokenManager.consumeToken(token);
 
             assertThat(email).isNull();
-            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(redisStringCommands, times(1)).getDel(
+                ("forgotPasswordToken::" + token).getBytes());
+            verify(forgotPasswordTokenCache, times(0)).get(token);
             verify(forgotPasswordTokenCache, times(0)).evict(token);
         }
         
@@ -135,14 +176,58 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
         @DisplayName("Should return null and not invalidate if token value is null when consuming")
         void should_return_null_and_not_invalidate_if_token_value_is_null_when_consuming() {
             String token = "valid-token-null-value";
-            Cache.ValueWrapper valueWrapper = () -> null;
-            when(forgotPasswordTokenCache.get(token)).thenReturn(valueWrapper);
+            when(redisStringCommands.getDel(
+                ("forgotPasswordToken::" + token).getBytes())).thenReturn(null);
 
             String email = forgotPasswordTokenManager.consumeToken(token);
 
             assertThat(email).isNull();
-            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(redisStringCommands, times(1)).getDel(
+                ("forgotPasswordToken::" + token).getBytes());
+            verify(forgotPasswordTokenCache, times(0)).get(token);
             verify(forgotPasswordTokenCache, times(0)).evict(token);
+        }
+
+        @Test
+        @DisplayName("Should consume token through Lua fallback when GETDEL is unavailable")
+        void should_consume_token_through_lua_fallback() {
+            String token = "token-to-consume-with-fallback";
+            byte[] serializedEmail = new StringRedisSerializer().serialize(userEmail);
+            when(redisStringCommands.getDel(any())).thenThrow(new UnsupportedOperationException());
+            when(redisConnection.scriptingCommands()).thenReturn(redisScriptingCommands);
+            when(redisScriptingCommands.eval(
+                any(byte[].class), eq(org.springframework.data.redis.connection.ReturnType.VALUE),
+                eq(1), any(byte[].class))).thenReturn(serializedEmail);
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isEqualTo(userEmail);
+            verify(redisScriptingCommands).eval(
+                any(byte[].class), eq(org.springframework.data.redis.connection.ReturnType.VALUE),
+                eq(1), any(byte[].class));
+        }
+
+        @Test
+        @DisplayName("Should return null when deserialized value is not a String")
+        void should_return_null_when_deserialized_value_not_string() {
+            String token = "token-with-non-string-value";
+            @SuppressWarnings("unchecked")
+            RedisSerializationContext.SerializationPair<Object> objectPair =
+                mock(RedisSerializationContext.SerializationPair.class);
+            when(objectPair.read(any(java.nio.ByteBuffer.class))).thenReturn(12345);
+
+            RedisCacheConfiguration customConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                    new StringRedisSerializer()))
+                .serializeValuesWith(objectPair);
+
+            when(forgotPasswordTokenCache.getCacheConfiguration()).thenReturn(customConfig);
+            when(redisStringCommands.getDel(("forgotPasswordToken::" + token).getBytes()))
+                .thenReturn(new byte[]{1, 2, 3});
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isNull();
         }
     }
 

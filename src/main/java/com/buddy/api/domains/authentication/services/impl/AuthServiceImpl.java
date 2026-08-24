@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,10 @@ public class AuthServiceImpl implements AuthService {
         List<ProfileDto> filteredProfiles = fetchAndFilterProfiles(userDetails.getUsername());
 
         String accessToken = jwtUtil.generateAccessToken(authDto.email(), profileAuthorities);
-        String refreshToken = jwtUtil.generateRefreshToken(authDto.email());
+        String refreshToken = jwtUtil.generateRefreshToken(
+            authDto.email(),
+            UUID.randomUUID().toString()
+        );
 
         updateAccount.updateLastLogin(userDetails.getUsername(), LocalDateTime.now());
         log.info("Authentication successful for user: {}", authDto.email());
@@ -104,9 +108,15 @@ public class AuthServiceImpl implements AuthService {
 
             List<String> authorities = extractAuthorities(userDetails);
             String newAccessToken = jwtUtil.generateAccessToken(email, authorities);
+            String newRefreshToken = jwtUtil.generateRefreshToken(
+                email,
+                UUID.randomUUID().toString()
+            );
+
+            blockToken(refreshToken);
 
             log.info("Refresh token successful for email: {}", email);
-            return new AuthDto(email, null, null, newAccessToken, refreshToken);
+            return new AuthDto(email, null, null, newAccessToken, newRefreshToken);
         } catch (JwtException e) {
             log.error("Error refreshing token: {}", e.getMessage());
             throw new AuthenticationException(
@@ -116,7 +126,6 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private UserDetails authenticateUser(final String email, final String password) {
         try {
             final var authResult = authenticationManager.authenticate(
@@ -130,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AccountNotVerifiedException("email", "account no longer active");
         } catch (LockedException ex) {
             throw new AccountBlockedException("email", "account blocked contact support");
-        } catch (Exception ex) {
+        } catch (org.springframework.security.core.AuthenticationException ex) {
             log.error("Authentication failed for user: {}", email, ex);
             throw new AuthenticationException("incorrect email or password", "credentials");
         }

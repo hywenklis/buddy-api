@@ -17,6 +17,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
 class CacheInitializerTest extends UnitTestAbstract {
+    private static final String REQUIRED_CACHES_NOT_FOUND = "Required caches not found: ";
 
     private static final String VERIFICATION_TOKEN_CACHE_NAME = "emailVerificationToken";
     private static final String RATE_LIMIT_CACHE_NAME = "emailVerificationRateLimit";
@@ -66,7 +67,7 @@ class CacheInitializerTest extends UnitTestAbstract {
             assertThatThrownBy(() -> cacheInitializer.initializeVerificationTokenCache())
                 .isInstanceOf(CacheInitializationException.class)
                 .hasMessageContaining(
-                    "Required caches not found: "
+                    REQUIRED_CACHES_NOT_FOUND
                         + "emailVerificationToken or emailVerificationRateLimit");
 
             verify(cacheManager).getCache(VERIFICATION_TOKEN_CACHE_NAME);
@@ -83,7 +84,7 @@ class CacheInitializerTest extends UnitTestAbstract {
             assertThatThrownBy(() -> cacheInitializer.initializeVerificationTokenCache())
                 .isInstanceOf(CacheInitializationException.class)
                 .hasMessageContaining(
-                    "Required caches not found: "
+                    REQUIRED_CACHES_NOT_FOUND
                         + "emailVerificationToken or emailVerificationRateLimit");
 
             verify(cacheManager).getCache(VERIFICATION_TOKEN_CACHE_NAME);
@@ -99,7 +100,7 @@ class CacheInitializerTest extends UnitTestAbstract {
             assertThatThrownBy(() -> cacheInitializer.initializeVerificationTokenCache())
                 .isInstanceOf(CacheInitializationException.class)
                 .hasMessageContaining(
-                    "Required caches not found: "
+                    REQUIRED_CACHES_NOT_FOUND
                         + "emailVerificationToken or emailVerificationRateLimit");
 
             verify(cacheManager).getCache(VERIFICATION_TOKEN_CACHE_NAME);
@@ -138,7 +139,7 @@ class CacheInitializerTest extends UnitTestAbstract {
             assertThatThrownBy(() -> cacheInitializer.initializeForgotPasswordTokenCache())
                 .isInstanceOf(CacheInitializationException.class)
                 .hasMessageContaining(
-                    "Required caches not found: "
+                    REQUIRED_CACHES_NOT_FOUND
                         + "forgotPasswordToken or forgotPasswordRateLimit");
 
             verify(cacheManager).getCache(FORGOT_PASSWORD_TOKEN_CACHE_NAME);
@@ -156,7 +157,7 @@ class CacheInitializerTest extends UnitTestAbstract {
             assertThatThrownBy(() -> cacheInitializer.initializeForgotPasswordTokenCache())
                 .isInstanceOf(CacheInitializationException.class)
                 .hasMessageContaining(
-                    "Required caches not found: "
+                    REQUIRED_CACHES_NOT_FOUND
                         + "forgotPasswordToken or forgotPasswordRateLimit");
 
             verify(cacheManager).getCache(FORGOT_PASSWORD_TOKEN_CACHE_NAME);
