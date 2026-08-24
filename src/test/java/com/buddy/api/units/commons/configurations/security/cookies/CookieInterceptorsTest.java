@@ -59,7 +59,13 @@ class CookieInterceptorsTest extends UnitTestAbstract {
         clearCookiesInterceptor.postHandle(new MockHttpServletRequest(), response,
             handler("ordinary"), null);
 
+        MockHttpServletResponse informationalResponse = new MockHttpServletResponse();
+        informationalResponse.setStatus(100);
+        clearCookiesInterceptor.postHandle(new MockHttpServletRequest(), informationalResponse,
+            handler("success"), null);
+
         verify(cookieManager, never()).clearCookies(response);
+        verify(cookieManager, never()).clearCookies(informationalResponse);
     }
 
     @Test
@@ -98,6 +104,13 @@ class CookieInterceptorsTest extends UnitTestAbstract {
             mock(ServerHttpRequest.class), mock(ServerHttpResponse.class));
 
         assertThat(result).isSameAs(body);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        AuthResponse result2 = cookieInterceptorAdvice.beforeBodyWrite(body, parameter,
+            MediaType.APPLICATION_JSON, StringHttpMessageConverter.class,
+            new ServletServerHttpRequest(request), mock(ServerHttpResponse.class));
+
+        assertThat(result2).isSameAs(body);
     }
 
     @Test

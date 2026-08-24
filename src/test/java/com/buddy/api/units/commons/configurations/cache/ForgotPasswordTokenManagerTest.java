@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -204,6 +205,29 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
             verify(redisScriptingCommands).eval(
                 any(byte[].class), eq(org.springframework.data.redis.connection.ReturnType.VALUE),
                 eq(1), any(byte[].class));
+        }
+
+        @Test
+        @DisplayName("Should return null when deserialized value is not a String")
+        void should_return_null_when_deserialized_value_not_string() {
+            String token = "token-with-non-string-value";
+            @SuppressWarnings("unchecked")
+            RedisSerializationContext.SerializationPair<Object> objectPair =
+                mock(RedisSerializationContext.SerializationPair.class);
+            when(objectPair.read(any(java.nio.ByteBuffer.class))).thenReturn(12345);
+
+            RedisCacheConfiguration customConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(
+                    new StringRedisSerializer()))
+                .serializeValuesWith(objectPair);
+
+            when(forgotPasswordTokenCache.getCacheConfiguration()).thenReturn(customConfig);
+            when(redisStringCommands.getDel(("forgotPasswordToken::" + token).getBytes()))
+                .thenReturn(new byte[]{1, 2, 3});
+
+            String email = forgotPasswordTokenManager.consumeToken(token);
+
+            assertThat(email).isNull();
         }
     }
 
