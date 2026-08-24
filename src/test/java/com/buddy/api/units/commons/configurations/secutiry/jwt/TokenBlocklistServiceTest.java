@@ -147,6 +147,38 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
         assertThat(result).isTrue();
     }
 
+    @Test
+    @DisplayName("Should execute fallbackBlockToken without throwing exception")
+    void fallbackBlockToken_shouldHandleGracefully() {
+        tokenBlocklistService.fallbackBlockToken(
+            TEST_JWT, 3600, new RuntimeException("Redis connection error"));
+    }
+
+    @Test
+    @DisplayName("Should execute fallbackRevokeAllUserTokens without throwing exception")
+    void fallbackRevokeAllUserTokens_shouldHandleGracefully() {
+        tokenBlocklistService.fallbackRevokeAllUserTokens(
+            TEST_EMAIL, new RuntimeException("Redis connection error"));
+    }
+
+    @Test
+    @DisplayName("Should execute fallbackIsBlocked and return false")
+    void fallbackIsBlocked_shouldReturnFalse() {
+        boolean result = tokenBlocklistService.fallbackIsBlocked(
+            TEST_JWT, new RuntimeException("Redis connection error"));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should execute fallbackIsUserTokensRevoked and return false")
+    void fallbackIsUserTokensRevoked_shouldReturnFalse() {
+        boolean result = tokenBlocklistService.fallbackIsUserTokensRevoked(
+            TEST_EMAIL, 1000L, new RuntimeException("Redis connection error"));
+
+        assertThat(result).isFalse();
+    }
+
     private String hashToken(final String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
