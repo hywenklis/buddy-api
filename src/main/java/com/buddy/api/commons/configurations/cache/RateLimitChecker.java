@@ -2,11 +2,15 @@ package com.buddy.api.commons.configurations.cache;
 
 import com.buddy.api.commons.configurations.properties.RateLimitProperties;
 import com.buddy.api.commons.exceptions.TooManyRequestsException;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,7 +25,7 @@ public class RateLimitChecker {
     private static final String PASSWORD_RECOVERY_LIMIT_MESSAGE =
         "Too many password recovery requests. Please wait a minute before trying again.";
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final ProxyManager<byte[]> proxyManager;
     private final RateLimitProperties rateLimitProperties;
 
     public void checkRateLimit(final String email, final UUID accountId) {
@@ -38,19 +42,12 @@ public class RateLimitChecker {
                                 final String operation,
                                 final String limitMessage
     ) {
-        String countKey = buildCountKey(operation, email);
-        Long count = redisTemplate.opsForValue().increment(countKey, 1);
+        String key = buildCountKey(operation, email);
+        Bucket bucket = proxyManager.builder()
+            .build(key.getBytes(StandardCharsets.UTF_8), this::bucketConfiguration);
 
-        if (count != null && count == 1) {
-            redisTemplate.expire(countKey, Duration.ofMinutes(rateLimitProperties.windowMinutes()));
-        }
-
-        if (count != null && count > rateLimitProperties.maxAttempts()) {
-            log.warn("Rate limit exceeded for {} request for account={}",
-                operation,
-                accountId
-            );
-
+        if (!bucket.tryConsume(1)) {
+            log.warn("Rate limit exceeded for {} request for account={}", operation, accountId);
             throw new TooManyRequestsException(limitMessage);
         }
     }
@@ -62,6 +59,17 @@ public class RateLimitChecker {
             PASSWORD_RECOVERY_OPERATION,
             PASSWORD_RECOVERY_LIMIT_MESSAGE
         );
+    }
+
+    private BucketConfiguration bucketConfiguration() {
+        return BucketConfiguration.builder()
+            .addLimit(Bandwidth.builder()
+                .capacity(rateLimitProperties.maxAttempts())
+                .refillIntervally(rateLimitProperties.maxAttempts(),
+                    Duration.ofMinutes(rateLimitProperties.windowMinutes()))
+                .build()
+            )
+            .build();
     }
 
     private String buildCountKey(final String operation, final String email) {

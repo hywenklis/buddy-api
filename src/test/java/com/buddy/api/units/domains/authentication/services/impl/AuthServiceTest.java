@@ -1,8 +1,10 @@
-package com.buddy.api.units.domains.services.impl;
+package com.buddy.api.units.domains.authentication.services.impl;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -39,6 +41,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -72,7 +75,6 @@ class AuthServiceTest extends UnitTestAbstract {
 
     @Mock
     private Authentication authResult;
-
 
     @InjectMocks
     private AuthServiceImpl authService;
@@ -109,7 +111,8 @@ class AuthServiceTest extends UnitTestAbstract {
             List.of(ProfileTypeEnum.USER.name()))
         ).thenReturn(ACCESS_TOKEN);
 
-        when(jwtUtil.generateRefreshToken(authDto.email())).thenReturn(REFRESH_TOKEN);
+        when(jwtUtil.generateRefreshToken(eq(authDto.email()), anyString()))
+            .thenReturn(REFRESH_TOKEN);
 
         AuthDto result = authService.authenticate(authDto);
 
@@ -131,7 +134,7 @@ class AuthServiceTest extends UnitTestAbstract {
             .generateAccessToken(authDto.email(), List.of(ProfileTypeEnum.USER.name()));
 
         verify(jwtUtil, times(1))
-            .generateRefreshToken(authDto.email());
+            .generateRefreshToken(eq(authDto.email()), anyString());
     }
 
     @Test
@@ -150,9 +153,13 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
         when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(false);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
+        when(jwtUtil.getExpirationFromToken(REFRESH_TOKEN))
+            .thenReturn(java.util.Date.from(java.time.Instant.now().plusSeconds(3600)));
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
         when(jwtUtil.generateAccessToken(email, List.of(ProfileTypeEnum.USER.name())))
             .thenReturn(ACCESS_TOKEN);
+        when(jwtUtil.generateRefreshToken(eq(email), anyString()))
+            .thenReturn("new-refresh-token");
 
         AuthDto result = authService.refreshToken(request);
 
@@ -161,7 +168,9 @@ class AuthServiceTest extends UnitTestAbstract {
         assertThat(result.password()).isNull();
         assertThat(result.profiles()).isNull();
         assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
-        assertThat(result.refreshToken()).isEqualTo(REFRESH_TOKEN);
+        assertThat(result.refreshToken()).isEqualTo("new-refresh-token");
+        
+        verify(blocklistService, times(1)).blockToken(eq(REFRESH_TOKEN), anyLong());
 
         verify(jwtUtil, times(1)).extractRefreshToken(request);
         verify(jwtUtil, times(1)).getEmailFromToken(REFRESH_TOKEN);
@@ -291,15 +300,15 @@ class AuthServiceTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should throw AuthenticationException for generic errors")
-    void should_throw_authentication_exception_generic() {
+    @DisplayName("Should throw AuthenticationException for bad credentials")
+    void should_throw_authentication_exception_bad_credentials() {
         final var authDto = AuthDto.builder()
             .email(RandomEmailUtils.generateValidEmail())
             .password(UUID.randomUUID().toString())
             .build();
 
         when(authenticationManager.authenticate(any()))
-            .thenThrow(new RuntimeException("Database down"));
+            .thenThrow(new BadCredentialsException("Bad credentials"));
 
         assertThatThrownBy(() -> authService.authenticate(authDto))
             .isInstanceOf(AuthenticationException.class)

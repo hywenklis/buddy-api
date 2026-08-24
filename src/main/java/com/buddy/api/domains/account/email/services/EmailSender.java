@@ -1,5 +1,6 @@
 package com.buddy.api.domains.account.email.services;
 
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import java.util.UUID;
 
 public interface EmailSender {
@@ -11,4 +12,5 @@ public interface EmailSender {
                                        String userEmail,
                                        String token);
 
+    void dispatchPasswordChangedNotification(UUID accountId, EmailAddress userEmail);
 }

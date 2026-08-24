@@ -51,6 +51,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             final String email = jwtUtil.getEmailFromToken(token);
 
+            if (tokenBlocklistService.isUserTokensRevoked(
+                email,
+                jwtUtil.getIssuedAtFromToken(token).toEpochMilli())
+            ) {
+                log.warn("Attempt to use token issued before user's tokens were revoked");
+                return;
+            }
+
             if (shouldSkipAuthentication(email)) {
                 return;
             }

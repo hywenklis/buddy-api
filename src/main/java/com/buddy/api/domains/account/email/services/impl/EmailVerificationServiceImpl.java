@@ -1,7 +1,6 @@
 package com.buddy.api.domains.account.email.services.impl;
 
 import com.buddy.api.commons.configurations.cache.CacheInitializer;
-import com.buddy.api.commons.configurations.cache.RateLimitChecker;
 import com.buddy.api.commons.configurations.cache.TokenManager;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.AccountValidator;
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmailVerificationServiceImpl implements EmailVerificationService {
     private final UpdateAccount updateAccount;
     private final CacheInitializer cacheInitializer;
-    private final RateLimitChecker rateLimitChecker;
     private final TokenManager tokenManager;
     private final EmailSender emailSender;
     private final AccountValidator accountValidator;
@@ -38,7 +36,6 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         log.info("Received request for email verification for account={}", accountId);
 
         accountValidator.validateAccountNotVerified(account);
-        rateLimitChecker.checkRateLimit(userEmail, accountId);
 
         String token = tokenManager.generateAndStoreToken(userEmail);
         emailSender.dispatchVerificationEmail(accountId, userEmail, token);

@@ -19,6 +19,12 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 class TokenBlocklistServiceTest extends UnitTestAbstract {
+    private static final String TEST_JWT = "test.jwt";
+    private static final String JWT_BLOCKLIST_PREFIX = "jwt:blocklist:";
+    private static final String TEST_EMAIL = "test@example.com";
+    private static final String JWT_REVOKE_ALL_PREFIX = "jwt:revoke_all:test@example.com";
+    private static final int HEX_LENGTH_SINGLE_DIGIT = 1;
+
 
     @Mock
     private StringRedisTemplate redisTemplate;
@@ -34,18 +40,18 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     void blockToken_positiveExpiration() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
-        tokenBlocklistService.blockToken("test.jwt", 3600);
+        tokenBlocklistService.blockToken(TEST_JWT, 3600);
 
         verify(redisTemplate).opsForValue();
-        verify(valueOperations).set("jwt:blocklist:" + hashToken("test.jwt"), "blocked",
+        verify(valueOperations).set(JWT_BLOCKLIST_PREFIX + hashToken(TEST_JWT), "blocked",
             Duration.ofSeconds(3600));
     }
 
     @Test
     @DisplayName("Should not block token when expiration is zero or negative")
     void blockToken_negativeOrZeroExpiration() {
-        tokenBlocklistService.blockToken("test.jwt", 0);
-        tokenBlocklistService.blockToken("test.jwt", -10);
+        tokenBlocklistService.blockToken(TEST_JWT, 0);
+        tokenBlocklistService.blockToken(TEST_JWT, -10);
 
         verify(redisTemplate, never()).opsForValue();
     }
@@ -53,10 +59,10 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should return true when token is in blocklist")
     void isBlocked_true() {
-        when(redisTemplate.hasKey("jwt:blocklist:" + hashToken("test.jwt"))).thenReturn(
+        when(redisTemplate.hasKey(JWT_BLOCKLIST_PREFIX + hashToken(TEST_JWT))).thenReturn(
             Boolean.TRUE);
 
-        boolean result = tokenBlocklistService.isBlocked("test.jwt");
+        boolean result = tokenBlocklistService.isBlocked(TEST_JWT);
 
         assertThat(result).isTrue();
     }
@@ -64,10 +70,10 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should return false when token is not in blocklist")
     void isBlocked_false() {
-        when(redisTemplate.hasKey("jwt:blocklist:" + hashToken("test.jwt"))).thenReturn(
+        when(redisTemplate.hasKey(JWT_BLOCKLIST_PREFIX + hashToken(TEST_JWT))).thenReturn(
             Boolean.FALSE);
 
-        boolean result = tokenBlocklistService.isBlocked("test.jwt");
+        boolean result = tokenBlocklistService.isBlocked(TEST_JWT);
 
         assertThat(result).isFalse();
     }
@@ -75,9 +81,9 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should return false when hasKey returns null")
     void isBlocked_null() {
-        when(redisTemplate.hasKey("jwt:blocklist:" + hashToken("test.jwt"))).thenReturn(null);
+        when(redisTemplate.hasKey(JWT_BLOCKLIST_PREFIX + hashToken(TEST_JWT))).thenReturn(null);
 
-        boolean result = tokenBlocklistService.isBlocked("test.jwt");
+        boolean result = tokenBlocklistService.isBlocked(TEST_JWT);
 
         assertThat(result).isFalse();
     }
@@ -87,11 +93,11 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     void revokeAllUserTokens() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         
-        tokenBlocklistService.revokeAllUserTokens("test@example.com");
+        tokenBlocklistService.revokeAllUserTokens(TEST_EMAIL);
 
         verify(redisTemplate).opsForValue();
         verify(valueOperations).set(
-            org.mockito.ArgumentMatchers.eq("jwt:revoke_all:test@example.com"),
+            org.mockito.ArgumentMatchers.eq(JWT_REVOKE_ALL_PREFIX),
             org.mockito.ArgumentMatchers.anyString(),
             org.mockito.ArgumentMatchers.eq(Duration.ofDays(30))
         );
@@ -101,9 +107,9 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @DisplayName("Should return true when token was issued before revocation timestamp")
     void isUserTokensRevoked_true() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn("1000");
+        when(valueOperations.get(JWT_REVOKE_ALL_PREFIX)).thenReturn("1000");
 
-        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 500);
+        boolean result = tokenBlocklistService.isUserTokensRevoked(TEST_EMAIL, 500);
 
         assertThat(result).isTrue();
     }
@@ -112,9 +118,9 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @DisplayName("Should return false when token was issued after revocation timestamp")
     void isUserTokensRevoked_false() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn("1000");
+        when(valueOperations.get(JWT_REVOKE_ALL_PREFIX)).thenReturn("1000");
 
-        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 2000);
+        boolean result = tokenBlocklistService.isUserTokensRevoked(TEST_EMAIL, 2000);
 
         assertThat(result).isFalse();
     }
@@ -123,9 +129,9 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @DisplayName("Should return false when no revocation timestamp exists")
     void isUserTokensRevoked_null() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn(null);
+        when(valueOperations.get(JWT_REVOKE_ALL_PREFIX)).thenReturn(null);
 
-        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 500);
+        boolean result = tokenBlocklistService.isUserTokensRevoked(TEST_EMAIL, 500);
 
         assertThat(result).isFalse();
     }
@@ -134,9 +140,9 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
     @DisplayName("Should return true when token issued at same second but before revocation")
     void isUserTokensRevoked_sameLogicalInstant() {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get("jwt:revoke_all:test@example.com")).thenReturn("1000500");
+        when(valueOperations.get(JWT_REVOKE_ALL_PREFIX)).thenReturn("1000500");
 
-        boolean result = tokenBlocklistService.isUserTokensRevoked("test@example.com", 1000000L);
+        boolean result = tokenBlocklistService.isUserTokensRevoked(TEST_EMAIL, 1000000L);
 
         assertThat(result).isTrue();
     }
@@ -148,7 +154,7 @@ class TokenBlocklistServiceTest extends UnitTestAbstract {
             StringBuilder hexString = new StringBuilder(2 * hashBytes.length);
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
+                if (hex.length() == HEX_LENGTH_SINGLE_DIGIT) {
                     hexString.append('0');
                 }
                 hexString.append(hex);

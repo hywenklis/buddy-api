@@ -1,5 +1,6 @@
 package com.buddy.api.web.accounts.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
 import com.buddy.api.domains.account.services.CreateAccount;
 import com.buddy.api.web.accounts.mappers.AccountMapperRequest;
 import com.buddy.api.web.accounts.requests.AccountRequest;
@@ -22,6 +23,11 @@ public class CreateAccountController implements CreateAccountControllerDoc {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @RateLimited(useIp = true, 
+        operation = "registration",
+        emailSpel = "#accountRequest.email",
+        limitMessage = "Too many registration attempts. Please wait a minute before trying again."
+    )
     public CreatedSuccessResponse registration(
         @Valid @RequestBody final AccountRequest accountRequest) {
         createAccount.create(mapperRequest.toAccountDto(accountRequest));

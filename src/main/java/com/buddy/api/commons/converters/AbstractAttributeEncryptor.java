@@ -6,6 +6,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Optional;
@@ -36,7 +37,6 @@ public abstract class AbstractAttributeEncryptor implements AttributeConverter<S
             .orElse(null);
     }
 
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private String encrypt(final String data) {
         try {
             final byte[] iv = new byte[properties.ivLength()];
@@ -50,12 +50,11 @@ public abstract class AbstractAttributeEncryptor implements AttributeConverter<S
             byteBuffer.put(cipherText);
 
             return Base64.getEncoder().encodeToString(byteBuffer.array());
-        } catch (Exception e) {
+        } catch (java.security.GeneralSecurityException e) {
             throw new AttributeEncryptorException("attribute", "Error encrypting data", e);
         }
     }
 
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     private String decrypt(final String encryptedData) {
         try {
             final byte[] decoded = Base64.getDecoder().decode(encryptedData);
@@ -70,12 +69,13 @@ public abstract class AbstractAttributeEncryptor implements AttributeConverter<S
             final var cipher = initCipher(Cipher.DECRYPT_MODE, iv);
 
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
-        } catch (Exception e) {
+        } catch (java.security.GeneralSecurityException e) {
             throw new AttributeEncryptorException("attribute", "Error decrypting data", e);
         }
     }
 
-    private Cipher initCipher(final int mode, final byte[] iv) throws Exception {
+    private Cipher initCipher(final int mode, final byte[] iv)
+        throws GeneralSecurityException {
         final var cipher = Cipher.getInstance(properties.algorithm());
         final var parameterSpec = new GCMParameterSpec(properties.tagLength(), iv);
         final var keySpec = new SecretKeySpec(properties.encryptionKey()

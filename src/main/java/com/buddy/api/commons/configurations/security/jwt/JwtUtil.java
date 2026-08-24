@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,9 +44,14 @@ public class JwtUtil {
     }
 
     public String generateRefreshToken(final String email) {
+        return generateRefreshToken(email, UUID.randomUUID().toString());
+    }
+
+    public String generateRefreshToken(final String email, final String jti) {
         Instant now = Instant.now();
         return Jwts.builder()
             .subject(email)
+            .id(jti)
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusMillis(properties.refreshTokenExpiration())))
             .signWith(key())

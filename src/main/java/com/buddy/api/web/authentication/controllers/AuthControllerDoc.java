@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 
 @Tag(name = "Authentication", description = "Endpoints for user authentication and token refresh")
@@ -44,8 +43,7 @@ public interface AuthControllerDoc {
             ))})
     AuthResponse authenticate(
         AuthRequest request,
-        HttpServletRequest httpRequest,
-        HttpServletResponse response
+        HttpServletRequest httpRequest
     );
 
     @Operation(
@@ -68,8 +66,7 @@ public interface AuthControllerDoc {
                 schema = @Schema(implementation = ErrorResponse.class)
             ))})
     AuthResponse refreshToken(
-        final HttpServletRequest request,
-        final HttpServletResponse response
+        final HttpServletRequest request
     );
 
     @Operation(
@@ -83,7 +80,6 @@ public interface AuthControllerDoc {
         )
     })
     void logout(
-        HttpServletRequest request,
-        HttpServletResponse response
+        HttpServletRequest request
     );
 }
