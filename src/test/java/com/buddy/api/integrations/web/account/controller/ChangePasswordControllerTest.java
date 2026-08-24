@@ -52,7 +52,7 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
             WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
             WireMock.setScenarioState("MANAGER_PASSWORD_CHANGED_EMAIL_SCENARIO", "SUCCESS_STATE");
 
-            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "A1!";
+            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "aA1!";
             ChangePasswordRequest request = new ChangePasswordRequest(
                 testUser.plainPassword(),
                 newPassword

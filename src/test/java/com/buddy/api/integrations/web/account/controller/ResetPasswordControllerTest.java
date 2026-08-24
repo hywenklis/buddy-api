@@ -155,7 +155,7 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         @DisplayName("Should allow only one concurrent request to consume a reset token")
         void should_allow_only_one_concurrent_token_consumer() throws Exception {
             String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
-            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "A1!";
+            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "aA1!";
             ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
             ExecutorService executor = Executors.newFixedThreadPool(2);
             CountDownLatch ready = new CountDownLatch(2);
