@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 class ResetPasswordServiceImplTest extends UnitTestAbstract {
@@ -37,11 +38,14 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private ResetPasswordServiceImpl resetPasswordService;
 
     @Test
-    @DisplayName("Should successfully reset password and revoke tokens")
+    @DisplayName("Should successfully reset password and publish PasswordResetEvent")
     void should_reset_password_successfully() {
         String token = "valid-token";
         String email = RandomEmailUtils.generateValidEmail();
@@ -58,6 +62,20 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
         verify(tokenManager, times(1)).consumeToken(token);
         verify(passwordEncoder, times(1)).encode(newPassword);
         verify(updateAccount, times(1)).updatePassword(new EmailAddress(email), encodedPassword);
+        verify(eventPublisher, times(1)).publishEvent(
+            new ResetPasswordServiceImpl.PasswordResetEvent(email)
+        );
+    }
+
+    @Test
+    @DisplayName("Should revoke all user tokens when handling PasswordResetEvent")
+    void should_revoke_all_tokens_on_password_reset_event() {
+        String email = RandomEmailUtils.generateValidEmail();
+        ResetPasswordServiceImpl.PasswordResetEvent event =
+            new ResetPasswordServiceImpl.PasswordResetEvent(email);
+
+        resetPasswordService.handlePasswordReset(event);
+
         verify(blocklistService, times(1)).revokeAllUserTokens(email);
     }
 
@@ -76,11 +94,12 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
         verify(tokenManager, times(1)).consumeToken(token);
         verify(passwordEncoder, never()).encode(any());
         verify(updateAccount, never()).updatePassword(any(), any());
+        verify(eventPublisher, never()).publishEvent(any());
         verify(blocklistService, never()).revokeAllUserTokens(any());
     }
 
     @Test
-    @DisplayName("Should propagate exception when update password fails")
+    @DisplayName("Should propagate exception and not publish event when update password fails")
     void should_propagate_exception_when_update_password_fails() {
         String token = "valid-token";
         String email = RandomEmailUtils.generateValidEmail();
@@ -103,34 +122,7 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
         verify(tokenManager, times(1)).consumeToken(token);
         verify(passwordEncoder, times(1)).encode(newPassword);
         verify(updateAccount, times(1)).updatePassword(new EmailAddress(email), encodedPassword);
+        verify(eventPublisher, never()).publishEvent(any());
         verify(blocklistService, never()).revokeAllUserTokens(any());
     }
-
-    @Test
-    @DisplayName("Should propagate exception when revoke tokens fails")
-    void should_propagate_exception_when_revoke_tokens_fails() {
-        String token = "valid-token";
-        String email = RandomEmailUtils.generateValidEmail();
-        String newPassword = NEW_PASSWORD;
-        String encodedPassword = "encodedPassword";
-        
-        ResetPasswordDto request = new ResetPasswordDto(token, newPassword);
-
-        when(tokenManager.consumeToken(token)).thenReturn(email);
-        when(passwordEncoder.encode(newPassword)).thenReturn(encodedPassword);
-        
-        RuntimeException expectedException = new RuntimeException("Redis error");
-        org.mockito.Mockito.doThrow(expectedException)
-            .when(blocklistService).revokeAllUserTokens(email);
-
-        assertThatThrownBy(() -> resetPasswordService.resetPassword(request))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessage("Redis error");
-
-        verify(tokenManager, times(1)).consumeToken(token);
-        verify(passwordEncoder, times(1)).encode(newPassword);
-        verify(updateAccount, times(1)).updatePassword(new EmailAddress(email), encodedPassword);
-        verify(blocklistService, times(1)).revokeAllUserTokens(email);
-    }
-
 }

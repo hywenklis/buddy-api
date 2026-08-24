@@ -83,6 +83,8 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
             assertThat(passwordEncoder.matches(newPassword, updatedAccount.getPassword())).isTrue();
             
             assertThat(tokenManager.getEmailByToken(token)).isNull();
+            org.mockito.Mockito.verify(tokenBlocklistService)
+                .revokeAllUserTokens(testUser.getEmail().value());
         }
 
         @Test
@@ -98,6 +100,9 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             ).forField("token", "Invalid or expired reset token");
+
+            org.mockito.Mockito.verify(tokenBlocklistService, org.mockito.Mockito.never())
+                .revokeAllUserTokens(org.mockito.ArgumentMatchers.any());
         }
 
         @Test
@@ -170,26 +175,7 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
             }
         }
 
-        @Test
-        @DisplayName("Should roll back the password when token revocation fails")
-        void should_roll_back_password_when_token_revocation_fails() throws Exception {
-            String previousPassword = testUser.getPassword();
-            String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
-            String newPassword = RandomStringUtils.secure().nextAlphanumeric(10) + "A1!";
-            ResetPasswordRequest request = new ResetPasswordRequest(token, newPassword);
-            doThrow(new IllegalStateException("Redis error"))
-                .when(tokenBlocklistService)
-                .revokeAllUserTokens(testUser.getEmail().value());
 
-            mockMvc.perform(post(RESET_PASSWORD_URL)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isInternalServerError());
-
-            AccountEntity unchangedAccount = accountRepository
-                .findById(testUser.getAccountId()).orElseThrow();
-            assertThat(unchangedAccount.getPassword()).isEqualTo(previousPassword);
-        }
 
         private Future<Integer> submitResetRequest(
             final ExecutorService executor,

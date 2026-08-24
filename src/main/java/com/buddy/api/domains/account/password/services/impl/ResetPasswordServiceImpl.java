@@ -9,9 +9,12 @@ import com.buddy.api.domains.account.services.UpdateAccount;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Service
@@ -22,11 +25,13 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
     private final UpdateAccount updateAccount;
     private final TokenBlocklistService blocklistService;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     public void resetPassword(final ResetPasswordDto request) {
-        String email = tokenManager.consumeToken(request.token());
+        log.info("Starting reset password process for token");
+        final var email = tokenManager.consumeToken(request.token());
         
         if (email == null) {
             log.warn("Invalid or expired reset token provided");
@@ -35,11 +40,18 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
         log.info("Resetting password for user");
         
-        String encodedPassword = passwordEncoder.encode(request.newPassword());
+        final var encodedPassword = passwordEncoder.encode(request.newPassword());
         updateAccount.updatePassword(new EmailAddress(email), encodedPassword);
         
-        blocklistService.revokeAllUserTokens(email);
-        
+        eventPublisher.publishEvent(new PasswordResetEvent(email));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handlePasswordReset(final PasswordResetEvent event) {
+        blocklistService.revokeAllUserTokens(event.email());
         log.info("Password successfully reset and all previous tokens revoked");
+    }
+
+    public record PasswordResetEvent(String email) {
     }
 }
