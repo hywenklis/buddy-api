@@ -203,5 +203,23 @@ class ResetPasswordControllerTest extends IntegrationTestAbstract {
         TokenBlocklistService tokenBlocklistService() {
             return mock(TokenBlocklistService.class);
         }
+
+        @Test
+        @DisplayName("Should return 404 on second attempt with same token (single-use)")
+        void should_return_not_found_on_second_attempt() throws Exception {
+            String token = tokenManager.generateAndStoreToken(testUser.getEmail().value());
+            ResetPasswordRequest request = new ResetPasswordRequest(token, "NewPassword123!");
+
+            mockMvc.perform(post(RESET_PASSWORD_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+            expectNotFoundFrom(
+                mockMvc.perform(post(RESET_PASSWORD_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            ).forField("token", "Invalid or expired reset token");
+        }
     }
 }

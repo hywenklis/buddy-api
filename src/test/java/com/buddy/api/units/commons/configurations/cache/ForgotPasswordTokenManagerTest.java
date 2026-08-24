@@ -2,10 +2,14 @@ package com.buddy.api.units.commons.configurations.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+<<<<<<< HEAD
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
+=======
+import static org.mockito.Mockito.clearInvocations;
+>>>>>>> origin/main
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -229,6 +233,11 @@ class ForgotPasswordTokenManagerTest extends UnitTestAbstract {
 
             assertThat(email).isNull();
         }
+=======
+            verify(forgotPasswordTokenCache, times(1)).get(token);
+            verify(forgotPasswordTokenCache, times(0)).evict(token);
+        }
+>>>>>>> origin/main
     }
 
     @Test

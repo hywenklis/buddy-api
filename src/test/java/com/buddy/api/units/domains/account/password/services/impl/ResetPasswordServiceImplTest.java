@@ -125,4 +125,59 @@ class ResetPasswordServiceImplTest extends UnitTestAbstract {
         verify(eventPublisher, never()).publishEvent(any());
         verify(blocklistService, never()).revokeAllUserTokens(any());
     }
+
+    @Test
+    @DisplayName("Should propagate exception when update password fails")
+    void should_propagate_exception_when_update_password_fails() {
+        String token = "valid-token";
+        String email = RandomEmailUtils.generateValidEmail();
+        String newPassword = "NewPassword123!";
+        String encodedPassword = "encodedPassword";
+        
+        ResetPasswordDto request = new ResetPasswordDto(token, newPassword);
+
+        when(tokenManager.consumeToken(token)).thenReturn(email);
+        when(passwordEncoder.encode(newPassword)).thenReturn(encodedPassword);
+        
+        RuntimeException expectedException = new RuntimeException("Database error");
+        org.mockito.Mockito.doThrow(expectedException)
+            .when(updateAccount).updatePassword(new EmailAddress(email), encodedPassword);
+
+        assertThatThrownBy(() -> resetPasswordService.resetPassword(request))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Database error");
+
+        verify(tokenManager, times(1)).consumeToken(token);
+        verify(passwordEncoder, times(1)).encode(newPassword);
+        verify(updateAccount, times(1)).updatePassword(new EmailAddress(email), encodedPassword);
+        verify(blocklistService, never()).revokeAllUserTokens(any());
+    }
+
+    @Test
+    @DisplayName("Should propagate exception when revoke tokens fails")
+    void should_propagate_exception_when_revoke_tokens_fails() {
+        String token = "valid-token";
+        String email = RandomEmailUtils.generateValidEmail();
+        String newPassword = "NewPassword123!";
+        String encodedPassword = "encodedPassword";
+        
+        ResetPasswordDto request = new ResetPasswordDto(token, newPassword);
+
+        when(tokenManager.consumeToken(token)).thenReturn(email);
+        when(passwordEncoder.encode(newPassword)).thenReturn(encodedPassword);
+        
+        RuntimeException expectedException = new RuntimeException("Redis error");
+        org.mockito.Mockito.doThrow(expectedException)
+            .when(blocklistService).revokeAllUserTokens(email);
+
+        assertThatThrownBy(() -> resetPasswordService.resetPassword(request))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("Redis error");
+
+        verify(tokenManager, times(1)).consumeToken(token);
+        verify(passwordEncoder, times(1)).encode(newPassword);
+        verify(updateAccount, times(1)).updatePassword(new EmailAddress(email), encodedPassword);
+        verify(blocklistService, times(1)).revokeAllUserTokens(email);
+    }
+
 }
