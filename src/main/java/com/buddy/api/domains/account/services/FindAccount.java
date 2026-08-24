@@ -6,6 +6,8 @@ import java.util.UUID;
 public interface FindAccount {
     Boolean existsById(UUID accountId);
 
+    AccountDto findById(UUID accountId);
+
     AccountDto findByEmail(String email);
 
     AccountDto findAccountForAuthentication(String email);

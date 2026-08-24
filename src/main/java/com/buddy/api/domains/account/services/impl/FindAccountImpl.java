@@ -29,6 +29,15 @@ public class FindAccountImpl implements FindAccount {
 
     @Override
     @Transactional(readOnly = true)
+    public AccountDto findById(final UUID accountId) {
+        final var account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new NotFoundException("accountId", "Account not found"));
+
+        return accountMapper.toAccountDto(account);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AccountDto findByEmail(final String email) {
         final var account = accountRepository.findByEmail(new EmailAddress(email))
             .orElseThrow(() -> new NotFoundException("email", "Account not found"));

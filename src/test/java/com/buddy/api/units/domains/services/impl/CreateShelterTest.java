@@ -33,19 +33,14 @@ class CreateShelterTest extends UnitTestAbstract {
     @DisplayName("Should return success"
         + "when registering an shelter that does not exist in the database")
     void save_shelter_success() {
-
-        // Given
         final var shelterDto = ShelterBuilder.createShelterDto();
         final var shelterEntity = ShelterBuilder.createShelterEntity(shelterDto);
 
-        // Mock
         when(mapper.mapToEntity(shelterDto)).thenReturn(shelterEntity);
         when(shelterRepository.save(shelterEntity)).thenReturn(shelterEntity);
 
-        // When
         createShelter.create(shelterDto);
 
-        // Then
         ArgumentCaptor<ShelterEntity> shelterEntityCaptor = forClass(ShelterEntity.class);
         verify(shelterRepository, times(1)).save(shelterEntityCaptor.capture());
 
@@ -57,7 +52,5 @@ class CreateShelterTest extends UnitTestAbstract {
         assertThat(savedShelterEntity.getEmail()).isEqualTo(shelterDto.email());
         assertThat(savedShelterEntity.getAddress()).isEqualTo(shelterDto.address());
         assertThat(savedShelterEntity.getPhoneNumber()).isEqualTo(shelterDto.phoneNumber());
-
-        verify(shelterRepository, times(1)).save(shelterEntityCaptor.capture());
     }
 }

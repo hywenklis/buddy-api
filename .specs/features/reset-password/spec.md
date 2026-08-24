@@ -6,9 +6,9 @@ When a user forgets their password, they receive an email with a reset token. Th
 
 ## Goals
 
-- [ ] Securely update the user's password using a valid reset token.
-- [ ] Invalidate the used reset token so it cannot be reused.
-- [ ] Revoke all existing refresh tokens for the account to terminate old sessions immediately.
+- [x] Securely update the user's password using a valid reset token.
+- [x] Invalidate the used reset token so it cannot be reused.
+- [x] Revoke all existing refresh tokens for the account to terminate old sessions immediately.
 
 ## Out of Scope
 
@@ -75,6 +75,6 @@ When a user forgets their password, they receive an email with a reset token. Th
 
 ## Success Criteria
 
-- [ ] Used or expired tokens return a domain friendly error.
-- [ ] Password is updated successfully in the database.
-- [ ] Old sessions (refresh tokens) are immediately revoked.
+- [x] Used or expired tokens return a domain friendly error.
+- [x] Password is updated successfully in the database.
+- [x] Old sessions (refresh tokens) are immediately revoked.

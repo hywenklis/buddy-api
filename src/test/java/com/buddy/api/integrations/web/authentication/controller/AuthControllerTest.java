@@ -6,6 +6,7 @@ import static com.buddy.api.customverifications.CustomErrorVerifications.expectE
 import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.ADMIN;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -327,9 +328,9 @@ class AuthControllerTest extends IntegrationTestAbstract {
             .andExpect(cookie().secure(ACCESS_TOKEN_NAME, true))
             .andExpect(cookie().httpOnly(ACCESS_TOKEN_NAME, true))
             .andExpect(cookie().exists(REFRESH_TOKEN_NAME))
-            .andExpect(cookie().value(REFRESH_TOKEN_NAME, refreshToken))
+            .andExpect(cookie().value(REFRESH_TOKEN_NAME, not(equalTo(refreshToken))))
             .andExpect(jsonPath("$.accessToken", notNullValue()))
-            .andExpect(jsonPath("$.refreshToken", equalTo(refreshToken)))
+            .andExpect(jsonPath("$.refreshToken", not(equalTo(refreshToken))))
             .andExpect(jsonPath("$.profiles").doesNotExist());
     }
 

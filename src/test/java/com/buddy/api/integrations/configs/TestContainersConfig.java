@@ -15,6 +15,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 @TestConfiguration(proxyBeanMethods = false)
+@SuppressWarnings("PMD.TestClassWithoutTestCases")
 public class TestContainersConfig {
 
     @Bean

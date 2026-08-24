@@ -1,5 +1,6 @@
 package com.buddy.api.web.accounts.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
 import com.buddy.api.domains.account.email.services.ForgotPasswordService;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.web.accounts.requests.ForgotPasswordRequest;
@@ -24,6 +25,12 @@ public class ForgotPasswordController {
 
     @PostMapping("/forgot")
     @ResponseStatus(HttpStatus.ACCEPTED)
+    @RateLimited(useIp = true, 
+        operation = "password-recovery",
+        emailSpel = "#request.email",
+        limitMessage = "Too many password recovery requests. "
+            + "Please wait a minute before trying again."
+    )
     public AcceptedSuccessResponse forgotPassword(
         @Valid @RequestBody final ForgotPasswordRequest request
     ) {

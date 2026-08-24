@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.wiremock.spring.ConfigureWireMock;
 import org.wiremock.spring.EnableWireMock;
@@ -39,6 +40,10 @@ import org.wiremock.spring.InjectWireMock;
 @AutoConfigureJson
 @EnableWireMock({@ConfigureWireMock(port = 0, filesUnderClasspath = "")})
 @Import(TestContainersConfig.class)
+@TestPropertySource(properties = {
+    "buddy.security.cors.allowed-origins=http://localhost:3000,https://buddyclient.vercel.app,"
+        + "550e8400-e29b-41d4-a716-446655440000"
+})
 @Isolated
 public abstract class IntegrationTestAbstract {
 
