@@ -3,7 +3,6 @@ package com.buddy.api.integrations.web.account.controller;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

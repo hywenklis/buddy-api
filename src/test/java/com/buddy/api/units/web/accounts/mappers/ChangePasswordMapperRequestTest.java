@@ -19,7 +19,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 class ChangePasswordMapperRequestTest extends UnitTestAbstract {
 
@@ -68,7 +67,7 @@ class ChangePasswordMapperRequestTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should map ChangePasswordRequest to ChangePasswordDto using constructor-injected HttpRequestExtractor")
+    @DisplayName("Should map ChangePasswordRequest to ChangePasswordDto using extractor")
     void should_map_change_password_request_to_dto() {
         UUID accountId = UUID.randomUUID();
         String email = com.buddy.api.utils.RandomEmailUtils.generateValidEmail();
@@ -81,7 +80,10 @@ class ChangePasswordMapperRequestTest extends UnitTestAbstract {
         AuthenticatedUser user = new AuthenticatedUser(account,
             List.of(new SimpleGrantedAuthority("USER")));
 
-        ChangePasswordRequest requestBody = new ChangePasswordRequest("OldPassword123!", "NewPassword123!");
+        ChangePasswordRequest requestBody = new ChangePasswordRequest(
+            "OldPassword123!",
+            "NewPassword123!"
+        );
 
         when(httpRequestExtractor.extractIp(request)).thenReturn("127.0.0.1");
         when(httpRequestExtractor.extractUserAgent(request)).thenReturn("Mozilla/5.0");

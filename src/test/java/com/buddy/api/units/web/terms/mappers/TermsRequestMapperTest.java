@@ -42,7 +42,7 @@ class TermsRequestMapperTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should map to AcceptTermsDto using authenticated user and extracted request metadata")
+    @DisplayName("Should map to AcceptTermsDto using auth user and metadata")
     void should_map_to_accept_terms_dto_from_authenticated_user() {
         final String expectedEmail = RandomEmailUtils.generateValidEmail();
         when(authUser.getEmail()).thenReturn(expectedEmail);
@@ -86,7 +86,8 @@ class TermsRequestMapperTest extends UnitTestAbstract {
     void should_map_create_terms_version_dto() {
         final String expectedEmail = RandomEmailUtils.generateValidEmail();
         when(authUser.getEmail()).thenReturn(expectedEmail);
-        CreateTermsVersionRequest createRequest = new CreateTermsVersionRequest("v1.0", "Terms content", true);
+        CreateTermsVersionRequest createRequest =
+            new CreateTermsVersionRequest("v1.0", "Terms content", true);
 
         CreateTermsVersionDto result = mapper.toCreateDto(createRequest, authUser);
 
