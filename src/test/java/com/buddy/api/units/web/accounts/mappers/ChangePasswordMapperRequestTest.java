@@ -9,6 +9,7 @@ import com.buddy.api.domains.account.password.dtos.ChangePasswordDto;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.web.accounts.mappers.ChangePasswordMapperRequest;
+import com.buddy.api.web.accounts.mappers.ChangePasswordMapperRequestImpl;
 import com.buddy.api.web.accounts.requests.ChangePasswordRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -16,11 +17,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.util.ReflectionTestUtils;
 
 class ChangePasswordMapperRequestTest extends UnitTestAbstract {
 
@@ -30,12 +29,11 @@ class ChangePasswordMapperRequestTest extends UnitTestAbstract {
     @Mock
     private HttpServletRequest request;
 
-    @InjectMocks
-    private TestMapper mapper;
+    private ChangePasswordMapperRequest mapper;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(mapper, "httpRequestExtractor", httpRequestExtractor);
+        mapper = new ChangePasswordMapperRequestImpl(httpRequestExtractor);
     }
 
     @Test
@@ -66,26 +64,42 @@ class ChangePasswordMapperRequestTest extends UnitTestAbstract {
         assertThat(mapper.extractEmail(user)).isEqualTo(user.getUsername());
         assertThat(mapper.extractAccountId(user)).isNull();
         assertThat(mapper.extractEmail(null)).isNull();
+        assertThat(mapper.extractAccountId(null)).isNull();
     }
 
     @Test
-    @DisplayName("Should delegate request metadata extraction")
-    void should_extract_request_metadata() {
-        when(httpRequestExtractor.extractIp(request)).thenReturn("127.0.0.1");
-        when(httpRequestExtractor.extractUserAgent(request)).thenReturn("agent");
+    @DisplayName("Should map ChangePasswordRequest to ChangePasswordDto using constructor-injected HttpRequestExtractor")
+    void should_map_change_password_request_to_dto() {
+        UUID accountId = UUID.randomUUID();
+        String email = com.buddy.api.utils.RandomEmailUtils.generateValidEmail();
+        AccountDto account = AccountDto.builder().accountId(accountId)
+            .email(new com.buddy.api.domains.valueobjects.EmailAddress(email))
+            .password("oldPassword")
+            .isBlocked(false)
+            .isDeleted(false)
+            .build();
+        AuthenticatedUser user = new AuthenticatedUser(account,
+            List.of(new SimpleGrantedAuthority("USER")));
 
-        assertThat(mapper.extractIp(request)).isEqualTo("127.0.0.1");
-        assertThat(mapper.extractUserAgent(request)).isEqualTo("agent");
+        ChangePasswordRequest requestBody = new ChangePasswordRequest("OldPassword123!", "NewPassword123!");
+
+        when(httpRequestExtractor.extractIp(request)).thenReturn("127.0.0.1");
+        when(httpRequestExtractor.extractUserAgent(request)).thenReturn("Mozilla/5.0");
+
+        ChangePasswordDto dto = mapper.toDto(requestBody, request, user);
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.accountId()).isEqualTo(accountId);
+        assertThat(dto.email()).isEqualTo(user.getEmail());
+        assertThat(dto.currentPassword()).isEqualTo("OldPassword123!");
+        assertThat(dto.newPassword()).isEqualTo("NewPassword123!");
+        assertThat(dto.ipAddress()).isEqualTo("127.0.0.1");
+        assertThat(dto.userAgent()).isEqualTo("Mozilla/5.0");
     }
 
-    static class TestMapper extends ChangePasswordMapperRequest {
-        @Override
-        public ChangePasswordDto toDto(
-            final ChangePasswordRequest body,
-            final HttpServletRequest request,
-            final UserDetails userDetails
-        ) {
-            return null;
-        }
+    @Test
+    @DisplayName("Should return null when all inputs are null")
+    void should_return_null_when_all_inputs_null() {
+        assertThat(mapper.toDto(null, null, null)).isNull();
     }
 }
