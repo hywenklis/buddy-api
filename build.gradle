@@ -47,6 +47,7 @@ ext {
     awaitilityVersion = "4.3.0"
     findsecbugsVersion = "1.14.0"
     testcontainersVersion = "1.21.4"
+    resilience4jVersion = "2.3.0"
 }
 
 dependencies {
@@ -60,6 +61,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.bucket4j:bucket4j-core:8.10.1'
     implementation 'com.bucket4j:bucket4j-redis:8.10.1'
+
+    // Resilience
+    implementation "io.github.resilience4j:resilience4j-spring-boot3:${resilience4jVersion}"
 
     // Spring Cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
