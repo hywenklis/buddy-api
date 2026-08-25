@@ -388,4 +388,70 @@ class AuthControllerTest extends IntegrationTestAbstract {
             UNAUTHORIZED)
             .forField("refresh-token", "Invalid refresh token or token expired");
     }
+
+    @Test
+    @DisplayName("Should logout successfully using mobile X-Refresh-Token header")
+    void logout_success_with_mobile_header() throws Exception {
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity()
+            .password(passwordEncoder.encode(plain))
+            .isVerified(true)
+            .build();
+        accountRepository.save(account);
+
+        final var authRequest = AuthRequest.builder()
+            .email(account.getEmail().value())
+            .password(plain)
+            .build();
+        final var authResult = performAuthRequest(authRequest).andReturn().getResponse();
+        final var accessToken = Objects.requireNonNull(authResult.getCookie(ACCESS_TOKEN_NAME))
+            .getValue();
+        final var refreshToken = Objects.requireNonNull(authResult.getCookie(REFRESH_TOKEN_NAME))
+            .getValue();
+
+        mockMvc.perform(post("/v1/auth/logout")
+                .header(ORIGIN, WEB_ORIGIN)
+                .header("Authorization", "Bearer " + accessToken)
+                .header("X-Refresh-Token", refreshToken))
+            .andExpect(status().isNoContent());
+
+        expectErrorStatusFrom(
+            performRefreshRequest(refreshToken),
+            UNAUTHORIZED)
+            .forField("refresh-token", "Invalid refresh token or token expired");
+    }
+
+    @Test
+    @DisplayName("Should return 401 when access token is missing on logout")
+    void logout_should_fail_when_access_token_is_missing() throws Exception {
+        final var result = mockMvc.perform(post("/v1/auth/logout")
+            .header(ORIGIN, WEB_ORIGIN)
+            .cookie(new Cookie(REFRESH_TOKEN_NAME, "dummy.refresh.token")));
+
+        expectErrorStatusFrom(result, UNAUTHORIZED)
+            .forField("access-token", "Access token is required");
+    }
+
+    @Test
+    @DisplayName("Should return 401 when refresh token is missing on logout")
+    void logout_should_fail_when_refresh_token_is_missing() throws Exception {
+        final var result = mockMvc.perform(post("/v1/auth/logout")
+            .header(ORIGIN, WEB_ORIGIN)
+            .header("Authorization", "Bearer valid.access.token"));
+
+        expectErrorStatusFrom(result, UNAUTHORIZED)
+            .forField("refresh-token", "Refresh token is required");
+    }
+
+    @Test
+    @DisplayName("Should return 401 when token format is invalid on logout")
+    void logout_should_fail_when_token_is_invalid() throws Exception {
+        final var result = mockMvc.perform(post("/v1/auth/logout")
+            .header(ORIGIN, WEB_ORIGIN)
+            .header("Authorization", "Bearer invalid.malformed.token")
+            .cookie(new Cookie(REFRESH_TOKEN_NAME, "another.bad.token")));
+
+        expectErrorStatusFrom(result, UNAUTHORIZED)
+            .forField("token", "Invalid token format");
+    }
 }
