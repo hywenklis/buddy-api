@@ -1,6 +1,7 @@
 package com.buddy.api.commons.configurations.security;
 
 import com.buddy.api.commons.configurations.properties.BuddySecurityProperties;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +19,9 @@ public class GlobalCorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        if (securityProperties.cors() != null
-            && securityProperties.cors().allowedOrigins() != null) {
-            securityProperties.cors().allowedOrigins().forEach(config::addAllowedOriginPattern);
-        }
+        Optional.ofNullable(securityProperties.cors())
+            .map(BuddySecurityProperties.CorsProperties::allowedOrigins)
+            .ifPresent(origins -> origins.forEach(config::addAllowedOriginPattern));
         config.setAllowCredentials(true);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

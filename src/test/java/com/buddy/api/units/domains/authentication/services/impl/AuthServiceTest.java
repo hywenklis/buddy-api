@@ -30,7 +30,6 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -153,8 +152,8 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
         when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(false);
         when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
-        when(jwtUtil.getExpirationFromToken(REFRESH_TOKEN))
-            .thenReturn(java.util.Date.from(java.time.Instant.now().plusSeconds(3600)));
+        when(jwtUtil.getExpirationInstantAllowingExpired(REFRESH_TOKEN))
+            .thenReturn(Optional.of(Instant.now().plusSeconds(3600)));
         when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
         when(jwtUtil.generateAccessToken(email, List.of(ProfileTypeEnum.USER.name())))
             .thenReturn(ACCESS_TOKEN);
@@ -182,6 +181,37 @@ class AuthServiceTest extends UnitTestAbstract {
             .generateAccessToken(email, List.of(ProfileTypeEnum.USER.name()));
         verify(updateAccount, times(0))
             .updateLastLogin(any(String.class), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when blockToken "
+        + "fails with JwtException during refreshToken")
+    void should_throw_auth_exception_when_block_token_fails_with_jwt_exception() {
+        var email = RandomEmailUtils.generateValidEmail();
+        UserDetails userDetails = new User(
+            email,
+            RandomStringUtils.secure().nextAlphanumeric(10),
+            List.of(new SimpleGrantedAuthority(ProfileTypeEnum.USER.name()))
+        );
+
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(blocklistService.isBlocked(REFRESH_TOKEN)).thenReturn(false);
+        when(jwtUtil.getEmailFromToken(REFRESH_TOKEN)).thenReturn(email);
+        when(jwtUtil.getIssuedAtFromToken(REFRESH_TOKEN)).thenReturn(Instant.ofEpochSecond(1000));
+        when(blocklistService.isUserTokensRevoked(email, 1000000L)).thenReturn(false);
+        when(userDetailsService.loadUserByUsername(email)).thenReturn(userDetails);
+        when(jwtUtil.getExpirationInstantAllowingExpired(REFRESH_TOKEN))
+            .thenThrow(new JwtException("Failed to parse token"));
+        when(jwtUtil.validateToken(REFRESH_TOKEN, email)).thenReturn(true);
+        when(jwtUtil.generateAccessToken(email, List.of(ProfileTypeEnum.USER.name())))
+            .thenReturn(ACCESS_TOKEN);
+        when(jwtUtil.generateRefreshToken(eq(email), anyString()))
+            .thenReturn("new-refresh-token");
+
+        assertThatThrownBy(() -> authService.refreshToken(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid refresh token or token expired")
+            .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
     }
 
     @Test
@@ -359,8 +389,8 @@ class AuthServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should block token successfully when expiration is in the future")
     void should_logout_successfully_and_block_token() {
-        final var futureDate = Date.from(Instant.now().plusSeconds(3600));
-        when(jwtUtil.getExpirationFromToken(ACCESS_TOKEN)).thenReturn(futureDate);
+        when(jwtUtil.getExpirationInstantFromToken(ACCESS_TOKEN))
+            .thenReturn(Instant.now().plusSeconds(3600));
 
         authService.logout(ACCESS_TOKEN);
 
@@ -372,8 +402,8 @@ class AuthServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should not block token if it is already expired")
     void should_not_block_token_if_already_expired() {
-        var pastDate = Date.from(Instant.parse("2020-01-01T00:00:00Z"));
-        when(jwtUtil.getExpirationFromToken(ACCESS_TOKEN)).thenReturn(pastDate);
+        when(jwtUtil.getExpirationInstantFromToken(ACCESS_TOKEN))
+            .thenReturn(Instant.parse("2020-01-01T00:00:00Z"));
 
         authService.logout(ACCESS_TOKEN);
 
@@ -383,11 +413,99 @@ class AuthServiceTest extends UnitTestAbstract {
     @Test
     @DisplayName("Should handle JwtException gracefully on logout")
     void should_handle_jwt_exception_on_logout() {
-        when(jwtUtil.getExpirationFromToken(ACCESS_TOKEN))
+        when(jwtUtil.getExpirationInstantFromToken(ACCESS_TOKEN))
             .thenThrow(new JwtException("Invalid JWT"));
 
         authService.logout(ACCESS_TOKEN);
 
         verifyNoInteractions(blocklistService);
+    }
+
+    @Test
+    @DisplayName("Should execute logoutComplete successfully and block both tokens")
+    void logoutComplete_success() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(ACCESS_TOKEN));
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(jwtUtil.getEmailFromTokenAllowingExpired(ACCESS_TOKEN)).thenReturn(EMAIL_VALUE);
+
+        when(jwtUtil.getExpirationInstantAllowingExpired(anyString()))
+            .thenReturn(Optional.of(Instant.now().plusSeconds(3600)));
+
+        authService.logoutComplete(request);
+
+        verify(blocklistService, times(2)).blockToken(anyString(), anyLong());
+    }
+
+    @Test
+    @DisplayName("Should execute logoutComplete successfully even when access token is expired")
+    void logoutComplete_withExpiredAccessToken() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(ACCESS_TOKEN));
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(jwtUtil.getEmailFromTokenAllowingExpired(ACCESS_TOKEN)).thenReturn(EMAIL_VALUE);
+
+        when(jwtUtil.getExpirationInstantAllowingExpired(ACCESS_TOKEN))
+            .thenReturn(Optional.of(Instant.now().minusSeconds(3600)));
+        when(jwtUtil.getExpirationInstantAllowingExpired(REFRESH_TOKEN))
+            .thenReturn(Optional.of(Instant.now().plusSeconds(3600)));
+
+        authService.logoutComplete(request);
+
+        verify(blocklistService, times(1)).blockToken(eq(REFRESH_TOKEN), anyLong());
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when access token "
+        + "is missing in logoutComplete")
+    void logoutComplete_missingAccessToken() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.logoutComplete(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Access token is required")
+            .hasFieldOrPropertyWithValue("fieldName", "access-token");
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when refresh token "
+        + "is missing in logoutComplete")
+    void logoutComplete_missingRefreshToken() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(ACCESS_TOKEN));
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.logoutComplete(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Refresh token is required")
+            .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when token format "
+        + "is invalid in logoutComplete")
+    void logoutComplete_invalidTokenFormat() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of("invalid.token"));
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
+        when(jwtUtil.getEmailFromTokenAllowingExpired("invalid.token"))
+            .thenThrow(new JwtException("Malformed token"));
+
+        assertThatThrownBy(() -> authService.logoutComplete(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid token format")
+            .hasFieldOrPropertyWithValue("fieldName", "token");
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when expired access token "
+        + "is accompanied by invalid refresh token")
+    void logoutComplete_withExpiredAccessTokenAndInvalidRefreshToken() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(ACCESS_TOKEN));
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of("invalid.refresh.token"));
+        when(jwtUtil.getEmailFromTokenAllowingExpired(ACCESS_TOKEN)).thenReturn(EMAIL_VALUE);
+        when(jwtUtil.getEmailFromTokenAllowingExpired("invalid.refresh.token"))
+            .thenThrow(new JwtException("Malformed refresh token"));
+
+        assertThatThrownBy(() -> authService.logoutComplete(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid token format")
+            .hasFieldOrPropertyWithValue("fieldName", "token");
     }
 }
