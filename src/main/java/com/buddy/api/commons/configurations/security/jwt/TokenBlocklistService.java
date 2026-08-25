@@ -1,5 +1,6 @@
 package com.buddy.api.commons.configurations.security.jwt;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
@@ -15,10 +16,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TokenBlocklistService {
 
-    private final StringRedisTemplate redisTemplate;
+    private static final String RESILIENCE_INSTANCE = "tokenBlocklist";
     private static final String KEY_PREFIX = "jwt:blocklist:";
     private static final int HEX_SINGLE_DIGIT_LENGTH = 1;
 
+    private final StringRedisTemplate redisTemplate;
+
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackBlockToken")
     public void blockToken(final String token, final long expirationInSeconds) {
         if (expirationInSeconds <= 0) {
             return;
@@ -28,10 +32,25 @@ public class TokenBlocklistService {
         log.debug("Token blocked for {} seconds", expirationInSeconds);
     }
 
+    public void fallbackBlockToken(final String token,
+                                   final long expirationInSeconds,
+                                   final Throwable ex) {
+        log.error("Failed to block token in Redis after retry attempts: {}",
+            ex.getMessage(), ex);
+    }
+
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackIsBlocked")
     public boolean isBlocked(final String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX + tokenHash(token)));
     }
 
+    public boolean fallbackIsBlocked(final String token, final Throwable ex) {
+        log.error("Failed to check if token is blocked in Redis after retries: {}",
+            ex.getMessage(), ex);
+        return false;
+    }
+
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackRevokeAllUserTokens")
     public void revokeAllUserTokens(final String email) {
         final String key = "jwt:revoke_all:" + email;
         long revokeTimestamp = Instant.now().toEpochMilli();
@@ -43,6 +62,12 @@ public class TokenBlocklistService {
         log.debug("All tokens revoked for user {} at {}", email, revokeTimestamp);
     }
 
+    public void fallbackRevokeAllUserTokens(final String email, final Throwable ex) {
+        log.error("Failed to revoke tokens in Redis for user {} after retries: {}",
+            email, ex.getMessage(), ex);
+    }
+
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackIsUserTokensRevoked")
     public boolean isUserTokensRevoked(final String email, final long issuedAtEpochMilli) {
         final String key = "jwt:revoke_all:" + email;
         String revokedTimestampStr = redisTemplate.opsForValue().get(key);
@@ -50,6 +75,14 @@ public class TokenBlocklistService {
             long revokedTimestamp = Long.parseLong(revokedTimestampStr);
             return issuedAtEpochMilli < revokedTimestamp;
         }
+        return false;
+    }
+
+    public boolean fallbackIsUserTokensRevoked(final String email,
+                                               final long issuedAtEpochMilli,
+                                               final Throwable ex) {
+        log.error("Failed to check revoked tokens in Redis for user {} after retries: {}",
+            email, ex.getMessage(), ex);
         return false;
     }
 

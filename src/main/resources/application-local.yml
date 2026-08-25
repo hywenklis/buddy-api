@@ -131,3 +131,15 @@ buddy:
       allowed-origins:
         - "http://localhost:3000"
         - "https://buddyclient.vercel.app"
+
+resilience4j:
+  retry:
+    instances:
+      tokenBlocklist:
+        max-attempts: 3
+        wait-duration: 200ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.dao.DataAccessException
+          - io.lettuce.core.RedisException
