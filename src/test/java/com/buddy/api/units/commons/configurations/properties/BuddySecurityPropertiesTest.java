@@ -35,7 +35,7 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
         + "when encryption key length is valid (16, 24, or 32 bytes)")
     void constructor_withValidKeyLength_shouldSucceed(final String validKey) {
         assertThatCode(() -> new BuddySecurityProperties(
-            validKey, "AES/GCM/NoPadding", 128, 12
+            validKey, "AES/GCM/NoPadding", 128, 12, null
         )).doesNotThrowAnyException();
     }
 
@@ -49,7 +49,7 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
     @DisplayName("Should throw IllegalArgumentException when encryption key length is invalid")
     void constructor_withInvalidKeyLength_shouldThrowException(final String invalidKey) {
         assertThatThrownBy(() -> new BuddySecurityProperties(
-            invalidKey, "AES/GCM/NoPadding", 128, 12
+            invalidKey, "AES/GCM/NoPadding", 128, 12, null
         ))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Invalid AES key length");
@@ -59,7 +59,7 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
     @DisplayName("Should detect constraint violations when fields are null or blank")
     void validation_withNullOrBlankFields_shouldReturnViolations() {
         final var properties =
-            new BuddySecurityProperties(null, "", null, null);
+            new BuddySecurityProperties(null, "", null, null, null);
 
         Set<ConstraintViolation<BuddySecurityProperties>> violations =
             validator.validate(properties);
@@ -90,7 +90,8 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
             KEY_32_BYTES,
             "AES",
             96,
-            16
+            16,
+            null
         );
 
         Set<ConstraintViolation<BuddySecurityProperties>> violations =
@@ -114,12 +115,31 @@ class BuddySecurityPropertiesTest extends UnitTestAbstract {
             KEY_32_BYTES,
             "AES/GCM/NoPadding",
             128,
-            12
+            12,
+            null
         );
 
         Set<ConstraintViolation<BuddySecurityProperties>> violations =
             validator.validate(properties);
 
         assertThat(violations).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should support cors properties in canonical constructor")
+    void validation_withCorsProperties() {
+        final var cors = new BuddySecurityProperties.CorsProperties(
+            java.util.List.of("http://localhost:3000")
+        );
+        final var properties = new BuddySecurityProperties(
+            KEY_32_BYTES,
+            "AES/GCM/NoPadding",
+            128,
+            12,
+            cors
+        );
+
+        assertThat(properties.cors()).isNotNull();
+        assertThat(properties.cors().allowedOrigins()).containsExactly("http://localhost:3000");
     }
 }
