@@ -184,8 +184,9 @@ class AuthServiceTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should handle JwtException in blockToken during refreshToken")
-    void should_handle_jwt_exception_in_block_token_during_refresh() {
+    @DisplayName("Should throw AuthenticationException when blockToken "
+        + "fails with JwtException during refreshToken")
+    void should_throw_auth_exception_when_block_token_fails_with_jwt_exception() {
         var email = RandomEmailUtils.generateValidEmail();
         UserDetails userDetails = new User(
             email,
@@ -207,10 +208,10 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.generateRefreshToken(eq(email), anyString()))
             .thenReturn("new-refresh-token");
 
-        AuthDto result = authService.refreshToken(request);
-
-        assertThat(result).isNotNull();
-        assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
+        assertThatThrownBy(() -> authService.refreshToken(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid refresh token or token expired")
+            .hasFieldOrPropertyWithValue("fieldName", "refresh-token");
     }
 
     @Test
@@ -485,6 +486,22 @@ class AuthServiceTest extends UnitTestAbstract {
         when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of(REFRESH_TOKEN));
         when(jwtUtil.getEmailFromTokenAllowingExpired("invalid.token"))
             .thenThrow(new JwtException("Malformed token"));
+
+        assertThatThrownBy(() -> authService.logoutComplete(request))
+            .isInstanceOf(AuthenticationException.class)
+            .hasMessage("Invalid token format")
+            .hasFieldOrPropertyWithValue("fieldName", "token");
+    }
+
+    @Test
+    @DisplayName("Should throw AuthenticationException when expired access token "
+        + "is accompanied by invalid refresh token")
+    void logoutComplete_withExpiredAccessTokenAndInvalidRefreshToken() {
+        when(jwtUtil.extractAccessToken(request)).thenReturn(Optional.of(ACCESS_TOKEN));
+        when(jwtUtil.extractRefreshToken(request)).thenReturn(Optional.of("invalid.refresh.token"));
+        when(jwtUtil.getEmailFromTokenAllowingExpired(ACCESS_TOKEN)).thenReturn(EMAIL_VALUE);
+        when(jwtUtil.getEmailFromTokenAllowingExpired("invalid.refresh.token"))
+            .thenThrow(new JwtException("Malformed refresh token"));
 
         assertThatThrownBy(() -> authService.logoutComplete(request))
             .isInstanceOf(AuthenticationException.class)

@@ -454,4 +454,31 @@ class AuthControllerTest extends IntegrationTestAbstract {
         expectErrorStatusFrom(result, UNAUTHORIZED)
             .forField("token", "Invalid token format");
     }
+
+    @Test
+    @DisplayName("Should return 401 when access token is paired with invalid refresh token")
+    void logout_should_fail_when_refresh_token_format_is_invalid() throws Exception {
+        final var plain = RandomStringUtils.secure().nextAlphanumeric(10);
+        final var account = validAccountEntity()
+            .password(passwordEncoder.encode(plain))
+            .isVerified(true)
+            .build();
+        accountRepository.save(account);
+
+        final var authRequest = AuthRequest.builder()
+            .email(account.getEmail().value())
+            .password(plain)
+            .build();
+        final var authResult = performAuthRequest(authRequest).andReturn().getResponse();
+        final var accessToken = Objects.requireNonNull(authResult.getCookie(ACCESS_TOKEN_NAME))
+            .getValue();
+
+        final var result = mockMvc.perform(post("/v1/auth/logout")
+            .header(ORIGIN, WEB_ORIGIN)
+            .header("Authorization", "Bearer " + accessToken)
+            .cookie(new Cookie(REFRESH_TOKEN_NAME, "invalid.malformed.refresh.token")));
+
+        expectErrorStatusFrom(result, UNAUTHORIZED)
+            .forField("token", "Invalid token format");
+    }
 }

@@ -198,6 +198,7 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             final var userEmail = jwtUtil.getEmailFromTokenAllowingExpired(accessToken);
+            jwtUtil.getEmailFromTokenAllowingExpired(refreshToken);
             log.info("User {} initiated logout - blocking all tokens", userEmail);
 
             blockToken(accessToken);
@@ -216,19 +217,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void blockToken(final String token) {
-        try {
-            jwtUtil.getExpirationInstantAllowingExpired(token)
-                .map(expiration -> Duration.between(Instant.now(), expiration).getSeconds())
-                .filter(secondsLeft -> secondsLeft > 0)
-                .ifPresentOrElse(
-                    secondsLeft -> {
-                        blocklistService.blockToken(token, secondsLeft);
-                        log.debug("Token blocked successfully for {} seconds", secondsLeft);
-                    },
-                    () -> log.debug("Token already expired, no need to block")
-                );
-        } catch (JwtException e) {
-            log.warn("Failed to block token: {}", e.getMessage());
-        }
+        jwtUtil.getExpirationInstantAllowingExpired(token)
+            .map(expiration -> Duration.between(Instant.now(), expiration).getSeconds())
+            .filter(secondsLeft -> secondsLeft > 0)
+            .ifPresentOrElse(
+                secondsLeft -> {
+                    blocklistService.blockToken(token, secondsLeft);
+                    log.debug("Token blocked successfully for {} seconds", secondsLeft);
+                },
+                () -> log.debug("Token already expired, no need to block")
+            );
     }
 }
