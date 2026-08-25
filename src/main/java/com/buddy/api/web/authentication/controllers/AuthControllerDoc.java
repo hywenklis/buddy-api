@@ -71,12 +71,23 @@ public interface AuthControllerDoc {
 
     @Operation(
         summary = "Logout user",
-        description = "Invalidates the current access token and clears authentication cookies."
+        description = "Invalidates the current session by revoking both access and refresh tokens "
+            + "in the Redis blocklist and clearing HTTP authentication cookies. "
+            + "The client (Web or Mobile) MUST purge any stored tokens from local storage "
+            + "(localStorage, sessionStorage, SecureStore) upon receiving 204 No Content."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "204",
-            description = "Logged out successfully"
+            description = "Logged out successfully. Tokens revoked and cookies cleared."
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized (e.g., missing access or refresh token, or invalid token)",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ErrorResponse.class)
+            )
         )
     })
     void logout(

@@ -217,19 +217,11 @@ class JwtUtilTest extends UnitTestAbstract {
     }
 
     @Test
-    @DisplayName("Should extract refresh token from header when cookie is absent")
-    void extractRefreshToken_fromHeader() {
-        when(request.getCookies()).thenReturn(null);
-        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(BEARER_TOKEN);
-
-        Optional<String> opt = jwtUtil.extractRefreshToken(request);
-        assertThat(opt).isPresent().contains(BEARER_TOKEN.substring(7));
-    }
-
-    @Test
     @DisplayName("Should return empty when no tokens are present")
     void extractToken_none() {
         when(request.getCookies()).thenReturn(null);
+        when(request.getHeader("X-Refresh-Token")).thenReturn(null);
+        when(request.getHeader("Refresh-Token")).thenReturn(null);
         when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(null);
 
         assertThat(jwtUtil.extractAccessToken(request)).isEmpty();
@@ -245,6 +237,94 @@ class JwtUtilTest extends UnitTestAbstract {
 
         Optional<String> opt = jwtUtil.extractAccessToken(request);
         assertThat(opt).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should extract refresh token from X-Refresh-Token header")
+    void extractRefreshToken_fromCustomHeader() {
+        when(request.getCookies()).thenReturn(null);
+        when(request.getHeader("X-Refresh-Token")).thenReturn("x-refresh-token-val");
+
+        Optional<String> opt = jwtUtil.extractRefreshToken(request);
+        assertThat(opt).isPresent().contains("x-refresh-token-val");
+    }
+
+    @Test
+    @DisplayName("Should extract refresh token from X-Refresh-Token header with Bearer prefix")
+    void extractRefreshToken_fromCustomHeaderWithBearer() {
+        when(request.getCookies()).thenReturn(null);
+        when(request.getHeader("X-Refresh-Token")).thenReturn("Bearer x-refresh-val");
+
+        Optional<String> opt = jwtUtil.extractRefreshToken(request);
+        assertThat(opt).isPresent().contains("x-refresh-val");
+    }
+
+    @Test
+    @DisplayName("Should extract refresh token from Refresh-Token header")
+    void extractRefreshToken_fromRefreshTokenHeader() {
+        when(request.getCookies()).thenReturn(null);
+        when(request.getHeader("X-Refresh-Token")).thenReturn(null);
+        when(request.getHeader("Refresh-Token")).thenReturn("custom-refresh-val");
+
+        Optional<String> opt = jwtUtil.extractRefreshToken(request);
+        assertThat(opt).isPresent().contains("custom-refresh-val");
+    }
+
+    @Test
+    @DisplayName("Should ignore custom headers with blank values")
+    void extractRefreshToken_blankHeader() {
+        when(request.getCookies()).thenReturn(null);
+        when(request.getHeader("X-Refresh-Token")).thenReturn("   ");
+        when(request.getHeader("Refresh-Token")).thenReturn("");
+
+        Optional<String> opt = jwtUtil.extractRefreshToken(request);
+        assertThat(opt).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should extract email from token allowing expired")
+    void getEmailFromTokenAllowingExpired_valid() {
+        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        String extracted = jwtUtil.getEmailFromTokenAllowingExpired(token);
+
+        assertThat(extracted).isEqualTo(EMAIL_VALUE);
+    }
+
+    @Test
+    @DisplayName("Should extract email even when token is expired")
+    void getEmailFromTokenAllowingExpired_expired() throws InterruptedException {
+        AuthProperties shortProps = AuthProperties.builder()
+            .secretKey(SECRET_KEY)
+            .accessTokenExpiration(1)
+            .refreshTokenExpiration(1)
+            .allowedOrigins(List.of())
+            .build();
+        JwtUtil shortJwt = new JwtUtil(shortProps);
+        String token = shortJwt.generateAccessToken(EMAIL_VALUE, PROFILES);
+
+        Thread.sleep(10);
+
+        String extracted = shortJwt.getEmailFromTokenAllowingExpired(token);
+        assertThat(extracted).isEqualTo(EMAIL_VALUE);
+    }
+
+    @Test
+    @DisplayName("Should extract expiration Instant from valid token")
+    void getExpirationInstantFromToken_valid() {
+        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        Instant expiration = jwtUtil.getExpirationInstantFromToken(token);
+
+        assertThat(expiration).isAfter(Instant.now());
+    }
+
+    @Test
+    @DisplayName("Should extract expiration Instant allowing expired")
+    void getExpirationInstantAllowingExpired_valid() {
+        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        Optional<Instant> expiration = jwtUtil.getExpirationInstantAllowingExpired(token);
+
+        assertThat(expiration).isPresent();
+        assertThat(expiration.get()).isAfter(Instant.now());
     }
 
     private Claims parseClaims(final String token) {

@@ -30,6 +30,8 @@ public class JwtUtil {
     private static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String X_REFRESH_TOKEN_HEADER = "X-Refresh-Token";
+    private static final String REFRESH_TOKEN_HEADER = "Refresh-Token";
     private static final String BEARER_PREFIX = "Bearer ";
 
     public String generateAccessToken(final String email, final List<String> profiles) {
@@ -65,11 +67,16 @@ public class JwtUtil {
 
     public Optional<String> extractRefreshToken(final HttpServletRequest request) {
         return extractTokenFromCookies(request, REFRESH_TOKEN_COOKIE_NAME)
-            .or(() -> extractTokenFromHeader(request));
+            .or(() -> extractCustomHeader(request, X_REFRESH_TOKEN_HEADER))
+            .or(() -> extractCustomHeader(request, REFRESH_TOKEN_HEADER));
     }
 
     public String getEmailFromToken(final String token) throws JwtException {
         return parseClaims(token).getSubject();
+    }
+
+    public String getEmailFromTokenAllowingExpired(final String token) throws JwtException {
+        return parseClaimsAllowingExpired(token).getSubject();
     }
 
     @SuppressWarnings("PMD.ReplaceJavaUtilDate")
@@ -79,6 +86,16 @@ public class JwtUtil {
             throw new JwtException("Token with no expiration claim exp");
         }
         return expiration;
+    }
+
+    public Instant getExpirationInstantFromToken(final String token) throws JwtException {
+        return getExpirationFromToken(token).toInstant();
+    }
+
+    public Optional<Instant> getExpirationInstantAllowingExpired(final String token)
+        throws JwtException {
+        return Optional.ofNullable(parseClaimsAllowingExpired(token).getExpiration())
+            .map(Date::toInstant);
     }
 
     public Instant getIssuedAtFromToken(final String token) throws JwtException {
@@ -118,6 +135,23 @@ public class JwtUtil {
         return Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER))
             .filter(header -> header.startsWith(BEARER_PREFIX))
             .map(header -> header.substring(BEARER_PREFIX.length()));
+    }
+
+    private Optional<String> extractCustomHeader(final HttpServletRequest request,
+                                                 final String headerName) {
+        return Optional.ofNullable(request.getHeader(headerName))
+            .map(String::trim)
+            .filter(val -> !val.isBlank())
+            .map(val -> val.startsWith(BEARER_PREFIX)
+                ? val.substring(BEARER_PREFIX.length()) : val);
+    }
+
+    public Claims parseClaimsAllowingExpired(final String token) throws JwtException {
+        try {
+            return parseClaims(token);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
     private Claims parseClaims(final String token) throws JwtException {
