@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -24,8 +25,15 @@ public record BuddySecurityProperties(
     @NotNull(message = "IV length cannot be null")
     @Min(value = 12, message = "IV length must be 12 bytes")
     @Max(value = 12, message = "IV length must be 12 bytes")
-    Integer ivLength
+    Integer ivLength,
+
+    CorsProperties cors
 ) {
+    public record CorsProperties(
+        List<String> allowedOrigins
+    ) {
+    }
+
     private static final Set<Integer> VALID_AES_KEY_SIZES = Set.of(16, 24, 32);
 
     public BuddySecurityProperties {
