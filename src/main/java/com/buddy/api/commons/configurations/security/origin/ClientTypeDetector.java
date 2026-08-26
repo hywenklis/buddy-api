@@ -3,6 +3,7 @@ package com.buddy.api.commons.configurations.security.origin;
 import com.buddy.api.commons.configurations.properties.AuthProperties;
 import com.buddy.api.commons.configurations.security.origin.enums.ClientType;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -12,22 +13,26 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ClientTypeDetector {
 
+    public static final String X_ORIGIN_CODE_HEADER = "X-Origin-Code";
+    public static final String ORIGIN_HEADER = "Origin";
+
     private final AuthProperties authProperties;
 
     public ClientType detectClientType(final HttpServletRequest request) {
-        String origin = request.getHeader("Origin");
+        final var origin = Optional.ofNullable(request.getHeader(X_ORIGIN_CODE_HEADER))
+            .filter(header -> !header.isBlank())
+            .orElseGet(() -> request.getHeader(ORIGIN_HEADER));
+
         log.debug("Detecting client type for origin: {}", origin);
 
         if (origin == null) {
             return ClientType.UNKNOWN;
         }
 
-        for (AuthProperties.OriginConfig config : authProperties.allowedOrigins()) {
-            if (config.code().equals(origin)) {
-                return ClientType.fromString(config.type());
-            }
-        }
-
-        return ClientType.UNKNOWN;
+        return authProperties.allowedOrigins().stream()
+            .filter(config -> config.code().equals(origin))
+            .findFirst()
+            .map(config -> ClientType.fromString(config.type()))
+            .orElse(ClientType.UNKNOWN);
     }
 }

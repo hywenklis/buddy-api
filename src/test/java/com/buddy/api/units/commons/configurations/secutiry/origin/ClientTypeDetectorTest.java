@@ -33,14 +33,16 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
     private ClientTypeDetector clientTypeDetector;
 
     @Test
-    @DisplayName("Should return UNKNOWN when Origin header is null")
+    @DisplayName("Should return UNKNOWN when both Origin and X-Origin-Code headers are null")
     void should_return_unknown_when_origin_is_null() {
+        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn(null);
         when(request.getHeader(ORIGIN_NAME)).thenReturn(null);
 
         ClientType result = clientTypeDetector.detectClientType(request);
 
         assertThat(result).isEqualTo(ClientType.UNKNOWN);
 
+        verify(request, times(1)).getHeader(X_ORIGIN_CODE_HEADER);
         verify(request, times(1)).getHeader(ORIGIN_NAME);
         verify(authProperties, times(0)).allowedOrigins();
     }
@@ -53,6 +55,7 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
     ) {
         List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
 
+        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn(null);
         when(request.getHeader(ORIGIN_NAME)).thenReturn(origin);
         when(authProperties.allowedOrigins()).thenReturn(origins);
 
@@ -60,7 +63,63 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
 
         assertThat(result).isEqualTo(expectedType);
 
+        verify(request, times(1)).getHeader(X_ORIGIN_CODE_HEADER);
         verify(request, times(1)).getHeader(ORIGIN_NAME);
+        verify(authProperties, times(1)).allowedOrigins();
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideKnownOrigins")
+    @DisplayName("Should return correct client type when X-Origin-Code matches a known config")
+    void should_return_correct_client_type_when_x_origin_code_matches(final String origin,
+                                                                      final ClientType expectedType
+    ) {
+        List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
+
+        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn(origin);
+        when(authProperties.allowedOrigins()).thenReturn(origins);
+
+        ClientType result = clientTypeDetector.detectClientType(request);
+
+        assertThat(result).isEqualTo(expectedType);
+
+        verify(request, times(1)).getHeader(X_ORIGIN_CODE_HEADER);
+        verify(request, times(0)).getHeader(ORIGIN_NAME);
+        verify(authProperties, times(1)).allowedOrigins();
+    }
+
+    @Test
+    @DisplayName("Should fallback to Origin header when X-Origin-Code is blank")
+    void should_fallback_to_origin_when_x_origin_code_is_blank() {
+        List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
+
+        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn("   ");
+        when(request.getHeader(ORIGIN_NAME)).thenReturn("550e8400-e29b-41d4-a716-446655440000");
+        when(authProperties.allowedOrigins()).thenReturn(origins);
+
+        ClientType result = clientTypeDetector.detectClientType(request);
+
+        assertThat(result).isEqualTo(ClientType.WEB);
+
+        verify(request, times(1)).getHeader(X_ORIGIN_CODE_HEADER);
+        verify(request, times(1)).getHeader(ORIGIN_NAME);
+        verify(authProperties, times(1)).allowedOrigins();
+    }
+
+    @Test
+    @DisplayName("Should prioritize X-Origin-Code over Origin header")
+    void should_prioritize_x_origin_code_over_origin() {
+        List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
+
+        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn("123e4567-e89b-12d3-a456-426614174000");
+        when(authProperties.allowedOrigins()).thenReturn(origins);
+
+        ClientType result = clientTypeDetector.detectClientType(request);
+
+        assertThat(result).isEqualTo(ClientType.MOBILE);
+
+        verify(request, times(1)).getHeader(X_ORIGIN_CODE_HEADER);
+        verify(request, times(0)).getHeader(ORIGIN_NAME);
         verify(authProperties, times(1)).allowedOrigins();
     }
 
@@ -69,12 +128,14 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
     void should_return_unknown_when_origin_does_not_match() {
         String origin = UUID.randomUUID().toString();
 
+        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn(null);
         when(request.getHeader(ORIGIN_NAME)).thenReturn(origin);
 
         ClientType result = clientTypeDetector.detectClientType(request);
 
         assertThat(result).isEqualTo(ClientType.UNKNOWN);
 
+        verify(request, times(1)).getHeader(X_ORIGIN_CODE_HEADER);
         verify(request, times(1)).getHeader(ORIGIN_NAME);
         verify(authProperties, times(1)).allowedOrigins();
     }
