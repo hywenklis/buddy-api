@@ -18,6 +18,8 @@ on:
     - cron: '20 7 * * 2' # Para Scorecard
   branch_protection_rule: # Para Scorecard
 
+permissions: read-all
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
   cancel-in-progress: true
@@ -36,24 +38,24 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.21.0
+        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
       - name: Build and test with Gradle wrapper
         run: |
@@ -62,23 +64,28 @@ jobs:
 
       - name: Publish Test Results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@283dea176069279a9076e77b548668a8e4f0c31b # v2.9.0
         with:
           check_name: Test Results
           junit_files: '**/build/test-results/**/*.xml'
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./build/reports/jacoco/test/jacocoTestReport.xml
           slug: ${{ github.repository }}
+          fail_ci_if_error: false
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: '**/build/test-results/**/*.xml'
+          slug: ${{ github.repository }}
+          fail_ci_if_error: false
 
   dependency_review:
     name: Dependency Review
@@ -88,15 +95,15 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.21.0
+        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
         with:
           egress-policy: audit
       - name: 'Checkout Repository'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v5
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
   codeql_analysis:
     name: CodeQL Analysis
@@ -112,21 +119,21 @@ jobs:
         language: [ "java" ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.21.0
+        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
         with:
           egress-policy: audit
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
         with:
           languages: ${{ matrix.language }}
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
+        uses: github/codeql-action/autobuild@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
         with:
           category: "/language:${{matrix.language}}"
 
@@ -141,27 +148,27 @@ jobs:
       actions: read
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@v2.21.0
+        uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
         with:
           egress-policy: audit
       - name: "Checkout code"
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: "Run analysis"
-        uses: ossf/scorecard-action@v2.4.4
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
           publish_results: true
       - name: "Upload artifact"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: SARIF file
           path: results.sarif
           retention-days: 5
       - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
         with:
           sarif_file: results.sarif
 
@@ -178,7 +185,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -204,15 +211,15 @@ jobs:
           NEW_VERSION="v${V[0]}.${V[1]}.${V[2]}"
           BRANCH_NAME="release/$NEW_VERSION"
           echo "Creating new branch from develop: $BRANCH_NAME"
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
 
       - name: Delete Merged Feature Branch
-        run: |
-          echo "Deleting merged feature branch: $SOURCE_BRANCH"
-          git push origin --delete $SOURCE_BRANCH
         env:
           SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          echo "Deleting merged feature branch: $SOURCE_BRANCH"
+          git push origin --delete "$SOURCE_BRANCH"
 
   prepare_major_release:
     name: Prepare Major Release Branch (MAJOR)
@@ -226,7 +233,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -255,15 +262,15 @@ jobs:
           
           BRANCH_NAME="release/$NEW_VERSION"
           echo "Creating new branch from develop: $BRANCH_NAME"
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
 
       - name: Delete Merged Feature Branch
-        run: |
-          echo "Deleting merged feature branch: $SOURCE_BRANCH"
-          git push origin --delete $SOURCE_BRANCH
         env:
           SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          echo "Deleting merged feature branch: $SOURCE_BRANCH"
+          git push origin --delete "$SOURCE_BRANCH"
 
   finalize_release:
     name: Tag Release & Sync Develop
@@ -280,7 +287,7 @@ jobs:
       tagged: ${{ steps.create_tag.outputs.should_run }}
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 'main'
           fetch-depth: 0
@@ -292,11 +299,13 @@ jobs:
 
       - name: Create and Push Gitflow Tag
         id: create_tag
+        env:
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+          MERGE_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
-          SOURCE_BRANCH="${{ github.event.pull_request.head.ref }}"
           NEW_TAG=""
           if [[ "$SOURCE_BRANCH" == "release/"* ]]; then
-            NEW_TAG=$(echo $SOURCE_BRANCH | sed 's/release\///')
+            NEW_TAG=$(echo "$SOURCE_BRANCH" | sed 's/release\///')
           elif [[ "$SOURCE_BRANCH" == "hotfix/"* ]]; then
             LAST_TAG=$(git tag -l "v*.*.*" --sort=-v:refname | head -n 1)
             LAST_TAG_NUM=${LAST_TAG#v}
@@ -305,23 +314,23 @@ jobs:
             NEW_TAG="v${V[0]}.${V[1]}.${V[2]}"
           else
             echo "Merge to main is not from a release/hotfix branch. Skipping."
-            echo "should_run=false" >> $GITHUB_OUTPUT
-            echo "new_tag=none" >> $GITHUB_OUTPUT
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "new_tag=none" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           
-          git tag $NEW_TAG ${{ github.event.pull_request.merge_commit_sha }}
-          git push origin $NEW_TAG
+          git tag "$NEW_TAG" "$MERGE_COMMIT_SHA"
+          git push origin "$NEW_TAG"
           echo "Tag $NEW_TAG created and pushed."
-          echo "should_run=true" >> $GITHUB_OUTPUT
-          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "should_run=true" >> "$GITHUB_OUTPUT"
+          echo "new_tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release with Changelog
         if: steps.create_tag.outputs.should_run == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_TAG: ${{ steps.create_tag.outputs.new_tag }}
         run: |
-          NEW_TAG="${{ steps.create_tag.outputs.new_tag }}"
           echo "Criando GitHub Release para a tag $NEW_TAG..."
           
           rc=0
@@ -336,7 +345,6 @@ jobs:
               --generate-notes \
               --latest
           fi
-
 
       - name: Clean up old tags and releases (Keep last 5)
         if: steps.create_tag.outputs.should_run == 'true'
@@ -376,7 +384,7 @@ jobs:
 
       - name: Create Sync Branch (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 'develop'
           fetch-depth: 0
@@ -384,25 +392,27 @@ jobs:
 
       - name: Configure and Push Sync Branch
         id: sync_branch
+        env:
+          NEW_TAG: ${{ steps.create_tag.outputs.new_tag }}
         run: |
-          SYNC_BRANCH_NAME="bot/sync-main-to-develop-${{ steps.create_tag.outputs.new_tag }}"
-          echo "branch_name=$SYNC_BRANCH_NAME" >> $GITHUB_OUTPUT
+          SYNC_BRANCH_NAME="bot/sync-main-to-develop-${NEW_TAG}"
+          echo "branch_name=$SYNC_BRANCH_NAME" >> "$GITHUB_OUTPUT"
           
           git config user.name "GitHub Actions Bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           echo "Creating sync branch: $SYNC_BRANCH_NAME"
-          git checkout -b $SYNC_BRANCH_NAME
+          git checkout -b "$SYNC_BRANCH_NAME"
           
           echo "Merging main into sync branch..."
-          git merge origin/main --no-ff -m "chore: sync main after release ${{ steps.create_tag.outputs.new_tag }} [skip ci]"
+          git merge origin/main --no-ff -m "chore: sync main after release ${NEW_TAG} [skip ci]"
           
           echo "Pushing sync branch..."
-          git push origin $SYNC_BRANCH_NAME
+          git push origin "$SYNC_BRANCH_NAME"
 
       - name: Open Pull Request (main -> develop)
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -423,7 +433,7 @@ jobs:
 
       - name: Delete Merged Release or Hotfix Branch
         if: steps.create_tag.outputs.should_run == 'true'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY_PRIVATE }}
       - env:
@@ -437,9 +447,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: finalize_release
     if: needs.finalize_release.result == 'success' && needs.finalize_release.outputs.tagged == 'true'
+    permissions:
+      contents: read
     steps:
       - name: "Deploy to Jenkins"
+        env:
+          NEW_TAG: ${{ needs.finalize_release.outputs.new_tag }}
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_JOB: ${{ secrets.JENKINS_JOB }}
+          JENKINS_PROJECT: ${{ secrets.JENKINS_PROJECT }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
         run: |
-          echo "Triggering Jenkins deploy for tag: ${{ needs.finalize_release.outputs.new_tag }}"
-          curl -X POST "${{ secrets.JENKINS_URL }}/job/${{ secrets.JENKINS_JOB }}/buildWithParameters?PROJECT=${{ secrets.JENKINS_PROJECT }}&GIT_BRANCH=main" \
-          --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_API_TOKEN }}"
+          echo "Triggering Jenkins deploy for tag: ${NEW_TAG}"
+          curl -X POST "${JENKINS_URL}/job/${JENKINS_JOB}/buildWithParameters?PROJECT=${JENKINS_PROJECT}&GIT_BRANCH=main" \
+          --user "${JENKINS_USER}:${JENKINS_API_TOKEN}"

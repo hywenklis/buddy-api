@@ -4,6 +4,8 @@
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=flat&logo=spring&logoColor=white)
 [![codecov](https://codecov.io/gh/hywenklis/buddy-api/graph/badge.svg?token=LQ5ZANNWWN)](https://codecov.io/gh/hywenklis/buddy-api)
 ![Build Status](https://github.com/hywenklis/buddy-api/actions/workflows/cicd-pipeline.yml/badge.svg)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hywenklis/buddy-api/badge)](https://scorecard.dev/viewer/?site=github.com/hywenklis/buddy-api)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/github.com/hywenklis/buddy-api/badge)](https://www.bestpractices.dev/projects/github.com/hywenklis/buddy-api)
 ![Dependabot Status](https://img.shields.io/badge/dependabot-active-brightgreen.svg)
 ![GitHub](https://img.shields.io/github/license/hywenklis/buddy-api.svg)
 ![GitHub contributors](https://img.shields.io/github/contributors/hywenklis/buddy-api.svg)
