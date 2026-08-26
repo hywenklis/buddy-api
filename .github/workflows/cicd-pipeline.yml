@@ -68,17 +68,22 @@ jobs:
           junit_files: '**/build/test-results/**/*.xml'
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./build/reports/jacoco/test/jacocoTestReport.xml
           slug: ${{ github.repository }}
+          fail_ci_if_error: false
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
+          files: '**/build/test-results/**/*.xml'
+          slug: ${{ github.repository }}
+          fail_ci_if_error: false
 
   dependency_review:
     name: Dependency Review

@@ -1,0 +1,73 @@
+# ==============================================================================
+# Codecov Configuration for buddy-api
+# Docs: https://docs.codecov.com/docs/codecov-yaml
+# ==============================================================================
+
+codecov:
+  notify:
+    after_n_builds: 1
+    wait_for_ci: true
+
+# Configurações de Cobertura e Gates de Status
+coverage:
+  precision: 2
+  round: down
+  range: "80...100"
+
+  status:
+    # 1. Status do Projeto Geral (Não permite regressão na base de código)
+    project:
+      default:
+        target: auto       # A cobertura não pode ficar menor do que a da branch base (main/develop)
+        threshold: 0.5%    # Tolerância de 0.5% para oscilações mínimas
+        if_ci_failed: error
+
+    # 2. Status do Patch (Código novo adicionado no PR)
+    patch:
+      default:
+        target: 80.0%      # Exige no mínimo 80% de cobertura no código novo da PR
+        threshold: 0.0%
+        if_ci_failed: error
+
+# Gestão de Componentes (Visão arquitetural da cobertura por camada)
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1.0%
+  individual_components:
+    - component_id: web_layer
+      name: "Web / Controllers"
+      paths:
+        - src/main/java/com/buddy/api/web/**
+    - component_id: domain_layer
+      name: "Domain / Services"
+      paths:
+        - src/main/java/com/buddy/api/domains/**
+    - component_id: commons_layer
+      name: "Commons & Security"
+      paths:
+        - src/main/java/com/buddy/api/commons/**
+    - component_id: integrations_layer
+      name: "Integrations / Clients"
+      paths:
+        - src/main/java/com/buddy/api/integrations/**
+
+# Configurações do comentário automático na Pull Request
+comment:
+  layout: "reach, diff, flags, components, files, footer"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  show_carryforward_flags: true
+
+# Arquivos e diretórios a serem desconsiderados no cálculo de cobertura
+ignore:
+  - "**/*Application.java"             # Classe principal Spring Boot
+  - "**/configurations/**"             # Configurações puras do Spring
+  - "**/generated/**"                  # Classes geradas (ex: MapStruct, OpenAPI)
+  - "**/*MapperImpl.java"              # Implementações geradas pelo MapStruct
+  - "src/test/**"                      # Arquivos de teste
+  - "config/**"                        # Arquivos de configuração de linters (Checkstyle, Spotbugs)
