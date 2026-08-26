@@ -94,7 +94,8 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
         List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
 
         when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn("   ");
-        when(request.getHeader(ORIGIN_NAME)).thenReturn("550e8400-e29b-41d4-a716-446655440000");
+        when(request.getHeader(ORIGIN_NAME))
+            .thenReturn("550e8400-e29b-41d4-a716-446655440000");
         when(authProperties.allowedOrigins()).thenReturn(origins);
 
         ClientType result = clientTypeDetector.detectClientType(request);
@@ -111,7 +112,8 @@ class ClientTypeDetectorTest extends UnitTestAbstract {
     void should_prioritize_x_origin_code_over_origin() {
         List<AuthProperties.OriginConfig> origins = createDefaultOrigins();
 
-        when(request.getHeader(X_ORIGIN_CODE_HEADER)).thenReturn("123e4567-e89b-12d3-a456-426614174000");
+        when(request.getHeader(X_ORIGIN_CODE_HEADER))
+            .thenReturn("123e4567-e89b-12d3-a456-426614174000");
         when(authProperties.allowedOrigins()).thenReturn(origins);
 
         ClientType result = clientTypeDetector.detectClientType(request);
