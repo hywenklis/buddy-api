@@ -87,6 +87,16 @@ auth:
   allowed-origins:
     - type: "WEB"
       code: "550e8400-e29b-41d4-a716-446655440000" # changes in production environment
+    - type: "WEB"
+      code: "http://localhost:3000"
+    - type: "WEB"
+      code: "http://localhost:3001"
+    - type: "WEB"
+      code: "http://127.0.0.1:3000"
+    - type: "WEB"
+      code: "http://127.0.0.1:3001"
+    - type: "WEB"
+      code: "https://buddyclient.vercel.app"
     - type: "MOBILE"
       code: "123e4567-e89b-12d3-a456-426614174000" # changes in production environment
     - type: "TOOLS"
