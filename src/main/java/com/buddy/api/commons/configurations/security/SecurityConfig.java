@@ -43,8 +43,6 @@ public class SecurityConfig {
                     "/v1/accounts/register",
                     "/v1/accounts/password/forgot",
                     "/v1/accounts/password/reset",
-                    "/v1/pets/**",
-                    "/v1/shelters/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**",
@@ -58,7 +56,10 @@ public class SecurityConfig {
                     "/api-docs/**",
                     "/v1/terms/active")
                 .permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/v1/pets/**")
+                .permitAll()
                 .anyRequest().authenticated())
+
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

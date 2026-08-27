@@ -1,5 +1,6 @@
 package com.buddy.api.web.accounts.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
 import com.buddy.api.domains.account.password.services.ResetPasswordService;
 import com.buddy.api.web.accounts.mappers.ResetPasswordMapperRequest;
 import com.buddy.api.web.accounts.requests.ResetPasswordRequest;
@@ -26,6 +27,12 @@ public class ResetPasswordController {
 
     @PostMapping("/reset")
     @ResponseStatus(HttpStatus.OK)
+    @RateLimited(
+        useIp = true,
+        operation = "resetPassword",
+        limitMessage =
+            "Too many password reset attempts. Please wait a minute before trying again."
+    )
     public void resetPassword(
         @Valid @RequestBody final ResetPasswordRequest request
     ) {
@@ -33,3 +40,4 @@ public class ResetPasswordController {
         resetPasswordService.resetPassword(mapper.toResetPasswordDto(request));
     }
 }
+
