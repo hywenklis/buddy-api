@@ -1,17 +1,24 @@
 package com.buddy.api.integrations.web.pet.controller;
 
+import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.pet.PetBuilder.createPetRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectNotFoundFrom;
+import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.SHELTER;
+import static com.buddy.api.domains.profile.enums.ProfileTypeEnum.USER;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.builders.pet.PetBuilder;
+import com.buddy.api.builders.profile.ProfileBuilder;
+import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import java.util.List;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -20,14 +27,77 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
     private static final String PET_REGISTER_URL = "/v1/pets/register";
 
+    private AccountEntity authenticatedAccount;
+    private String accessToken;
+
+    @BeforeEach
+    void setUp() {
+        authenticatedAccount =
+            accountRepository.save(validAccountEntity().isVerified(true).build());
+
+        profileRepository.save(
+            ProfileBuilder.profileEntity()
+                .account(authenticatedAccount)
+                .profileType(SHELTER)
+                .build()
+        );
+
+        accessToken = jwtUtil.generateAccessToken(
+            authenticatedAccount.getEmail().value(),
+            List.of("ROLE_" + SHELTER.name(), "SCOPE_VERIFIED")
+        );
+    }
+
+
     @Test
-    @DisplayName("Should register a new pet successfully")
+    @DisplayName("Should return 403 Forbidden when request has no token")
+    void should_return_403_when_unauthenticated() throws Exception {
+        var shelter = shelterComponent.createShelterNoPets();
+        var request = createPetRequest(shelter.getId());
+
+        mockMvc.perform(post(PET_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Should return 403 Forbidden when user is not a shelter")
+    void should_return_403_when_user_is_not_shelter() throws Exception {
+        var shelter = shelterComponent.createShelterNoPets();
+        var request = createPetRequest(shelter.getId());
+
+        var adopterAccount =
+            accountRepository.save(validAccountEntity().isVerified(true).build());
+        profileRepository.save(
+            ProfileBuilder.profileEntity()
+                .account(adopterAccount)
+                .profileType(USER)
+                .build()
+        );
+
+        String adopterToken = jwtUtil.generateAccessToken(
+            adopterAccount.getEmail().value(),
+            List.of("ROLE_" + USER.name(), "SCOPE_VERIFIED")
+        );
+
+        mockMvc.perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + adopterToken)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+    }
+
+
+    @Test
+    @DisplayName("Should register a new pet successfully when authenticated as shelter")
     void register_new_pet_success() throws Exception {
         var shelter = shelterComponent.createShelterNoPets();
         var request = createPetRequest(shelter.getId());
 
         expectCreatedFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))));
     }
@@ -39,6 +109,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectNotFoundFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("shelterId", "Shelter not found");
@@ -62,6 +133,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("name", "Pet name is mandatory");
@@ -85,6 +157,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("specie", "Pet species is mandatory");
@@ -108,6 +181,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("gender", "Pet gender is mandatory");
@@ -131,6 +205,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("weight", "Pet weight is mandatory");
@@ -154,6 +229,7 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("description", "Pet description is mandatory");
@@ -175,8 +251,10 @@ class CreatePetControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(PET_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("shelterId", "Shelter ID is mandatory");
     }
 }
+

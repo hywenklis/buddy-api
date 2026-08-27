@@ -1,5 +1,6 @@
 package com.buddy.api.integrations.web.shelter.controller;
 
+import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static com.buddy.api.builders.shelter.ShelterBuilder.createShelterRequest;
 import static com.buddy.api.customverifications.CustomCreatedVerifications.expectCreatedFrom;
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
@@ -7,9 +8,13 @@ import static com.buddy.api.utils.RandomCpfUtils.generateValidCpf;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.integrations.IntegrationTestAbstract;
+import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +23,52 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
     private static final String SHELTER_REGISTER_URL = "/v1/shelters/register";
 
+    private AccountEntity authenticatedAccount;
+    private String accessToken;
+
+    @BeforeEach
+    void setUp() {
+        authenticatedAccount =
+            accountRepository.save(validAccountEntity().isVerified(true).build());
+
+        accessToken = jwtUtil.generateAccessToken(
+            authenticatedAccount.getEmail().value(),
+            List.of("SCOPE_VERIFIED")
+        );
+    }
+
+    @Test
+    @DisplayName("Should return 403 Forbidden when request has no token")
+    void should_return_403_when_unauthenticated() throws Exception {
+        var request = createShelterRequest();
+
+        mockMvc.perform(post(SHELTER_REGISTER_URL)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Should return 403 Forbidden when user is not verified")
+    void should_return_403_when_unverified() throws Exception {
+        var request = createShelterRequest();
+
+        var unverifiedAccount =
+            accountRepository.save(validAccountEntity().isVerified(false).build());
+
+        String unverifiedToken = jwtUtil.generateAccessToken(
+            unverifiedAccount.getEmail().value(),
+            List.of()
+        );
+
+        mockMvc.perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + unverifiedToken)
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+    }
+
+
     @Test
     @DisplayName("Should register a new shelter successfully")
     void register_new_shelter_success() throws Exception {
@@ -25,6 +76,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectCreatedFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))));
     }
@@ -47,6 +99,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("cpfResponsible", "CPF must be unique");
@@ -71,6 +124,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("email", "Email must be unique");
@@ -89,6 +143,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("nameShelter", "Shelter name is mandatory");
@@ -107,6 +162,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("nameResponsible", "Responsible person's name is mandatory");
@@ -125,6 +181,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("cpfResponsible", "Responsible person's CPF is mandatory");
@@ -143,6 +200,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("cpfResponsible", "Invalid CPF format");
@@ -161,6 +219,7 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("email", "Email is mandatory");
@@ -179,8 +238,10 @@ class CreateShelterControllerTest extends IntegrationTestAbstract {
 
         expectBadRequestFrom(mockMvc
             .perform(post(SHELTER_REGISTER_URL)
+                .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))))
             .forField("email", "Invalid email format");
     }
 }
+

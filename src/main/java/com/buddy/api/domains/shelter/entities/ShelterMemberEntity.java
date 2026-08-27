@@ -65,11 +65,11 @@ public class ShelterMemberEntity {
     @Column(name = "departure_date")
     private LocalDateTime departureDate;
 
-    @Column(name = "create_date", nullable = false, updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     @CreationTimestamp
-    private LocalDateTime createDate;
+    private LocalDateTime creationDate;
 
-    @Column(name = "update_date", nullable = false)
+    @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
-    private LocalDateTime updateDate;
+    private LocalDateTime updatedDate;
 }

@@ -1,5 +1,6 @@
 package com.buddy.api.domains.image.entities;
 
+import com.buddy.api.commons.exceptions.DomainException;
 import com.buddy.api.domains.image.enums.ImageStatus;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
@@ -14,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -25,6 +27,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.http.HttpStatus;
 
 @Data
 @Builder
@@ -41,21 +44,19 @@ public class ImageEntity {
     @Column(name = "image_id", nullable = false, unique = true)
     private UUID imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "profile_id",
         referencedColumnName = "profile_id",
-        nullable = false,
         updatable = false
     )
     @ToString.Exclude
     private ProfileEntity profile;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "pet_v2_id",
         referencedColumnName = "pet_v2_id",
-        nullable = false,
         updatable = false
     )
     @ToString.Exclude
@@ -75,7 +76,7 @@ public class ImageEntity {
     @Column(name = "image_status")
     private ImageStatus imageStatus;
 
-    @Column(name = "display_order")
+    @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
@@ -85,5 +86,17 @@ public class ImageEntity {
     @Column(name = "updated_date", nullable = false)
     @UpdateTimestamp
     private LocalDateTime updatedDate;
-}
 
+    @PrePersist
+    protected void validateXorConstraint() {
+        if ((profile == null) == (petV2 == null)) {
+            throw new DomainException(
+                "'image' must be linked to exactly one of 'profile' or 'petV2', "
+                    + "not both or neither.",
+                "image",
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                null
+            );
+        }
+    }
+}

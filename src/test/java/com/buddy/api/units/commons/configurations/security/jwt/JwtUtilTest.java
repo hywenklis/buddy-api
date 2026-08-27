@@ -41,7 +41,6 @@ class JwtUtilTest extends UnitTestAbstract {
             .secretKey(SECRET_KEY)
             .accessTokenExpiration(Math.toIntExact(ACCESS_TOKEN_EXPIRATION))
             .refreshTokenExpiration(Math.toIntExact(REFRESH_TOKEN_EXPIRATION))
-            .allowedOrigins(List.of())
             .build();
         jwtUtil = new JwtUtil(props);
     }
@@ -150,7 +149,6 @@ class JwtUtilTest extends UnitTestAbstract {
             .secretKey(SECRET_KEY)
             .accessTokenExpiration(1)
             .refreshTokenExpiration(1)
-            .allowedOrigins(List.of())
             .build();
         JwtUtil shortJwt = new JwtUtil(shortProps);
         String token = shortJwt.generateAccessToken(EMAIL_VALUE, PROFILES);
@@ -297,7 +295,6 @@ class JwtUtilTest extends UnitTestAbstract {
             .secretKey(SECRET_KEY)
             .accessTokenExpiration(1)
             .refreshTokenExpiration(1)
-            .allowedOrigins(List.of())
             .build();
         JwtUtil shortJwt = new JwtUtil(shortProps);
         String token = shortJwt.generateAccessToken(EMAIL_VALUE, PROFILES);
