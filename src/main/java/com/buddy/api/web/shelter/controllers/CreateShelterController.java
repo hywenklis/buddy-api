@@ -1,5 +1,6 @@
 package com.buddy.api.web.shelter.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
 import com.buddy.api.domains.shelter.services.CreateShelter;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.shelter.mappers.ShelterMapperRequest;
@@ -30,9 +31,16 @@ public class CreateShelterController {
         summary = "Register shelter",
         description = "Register shelter with their appropriate information"
     )
+    @RateLimited(
+        useIp = true,
+        operation = "createShelter",
+        limitMessage =
+            "Too many shelter registration requests. Please wait a minute before trying again."
+    )
     public CreatedSuccessResponse registration(
         @RequestBody @Valid final ShelterRequest shelterRequest) {
         service.create(mapperRequest.mapToDto(shelterRequest));
         return new CreatedSuccessResponse();
     }
 }
+

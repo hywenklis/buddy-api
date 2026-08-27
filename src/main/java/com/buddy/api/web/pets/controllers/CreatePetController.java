@@ -1,5 +1,6 @@
 package com.buddy.api.web.pets.controllers;
 
+import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
 import com.buddy.api.domains.pet.dtos.PetDto;
 import com.buddy.api.domains.pet.services.CreatePet;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
@@ -24,9 +25,16 @@ public class CreatePetController implements CreatePetControllerDoc {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @RateLimited(
+        useIp = true,
+        operation = "createPet",
+        limitMessage =
+            "Too many pet registration requests. Please wait a minute before trying again."
+    )
     public CreatedSuccessResponse registration(@RequestBody @Valid final PetRequest petRequest) {
         PetDto petDto = mapperRequest.mapToDto(petRequest);
         service.create(petDto);
         return new CreatedSuccessResponse();
     }
 }
+
