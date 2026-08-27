@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 class AuthControllerTest extends IntegrationTestAbstract {
 
-    private static final String WEB_ORIGIN = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String WEB_ORIGIN = "http://localhost:3000";
 
     @Test
     @DisplayName("Should authenticate user successfully and filter out ADMIN profiles")

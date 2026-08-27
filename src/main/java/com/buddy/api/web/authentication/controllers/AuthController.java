@@ -46,12 +46,19 @@ public class AuthController implements AuthControllerDoc {
 
     @PostMapping("/refresh")
     @ResponseStatus(HttpStatus.OK)
+    @RateLimited(
+        useIp = true,
+        operation = "refreshToken",
+        limitMessage =
+            "Too many refresh attempts. Please wait a minute before trying again."
+    )
     public AuthResponse refreshToken(
         final HttpServletRequest request
     ) {
         AuthDto authDto = authenticateService.refreshToken(request);
         return mapper.toAuthResponse(authDto);
     }
+
 
     @ClearCookiesOnSuccess
     @PostMapping("/logout")
