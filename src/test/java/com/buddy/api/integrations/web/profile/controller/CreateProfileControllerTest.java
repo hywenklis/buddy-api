@@ -31,7 +31,7 @@ import org.springframework.test.web.servlet.ResultActions;
 class CreateProfileControllerTest extends IntegrationTestAbstract {
 
     private static final String PROFILE_REGISTER_URL = "/v1/profiles/register";
-    private static final String VALID_ORIGIN = "550e8400-e29b-41d4-a716-446655440000";
+    private static final String VALID_ORIGIN = "http://localhost:3000";
     private static final String FIELD_NAME = "name";
     private static final String ERROR_ACCOUNT_ID_REQUIRED = "Profile account ID is mandatory";
     private static final String ERROR_NAME_REQUIRED = "Profile name is mandatory";

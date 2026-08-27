@@ -36,6 +36,5 @@ public abstract class UnitTestAbstract {
         SHELTER.name()
     );
     protected static final String ORIGIN_NAME = "Origin";
-    protected static final String X_ORIGIN_CODE_HEADER = "X-Origin-Code";
     protected static final String RATE_LIMIT_COUNT = "rate-limit:count:";
 }
