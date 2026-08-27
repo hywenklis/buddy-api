@@ -9,6 +9,7 @@ import com.buddy.api.web.pets.requests.PetRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ public class CreatePetController implements CreatePetControllerDoc {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('SHELTER') and hasAuthority('SCOPE_VERIFIED')")
     @RateLimited(
         useIp = true,
         operation = "createPet",
@@ -37,4 +39,5 @@ public class CreatePetController implements CreatePetControllerDoc {
         return new CreatedSuccessResponse();
     }
 }
+
 
