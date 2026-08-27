@@ -53,7 +53,7 @@ public class AccountBlockReasonEntity {
     @Column(name = "reactivation_date")
     private LocalDateTime reactivationDate;
 
-    @Column(name = "deletionDate")
+    @Column(name = "deletion_date")
     private LocalDateTime deletionDate;
 
     @CreationTimestamp
