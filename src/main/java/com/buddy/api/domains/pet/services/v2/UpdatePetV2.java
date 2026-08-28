@@ -5,5 +5,5 @@ import com.buddy.api.domains.pet.dtos.v2.UpdatePetV2Dto;
 import java.util.UUID;
 
 public interface UpdatePetV2 {
-    PetV2Dto update(UpdatePetV2Dto dto, UUID authenticatedProfileId, boolean isAdmin);
+    PetV2Dto update(UpdatePetV2Dto dto, UUID authenticatedAccountId, boolean isAdmin);
 }

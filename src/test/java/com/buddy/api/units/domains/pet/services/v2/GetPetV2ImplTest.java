@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.buddy.api.commons.exceptions.PetNotFoundException;
 import com.buddy.api.domains.image.entities.ImageEntity;
-import com.buddy.api.domains.image.repositories.ImageRepository;
+import com.buddy.api.domains.image.services.FindImage;
 import com.buddy.api.domains.pet.dtos.v2.PetV2Dto;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
 import com.buddy.api.domains.pet.mappers.v2.PetV2DomainMapper;
@@ -31,7 +31,7 @@ class GetPetV2ImplTest {
     private PetV2Repository petV2Repository;
 
     @Mock
-    private ImageRepository imageRepository;
+    private FindImage findImage;
 
     @Mock
     private PetV2DomainMapper domainMapper;
@@ -53,7 +53,7 @@ class GetPetV2ImplTest {
             final var expectedDto = PetV2Dto.builder().id(petId).name("Bob").build();
 
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(pet));
-            when(imageRepository.findByPetV2OrderByDisplayOrderAsc(pet)).thenReturn(List.of(image));
+            when(findImage.findByPetV2OrderByDisplayOrderAsc(pet)).thenReturn(List.of(image));
             when(domainMapper.toDto(pet, List.of(image))).thenReturn(expectedDto);
 
             // Act

@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.domains.image.entities.ImageEntity;
-import com.buddy.api.domains.image.repositories.ImageRepository;
+import com.buddy.api.domains.image.services.FindImage;
 import com.buddy.api.domains.pet.dtos.v2.PetV2Dto;
 import com.buddy.api.domains.pet.dtos.v2.PetV2SearchCriteriaDto;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
@@ -36,7 +36,7 @@ class FindPetV2ImplTest {
     private PetV2Repository petV2Repository;
 
     @Mock
-    private ImageRepository imageRepository;
+    private FindImage findImage;
 
     @Mock
     private PetV2DomainMapper domainMapper;
@@ -92,7 +92,7 @@ class FindPetV2ImplTest {
 
             when(petV2Repository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(page);
-            when(imageRepository.findByPetV2_PetV2IdInOrderByDisplayOrderAsc(List.of(petId)))
+            when(findImage.findByPetV2_PetV2IdInOrderByDisplayOrderAsc(List.of(petId)))
                 .thenReturn(List.of(image));
             when(domainMapper.toDto(eq(pet), any())).thenReturn(dto);
 

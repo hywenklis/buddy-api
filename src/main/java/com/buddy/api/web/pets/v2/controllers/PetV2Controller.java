@@ -1,14 +1,12 @@
 package com.buddy.api.web.pets.v2.controllers;
 
 import com.buddy.api.commons.configurations.cache.annotations.RateLimited;
-import com.buddy.api.commons.exceptions.DomainException;
 import com.buddy.api.commons.page.PageResponse;
 import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.pet.services.v2.CreatePetV2;
 import com.buddy.api.domains.pet.services.v2.FindPetV2;
 import com.buddy.api.domains.pet.services.v2.GetPetV2;
 import com.buddy.api.domains.pet.services.v2.UpdatePetV2;
-import com.buddy.api.domains.profile.repositories.ProfileRepository;
 import com.buddy.api.web.defaultresponses.CreatedSuccessResponse;
 import com.buddy.api.web.pets.v2.mappers.PetV2RequestMapper;
 import com.buddy.api.web.pets.v2.mappers.PetV2ResponseMapper;
@@ -42,7 +40,6 @@ public class PetV2Controller implements PetV2ControllerDoc {
     private final FindPetV2 findPetService;
     private final GetPetV2 getPetService;
     private final UpdatePetV2 updatePetService;
-    private final ProfileRepository profileRepository;
     private final PetV2RequestMapper requestMapper;
     private final PetV2ResponseMapper responseMapper;
 
@@ -60,16 +57,7 @@ public class PetV2Controller implements PetV2ControllerDoc {
         @AuthenticationPrincipal final AuthenticatedUser authenticatedUser,
         @RequestBody @Valid final CreatePetV2Request request
     ) {
-        final var profile = profileRepository
-            .findByAccount_AccountIdAndIsDeletedFalse(authenticatedUser.getAccountId())
-            .orElseThrow(() -> new DomainException(
-                "Active guardian profile not found for this account.",
-                "profile",
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                null
-            ));
-
-        final var dto = requestMapper.toCreateDto(request, profile.getProfileId());
+        final var dto = requestMapper.toCreateDto(request, authenticatedUser.getAccountId());
         createPetService.create(dto);
         return new CreatedSuccessResponse();
     }
@@ -117,20 +105,9 @@ public class PetV2Controller implements PetV2ControllerDoc {
         @AuthenticationPrincipal final AuthenticatedUser authenticatedUser,
         @RequestBody @Valid final UpdatePetV2Request request
     ) {
-        final var profile = profileRepository
-            .findByAccount_AccountIdAndIsDeletedFalse(authenticatedUser.getAccountId())
-            .orElseThrow(() -> new DomainException(
-                "Active guardian profile not found for this account.",
-                "profile",
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                null
-            ));
-
-        final var isAdmin = authenticatedUser.getAuthorities().stream()
-            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-
         final var updateDto = requestMapper.toUpdateDto(id, request);
-        final var updated = updatePetService.update(updateDto, profile.getProfileId(), isAdmin);
+        final var updated = updatePetService
+            .update(updateDto, authenticatedUser.getAccountId(), authenticatedUser.isAdmin());
         return responseMapper.toResponse(updated);
     }
 }

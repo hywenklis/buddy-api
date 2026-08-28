@@ -1,13 +1,17 @@
 package com.buddy.api.domains.pet.services.v2.impl;
 
+import com.buddy.api.commons.exceptions.ActiveShelterProfileNotFoundException;
 import com.buddy.api.commons.exceptions.PetNotFoundException;
 import com.buddy.api.commons.exceptions.UnauthorizedEntityAccessException;
-import com.buddy.api.domains.image.repositories.ImageRepository;
+import com.buddy.api.domains.account.services.FindAccount;
+import com.buddy.api.domains.image.services.FindImage;
 import com.buddy.api.domains.pet.dtos.v2.PetV2Dto;
 import com.buddy.api.domains.pet.dtos.v2.UpdatePetV2Dto;
 import com.buddy.api.domains.pet.mappers.v2.PetV2DomainMapper;
 import com.buddy.api.domains.pet.repositories.PetV2Repository;
 import com.buddy.api.domains.pet.services.v2.UpdatePetV2;
+import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.profile.services.FindProfile;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,28 +26,31 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdatePetV2Impl implements UpdatePetV2 {
 
     private final PetV2Repository petV2Repository;
-    private final ImageRepository imageRepository;
+    private final FindAccount findAccount;
+    private final FindProfile findProfile;
+    private final FindImage findImage;
     private final PetV2DomainMapper domainMapper;
 
     @Override
     @Transactional
     public PetV2Dto update(final UpdatePetV2Dto dto,
-                           final UUID authenticatedProfileId,
+                           final UUID authenticatedAccountId,
                            final boolean isAdmin) {
-        log.info("Updating pet '{}' by profile '{}' (admin: {})",
-            dto.id(), authenticatedProfileId, isAdmin);
+        log.info("Updating pet '{}' by account '{}' (admin: {})",
+            dto.id(), authenticatedAccountId, isAdmin);
 
         final var pet = petV2Repository.findById(dto.id())
             .orElseThrow(() -> new PetNotFoundException(dto.id()));
 
-        final var isOwner = Optional.ofNullable(pet.getGuardianProfile())
-            .map(profile -> profile.getProfileId().equals(authenticatedProfileId))
-            .orElse(false);
+        findAccount.findActiveById(authenticatedAccountId);
 
-        if (!isAdmin && !isOwner) {
-            throw new UnauthorizedEntityAccessException(
-                "Access denied: You do not have permission to update this pet."
-            );
+        if (!isAdmin) {
+            final var activeShelterProfile = findProfile
+                .findActiveShelterProfileByAccountId(authenticatedAccountId)
+                .orElseThrow(
+                    () -> new ActiveShelterProfileNotFoundException(authenticatedAccountId));
+
+            validateOwnership(pet.getGuardianProfile(), activeShelterProfile.getProfileId());
         }
 
         Optional.ofNullable(dto.name()).ifPresent(pet::setName);
@@ -61,9 +68,17 @@ public class UpdatePetV2Impl implements UpdatePetV2 {
         });
 
         final var saved = petV2Repository.save(pet);
-        final var images = imageRepository.findByPetV2OrderByDisplayOrderAsc(saved);
+        final var images = findImage.findByPetV2OrderByDisplayOrderAsc(saved);
 
         log.info("Pet '{}' updated successfully", saved.getPetV2Id());
         return domainMapper.toDto(saved, images);
+    }
+
+    private void validateOwnership(final ProfileEntity guardian, final UUID accountProfileId) {
+        Optional.ofNullable(guardian)
+            .filter(profile -> profile.getProfileId().equals(accountProfileId))
+            .orElseThrow(() -> new UnauthorizedEntityAccessException(
+                "Access denied: You do not have permission to update this pet."
+            ));
     }
 }

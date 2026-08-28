@@ -7,7 +7,7 @@ import com.buddy.api.domains.pet.entities.PetV2Entity;
 import com.buddy.api.domains.pet.enums.PetGender;
 import com.buddy.api.domains.pet.enums.PetSpecies;
 import com.buddy.api.domains.pet.repositories.PetV2Repository;
-import com.buddy.api.domains.pet.specifications.v2.PetV2Specifications;
+import com.buddy.api.domains.pet.specifications.v2.PetV2BasicSpecifications;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.integrations.IntegrationTestAbstract;
@@ -102,8 +102,8 @@ class PetV2RepositoryTest extends IntegrationTestAbstract {
             .build());
 
         // Act
-        final var spec = PetV2Specifications.hasSpecies(PetSpecies.DOG)
-            .and(PetV2Specifications.isNeutered(true));
+        final var spec = PetV2BasicSpecifications.hasSpecies(PetSpecies.DOG)
+            .and(PetV2BasicSpecifications.isNeutered(true));
         final var page = petV2Repository.findAll(spec, PageRequest.of(0, 10));
 
         // Assert

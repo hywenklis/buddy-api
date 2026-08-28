@@ -33,7 +33,7 @@ class PetV2RequestMapperTest {
         @Test
         @DisplayName("Should map CreatePetV2Request to CreatePetV2Dto")
         void should_map_create_request() {
-            final var profileId = UUID.randomUUID();
+            final var accountId = UUID.randomUUID();
             final var request = CreatePetV2Request.builder()
                 .name("Max")
                 .species(PetSpecies.DOG)
@@ -46,10 +46,10 @@ class PetV2RequestMapperTest {
                 .description("Good boy")
                 .build();
 
-            final var dto = mapper.toCreateDto(request, profileId);
+            final var dto = mapper.toCreateDto(request, accountId);
 
             assertThat(dto).isNotNull();
-            assertThat(dto.guardianProfileId()).isEqualTo(profileId);
+            assertThat(dto.accountId()).isEqualTo(accountId);
             assertThat(dto.name()).isEqualTo("Max");
             assertThat(dto.species()).isEqualTo(PetSpecies.DOG);
             assertThat(dto.gender()).isEqualTo(PetGender.MALE);

@@ -37,7 +37,7 @@ class PetV2DomainMapperTest {
         void should_map_create_dto_to_entity() {
             final var profile = ProfileEntity.builder().profileId(UUID.randomUUID()).build();
             final var dto = CreatePetV2Dto.builder()
-                .guardianProfileId(profile.getProfileId())
+                .accountId(UUID.randomUUID())
                 .name("Rex")
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)

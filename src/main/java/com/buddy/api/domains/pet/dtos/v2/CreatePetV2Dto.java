@@ -8,7 +8,7 @@ import lombok.Builder;
 
 @Builder
 public record CreatePetV2Dto(
-    UUID guardianProfileId,
+    UUID accountId,
     String name,
     PetSpecies species,
     PetGender gender,

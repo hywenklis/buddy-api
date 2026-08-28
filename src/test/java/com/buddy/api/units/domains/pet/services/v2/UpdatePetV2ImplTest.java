@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import com.buddy.api.commons.exceptions.ActiveShelterProfileNotFoundException;
 import com.buddy.api.commons.exceptions.PetNotFoundException;
 import com.buddy.api.commons.exceptions.UnauthorizedEntityAccessException;
-import com.buddy.api.domains.image.repositories.ImageRepository;
+import com.buddy.api.domains.account.dtos.AccountDto;
+import com.buddy.api.domains.account.services.FindAccount;
+import com.buddy.api.domains.image.services.FindImage;
 import com.buddy.api.domains.pet.dtos.v2.PetV2Dto;
 import com.buddy.api.domains.pet.dtos.v2.UpdatePetV2Dto;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
@@ -16,6 +19,8 @@ import com.buddy.api.domains.pet.mappers.v2.PetV2DomainMapper;
 import com.buddy.api.domains.pet.repositories.PetV2Repository;
 import com.buddy.api.domains.pet.services.v2.impl.UpdatePetV2Impl;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
+import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
+import com.buddy.api.domains.profile.services.FindProfile;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +41,13 @@ class UpdatePetV2ImplTest {
     private PetV2Repository petV2Repository;
 
     @Mock
-    private ImageRepository imageRepository;
+    private FindAccount findAccount;
+
+    @Mock
+    private FindProfile findProfile;
+
+    @Mock
+    private FindImage findImage;
 
     @Mock
     private PetV2DomainMapper domainMapper;
@@ -49,16 +60,21 @@ class UpdatePetV2ImplTest {
     class UpdateTests {
 
         @Test
-        @DisplayName("Should update pet fields when user is the guardian owner")
+        @DisplayName("Should update pet fields when user is the guardian shelter owner")
         void should_update_pet_when_owner() {
             // Arrange
             final var petId = UUID.randomUUID();
+            final var accountId = UUID.randomUUID();
             final var profileId = UUID.randomUUID();
-            final var guardian = ProfileEntity.builder().profileId(profileId).build();
+            final var shelter = ProfileEntity.builder()
+                .profileId(profileId)
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
 
             final var existing = PetV2Entity.builder()
                 .petV2Id(petId)
-                .guardianProfile(guardian)
+                .guardianProfile(shelter)
                 .name("Old Name")
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)
@@ -85,12 +101,16 @@ class UpdatePetV2ImplTest {
             final var expectedDto = PetV2Dto.builder().id(petId).name("New Name").build();
 
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(accountId))
+                .thenReturn(AccountDto.builder().accountId(accountId).build());
+            when(findProfile.findActiveShelterProfileByAccountId(accountId))
+                .thenReturn(Optional.of(shelter));
             when(petV2Repository.save(existing)).thenReturn(saved);
-            when(imageRepository.findByPetV2OrderByDisplayOrderAsc(saved)).thenReturn(List.of());
+            when(findImage.findByPetV2OrderByDisplayOrderAsc(saved)).thenReturn(List.of());
             when(domainMapper.toDto(saved, List.of())).thenReturn(expectedDto);
 
             // Act
-            final var result = updatePetService.update(dto, profileId, false);
+            final var result = updatePetService.update(dto, accountId, false);
 
             // Assert
             assertThat(result).isEqualTo(expectedDto);
@@ -105,12 +125,12 @@ class UpdatePetV2ImplTest {
         }
 
         @Test
-        @DisplayName("Should update pet when user is admin even if not owner")
+        @DisplayName("Should update pet when user is admin and account is active")
         void should_update_pet_when_admin() {
             // Arrange
             final var petId = UUID.randomUUID();
             final var ownerProfileId = UUID.randomUUID();
-            final var adminProfileId = UUID.randomUUID();
+            final var adminAccountId = UUID.randomUUID();
             final var guardian = ProfileEntity.builder().profileId(ownerProfileId).build();
 
             final var existing = PetV2Entity.builder()
@@ -125,12 +145,14 @@ class UpdatePetV2ImplTest {
                 .build();
 
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(adminAccountId))
+                .thenReturn(AccountDto.builder().accountId(adminAccountId).build());
             when(petV2Repository.save(existing)).thenReturn(existing);
-            when(imageRepository.findByPetV2OrderByDisplayOrderAsc(existing)).thenReturn(List.of());
+            when(findImage.findByPetV2OrderByDisplayOrderAsc(existing)).thenReturn(List.of());
             when(domainMapper.toDto(existing, List.of())).thenReturn(PetV2Dto.builder().build());
 
             // Act
-            final var result = updatePetService.update(dto, adminProfileId, true);
+            final var result = updatePetService.update(dto, adminAccountId, true);
 
             // Assert
             assertThat(result).isNotNull();
@@ -143,8 +165,14 @@ class UpdatePetV2ImplTest {
             // Arrange
             final var petId = UUID.randomUUID();
             final var ownerProfileId = UUID.randomUUID();
+            final var otherAccountId = UUID.randomUUID();
             final var otherProfileId = UUID.randomUUID();
             final var guardian = ProfileEntity.builder().profileId(ownerProfileId).build();
+            final var otherProfile = ProfileEntity.builder()
+                .profileId(otherProfileId)
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
 
             final var existing = PetV2Entity.builder()
                 .petV2Id(petId)
@@ -154,11 +182,34 @@ class UpdatePetV2ImplTest {
             final var dto = UpdatePetV2Dto.builder().id(petId).build();
 
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(otherAccountId))
+                .thenReturn(AccountDto.builder().accountId(otherAccountId).build());
+            when(findProfile.findActiveShelterProfileByAccountId(otherAccountId))
+                .thenReturn(Optional.of(otherProfile));
 
             // Act & Assert
-            assertThatThrownBy(() -> updatePetService.update(dto, otherProfileId, false))
+            assertThatThrownBy(() -> updatePetService.update(dto, otherAccountId, false))
                 .isInstanceOf(UnauthorizedEntityAccessException.class)
                 .hasMessage("Access denied: You do not have permission to update this pet.");
+        }
+
+        @Test
+        @DisplayName("Should throw when shelter profile not found")
+        void should_throw_when_shelter_profile_not_found() {
+            final var petId = UUID.randomUUID();
+            final var accountId = UUID.randomUUID();
+            final var existing = PetV2Entity.builder().petV2Id(petId).build();
+            final var dto = UpdatePetV2Dto.builder().id(petId).build();
+
+            when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(accountId))
+                .thenReturn(AccountDto.builder().accountId(accountId).build());
+            when(findProfile.findActiveShelterProfileByAccountId(accountId))
+                .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> updatePetService.update(dto, accountId, false))
+                .isInstanceOf(ActiveShelterProfileNotFoundException.class)
+                .hasMessageContaining("Active shelter profile not found for account");
         }
 
         @Test
