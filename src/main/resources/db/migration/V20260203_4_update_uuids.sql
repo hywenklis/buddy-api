@@ -1,0 +1,4 @@
+BEGIN;
+SET CONSTRAINTS ALL DEFERRED;
+CALL migrate_uuidv4_to_uuidv7();
+COMMIT;
