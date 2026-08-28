@@ -13,5 +13,7 @@ public interface ProfileRepository extends JpaRepository<ProfileEntity, UUID> {
 
     Optional<List<ProfileEntity>> findByAccountEmail(EmailAddress emailAddress);
 
+    Optional<ProfileEntity> findByAccount_AccountIdAndIsDeletedFalse(UUID accountId);
+
     Boolean existsByName(String name);
 }
