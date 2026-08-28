@@ -26,9 +26,12 @@ public class FindProfileImpl implements FindProfile {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProfileDto> findByAccountEmail(final String email) {
+    public List<ProfileDto> findByAccountEmail(final EmailAddress email) {
         log.info("Searching profiles by account email");
-        return profileRepository.findByAccountEmail(new EmailAddress(email))
+        if (email == null) {
+            return Collections.emptyList();
+        }
+        return profileRepository.findByAccountEmail(email)
             .map(profileMapper::toProfilesDto)
             .orElse(Collections.emptyList());
     }

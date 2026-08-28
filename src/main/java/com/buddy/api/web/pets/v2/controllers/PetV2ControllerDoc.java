@@ -33,18 +33,19 @@ public interface PetV2ControllerDoc {
         @ApiResponse(responseCode = "400", description = "Validation error in request payload",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Missing or invalid token",
+        @ApiResponse(responseCode = "401",
+            description = "Unauthorized - Invalid authentication credentials",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(
             responseCode = "403",
-            description = "Forbidden - Requires shelter role and verified account",
+            description = "Forbidden - Missing token, unverified account, or requires shelter role",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))
         ),
         @ApiResponse(
             responseCode = "422",
-            description = "Unprocessable Entity - Inactive or non-existent profile",
+            description = "Unprocessable Entity - Inactive or non-existent shelter profile",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))
         ),
@@ -64,7 +65,10 @@ public interface PetV2ControllerDoc {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Paginated list of pets",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(implementation = PageResponse.class)))
+                schema = @Schema(implementation = PageResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid search criteria parameters",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ErrorResponse.class)))
     })
     PageResponse<PetV2SummaryResponse> findPets(
         PetV2SearchCriteriaRequest criteria,
@@ -96,12 +100,19 @@ public interface PetV2ControllerDoc {
         @ApiResponse(responseCode = "400", description = "Validation error",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized",
+        @ApiResponse(responseCode = "401",
+            description = "Unauthorized - Invalid authentication credentials",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(
             responseCode = "403",
-            description = "Forbidden - User is not the guardian owner",
+            description = "Forbidden - Not guardian owner or insufficient permissions",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ErrorResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "422",
+            description = "Unprocessable Entity - Active shelter profile not found",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class))
         ),

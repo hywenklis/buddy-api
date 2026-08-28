@@ -12,6 +12,7 @@ import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.AuthService;
 import com.buddy.api.domains.profile.dtos.ProfileDto;
 import com.buddy.api.domains.profile.services.FindProfile;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
@@ -152,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private List<ProfileDto> fetchAndFilterProfiles(final String email) {
-        List<ProfileDto> profiles = findProfile.findByAccountEmail(email);
+        List<ProfileDto> profiles = findProfile.findByAccountEmail(new EmailAddress(email));
         return profiles.stream()
             .filter(profile -> !profile.isDeleted())
             .filter(profile -> !profile.profileType().equals(ADMIN))

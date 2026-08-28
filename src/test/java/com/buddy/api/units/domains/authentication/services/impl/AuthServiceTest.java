@@ -24,6 +24,7 @@ import com.buddy.api.domains.authentication.dtos.AuthDto;
 import com.buddy.api.domains.authentication.services.impl.AuthServiceImpl;
 import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.profile.services.FindProfile;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.units.UnitTestAbstract;
 import com.buddy.api.utils.RandomEmailUtils;
 import io.jsonwebtoken.JwtException;
@@ -103,7 +104,8 @@ class AuthServiceTest extends UnitTestAbstract {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
             .thenReturn(authResult);
 
-        when(findProfile.findByAccountEmail(authDto.email())).thenReturn(profiles);
+        when(findProfile.findByAccountEmail(new EmailAddress(authDto.email())))
+            .thenReturn(profiles);
 
         when(jwtUtil.generateAccessToken(
             authDto.email(),
@@ -127,7 +129,7 @@ class AuthServiceTest extends UnitTestAbstract {
             .updateLastLogin(eq(authDto.email()), any(LocalDateTime.class));
 
         verify(findProfile, times(1))
-            .findByAccountEmail(authDto.email());
+            .findByAccountEmail(new EmailAddress(authDto.email()));
 
         verify(jwtUtil, times(1))
             .generateAccessToken(authDto.email(), List.of(ProfileTypeEnum.USER.name()));

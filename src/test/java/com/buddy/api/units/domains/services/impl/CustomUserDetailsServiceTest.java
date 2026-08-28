@@ -50,7 +50,7 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         when(findAccount.findAccountForAuthentication(accountDto.email().value()))
             .thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value()))
+        when(findProfile.findByAccountEmail(accountDto.email()))
             .thenReturn(List.of(activeProfile));
 
         UserDetails result = customUserDetailsService.loadUserByUsername(
@@ -86,7 +86,7 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         when(findAccount.findAccountForAuthentication(accountDto.email().value()))
             .thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value()))
+        when(findProfile.findByAccountEmail(accountDto.email()))
             .thenReturn(List.of(deletedProfile));
 
         UserDetails result = customUserDetailsService.loadUserByUsername(
@@ -113,7 +113,7 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         when(findAccount.findAccountForAuthentication(accountDto.email().value()))
             .thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value()))
+        when(findProfile.findByAccountEmail(accountDto.email()))
             .thenReturn(List.of());
 
         final var result = customUserDetailsService.loadUserByUsername(accountDto.email().value());
@@ -135,7 +135,7 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         when(findAccount.findAccountForAuthentication(accountDto.email().value()))
             .thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value()))
+        when(findProfile.findByAccountEmail(accountDto.email()))
             .thenReturn(List.of());
 
         final var result = customUserDetailsService.loadUserByUsername(accountDto.email().value());
@@ -165,7 +165,7 @@ class CustomUserDetailsServiceTest extends UnitTestAbstract {
 
         when(findAccount.findAccountForAuthentication(accountDto.email().value()))
             .thenReturn(accountDto);
-        when(findProfile.findByAccountEmail(accountDto.email().value()))
+        when(findProfile.findByAccountEmail(accountDto.email()))
             .thenReturn(List.of(shelter, admin));
 
         UserDetails result = customUserDetailsService

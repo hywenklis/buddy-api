@@ -66,7 +66,7 @@ public class PetV2Controller implements PetV2ControllerDoc {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public PageResponse<PetV2SummaryResponse> findPets(
-        final PetV2SearchCriteriaRequest criteria,
+        @Valid final PetV2SearchCriteriaRequest criteria,
         final Pageable pageable
     ) {
         final var criteriaDto = requestMapper.toSearchCriteriaDto(criteria);

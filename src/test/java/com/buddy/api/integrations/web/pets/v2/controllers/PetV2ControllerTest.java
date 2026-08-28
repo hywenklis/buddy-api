@@ -191,6 +191,15 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.hasNext").value(false));
         }
+
+        @Test
+        @DisplayName("Should return 400 Bad Request when search criteria is invalid")
+        void should_return_400_when_search_criteria_invalid() throws Exception {
+            mockMvc.perform(get(BASE_URL)
+                    .param("minSize", "50")
+                    .param("maxSize", "10"))
+                .andExpect(status().isBadRequest());
+        }
     }
 
     @Nested

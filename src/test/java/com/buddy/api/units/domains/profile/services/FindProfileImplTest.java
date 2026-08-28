@@ -1,7 +1,6 @@
 package com.buddy.api.units.domains.profile.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -44,11 +43,11 @@ class FindProfileImplTest {
         @Test
         @DisplayName("Should return profile dtos list when email exists")
         void should_return_dtos_when_email_exists() {
-            final var email = "test@buddy.com";
+            final var email = new EmailAddress("test@buddy.com");
             final var profileEntity = ProfileEntity.builder().build();
             final var profileDto = ProfileDto.builder().build();
 
-            when(profileRepository.findByAccountEmail(new EmailAddress(email)))
+            when(profileRepository.findByAccountEmail(email))
                 .thenReturn(Optional.of(List.of(profileEntity)));
             when(profileMapper.toProfilesDto(List.of(profileEntity)))
                 .thenReturn(List.of(profileDto));
@@ -56,15 +55,24 @@ class FindProfileImplTest {
             final var result = findProfileService.findByAccountEmail(email);
 
             assertThat(result).containsExactly(profileDto);
-            verify(profileRepository).findByAccountEmail(new EmailAddress(email));
+            verify(profileRepository).findByAccountEmail(email);
         }
 
         @Test
         @DisplayName("Should return empty list when repository returns empty")
         void should_return_empty_when_not_found() {
-            when(profileRepository.findByAccountEmail(any())).thenReturn(Optional.empty());
+            final var email = new EmailAddress("unknown@buddy.com");
+            when(profileRepository.findByAccountEmail(email)).thenReturn(Optional.empty());
 
-            final var result = findProfileService.findByAccountEmail("unknown@buddy.com");
+            final var result = findProfileService.findByAccountEmail(email);
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should return empty list when email parameter is null")
+        void should_return_empty_when_email_null() {
+            final var result = findProfileService.findByAccountEmail((EmailAddress) null);
 
             assertThat(result).isEmpty();
         }
