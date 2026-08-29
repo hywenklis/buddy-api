@@ -12,6 +12,7 @@ public class AuthenticatedUser implements UserDetails {
 
     @Serial
     private static final long serialVersionUID = -6582441640280677406L;
+    private static final String ADMIN_ROLE = "ROLE_ADMIN";
 
     private final java.util.UUID accountId;
     private final String email;
@@ -48,5 +49,10 @@ public class AuthenticatedUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return !this.deleted;
+    }
+
+    public boolean isAdmin() {
+        return this.authorities.stream()
+            .anyMatch(a -> ADMIN_ROLE.equals(a.getAuthority()));
     }
 }

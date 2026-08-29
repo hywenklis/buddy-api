@@ -84,6 +84,9 @@ public abstract class IntegrationTestAbstract {
     protected PetRepository petRepository;
 
     @Autowired
+    protected com.buddy.api.domains.pet.repositories.PetV2Repository petV2Repository;
+
+    @Autowired
     protected PetImageRepository petImageRepository;
 
     @Autowired

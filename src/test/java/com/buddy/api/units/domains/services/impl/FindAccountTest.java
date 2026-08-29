@@ -5,6 +5,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.buddy.api.builders.account.AccountBuilder;
+import com.buddy.api.commons.exceptions.AccountBlockedException;
+import com.buddy.api.commons.exceptions.AccountNotVerifiedException;
 import com.buddy.api.commons.exceptions.AccountUnavailableException;
 import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
@@ -53,6 +56,98 @@ class FindAccountTest extends UnitTestAbstract {
             .thenReturn(true);
 
         assertThat(findAccount.existsById(accountId)).isTrue();
+    }
+
+    @Nested
+    @DisplayName("findActiveById")
+    class FindActiveByIdTests {
+
+        @Test
+        @DisplayName("Should return AccountDto when account is active and verified")
+        void should_return_dto_when_active() {
+            final var accountId = UUID.randomUUID();
+            final var accountEntity = AccountBuilder.validAccountEntity()
+                .accountId(accountId)
+                .isBlocked(false)
+                .isDeleted(false)
+                .isVerified(true)
+                .build();
+
+            when(accountRepository.findById(accountId)).thenReturn(Optional.of(accountEntity));
+
+            final var result = findAccount.findActiveById(accountId);
+
+            assertThat(result).isNotNull();
+            assertThat(result.accountId()).isEqualTo(accountId);
+            assertThat(result.isBlocked()).isFalse();
+            assertThat(result.isDeleted()).isFalse();
+            assertThat(result.isVerified()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when account does not exist")
+        void should_throw_when_not_found() {
+            final var accountId = UUID.randomUUID();
+            when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> findAccount.findActiveById(accountId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage("Account not found");
+        }
+
+        @Test
+        @DisplayName("Should throw AccountUnavailableException when account is deleted")
+        void should_throw_when_deleted() {
+            final var accountId = UUID.randomUUID();
+            final var accountEntity = AccountBuilder.validAccountEntity()
+                .accountId(accountId)
+                .isDeleted(true)
+                .isBlocked(false)
+                .isVerified(true)
+                .build();
+
+            when(accountRepository.findById(accountId)).thenReturn(Optional.of(accountEntity));
+
+            assertThatThrownBy(() -> findAccount.findActiveById(accountId))
+                .isInstanceOf(AccountUnavailableException.class)
+                .hasMessage("Account is not available");
+        }
+
+        @Test
+        @DisplayName("Should throw AccountBlockedException when account is blocked")
+        void should_throw_when_blocked() {
+            final var accountId = UUID.randomUUID();
+            final var accountEntity = AccountBuilder.validAccountEntity()
+                .accountId(accountId)
+                .isDeleted(false)
+                .isBlocked(true)
+                .isVerified(true)
+                .build();
+
+            when(accountRepository.findById(accountId)).thenReturn(Optional.of(accountEntity));
+
+            assertThatThrownBy(() -> findAccount.findActiveById(accountId))
+                .isInstanceOf(AccountBlockedException.class)
+                .hasMessage("Account is blocked");
+        }
+
+        @Test
+        @DisplayName("Should throw AccountNotVerifiedException when account is not verified")
+        void should_throw_when_not_verified() {
+            final var accountId = UUID.randomUUID();
+            final var accountEntity = AccountBuilder.validAccountEntity()
+                .accountId(accountId)
+                .isDeleted(false)
+                .isBlocked(false)
+                .isVerified(false)
+                .build();
+
+            when(accountRepository.findById(accountId)).thenReturn(Optional.of(accountEntity));
+
+            assertThatThrownBy(() -> findAccount.findActiveById(accountId))
+                .isInstanceOf(AccountNotVerifiedException.class)
+                .hasMessage("Account is not verified");
+        }
     }
 
     @Test
