@@ -1,5 +1,6 @@
 package com.buddy.api.units.domains.pet.services.v2;
 
+import static org.apache.commons.lang3.RandomStringUtils.secure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -46,31 +47,27 @@ class GetPetV2ImplTest {
         @Test
         @DisplayName("Should return PetV2Dto with images when pet is found")
         void should_return_pet_dto_when_found() {
-            // Arrange
             final var petId = UUID.randomUUID();
-            final var pet = PetV2Entity.builder().petV2Id(petId).name("Bob").build();
+            final var petName = secure().nextAlphabetic(8);
+            final var pet = PetV2Entity.builder().petV2Id(petId).name(petName).build();
             final var image = ImageEntity.builder().imageId(UUID.randomUUID()).build();
-            final var expectedDto = PetV2Dto.builder().id(petId).name("Bob").build();
+            final var expectedDto = PetV2Dto.builder().id(petId).name(petName).build();
 
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(pet));
             when(findImage.findByPetV2OrderByDisplayOrderAsc(pet)).thenReturn(List.of(image));
             when(domainMapper.toDto(pet, List.of(image))).thenReturn(expectedDto);
 
-            // Act
             final var result = getPetService.findById(petId);
 
-            // Assert
             assertThat(result).isNotNull().isEqualTo(expectedDto);
         }
 
         @Test
         @DisplayName("Should throw PetNotFoundException when pet is not found")
         void should_throw_when_not_found() {
-            // Arrange
             final var petId = UUID.randomUUID();
             when(petV2Repository.findById(petId)).thenReturn(Optional.empty());
 
-            // Act & Assert
             assertThatThrownBy(() -> getPetService.findById(petId))
                 .isInstanceOf(PetNotFoundException.class)
                 .hasMessage("Pet with id '" + petId + "' was not found.");

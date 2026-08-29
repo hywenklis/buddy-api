@@ -1,5 +1,6 @@
 package com.buddy.api.units.web.pets.v2.mappers;
 
+import static org.apache.commons.lang3.RandomStringUtils.secure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.buddy.api.domains.pet.enums.PetGender;
@@ -34,8 +35,10 @@ class PetV2RequestMapperTest {
         @DisplayName("Should map CreatePetV2Request to CreatePetV2Dto")
         void should_map_create_request() {
             final var accountId = UUID.randomUUID();
+            final var petName = secure().nextAlphabetic(8);
+            final var description = secure().nextAlphabetic(20);
             final var request = CreatePetV2Request.builder()
-                .name("Max")
+                .name(petName)
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)
                 .approximateAge(2)
@@ -43,14 +46,14 @@ class PetV2RequestMapperTest {
                 .weight(BigDecimal.valueOf(10))
                 .isNeutered(true)
                 .isForAdoption(true)
-                .description("Good boy")
+                .description(description)
                 .build();
 
             final var dto = mapper.toCreateDto(request, accountId);
 
             assertThat(dto).isNotNull();
             assertThat(dto.accountId()).isEqualTo(accountId);
-            assertThat(dto.name()).isEqualTo("Max");
+            assertThat(dto.name()).isEqualTo(petName);
             assertThat(dto.species()).isEqualTo(PetSpecies.DOG);
             assertThat(dto.gender()).isEqualTo(PetGender.MALE);
             assertThat(dto.approximateAge()).isEqualTo(2);
@@ -58,7 +61,7 @@ class PetV2RequestMapperTest {
             assertThat(dto.weight()).isEqualTo(BigDecimal.valueOf(10));
             assertThat(dto.isNeutered()).isTrue();
             assertThat(dto.isForAdoption()).isTrue();
-            assertThat(dto.description()).isEqualTo("Good boy");
+            assertThat(dto.description()).isEqualTo(description);
         }
 
         @Test
@@ -76,8 +79,9 @@ class PetV2RequestMapperTest {
         @DisplayName("Should map UpdatePetV2Request to UpdatePetV2Dto")
         void should_map_update_request() {
             final var petId = UUID.randomUUID();
+            final var petName = secure().nextAlphabetic(8);
             final var request = UpdatePetV2Request.builder()
-                .name("Updated")
+                .name(petName)
                 .species(PetSpecies.CAT)
                 .gender(PetGender.FEMALE)
                 .build();
@@ -86,7 +90,7 @@ class PetV2RequestMapperTest {
 
             assertThat(dto).isNotNull();
             assertThat(dto.id()).isEqualTo(petId);
-            assertThat(dto.name()).isEqualTo("Updated");
+            assertThat(dto.name()).isEqualTo(petName);
             assertThat(dto.species()).isEqualTo(PetSpecies.CAT);
             assertThat(dto.gender()).isEqualTo(PetGender.FEMALE);
         }
@@ -105,8 +109,9 @@ class PetV2RequestMapperTest {
         @Test
         @DisplayName("Should map PetV2SearchCriteriaRequest to PetV2SearchCriteriaDto")
         void should_map_search_criteria() {
+            final var petName = secure().nextAlphabetic(8);
             final var request = PetV2SearchCriteriaRequest.builder()
-                .name("Thor")
+                .name(petName)
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)
                 .isNeutered(true)
@@ -118,7 +123,7 @@ class PetV2RequestMapperTest {
             final var dto = mapper.toSearchCriteriaDto(request);
 
             assertThat(dto).isNotNull();
-            assertThat(dto.name()).isEqualTo("Thor");
+            assertThat(dto.name()).isEqualTo(petName);
             assertThat(dto.species()).isEqualTo(PetSpecies.DOG);
             assertThat(dto.gender()).isEqualTo(PetGender.MALE);
             assertThat(dto.isNeutered()).isTrue();

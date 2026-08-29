@@ -56,6 +56,46 @@ class PetV2SearchCriteriaRequestTest {
             assertThat(request.isWeightRangeValid()).isTrue();
             assertThat(request.isAgeRangeValid()).isTrue();
         }
+
+        @Test
+        @DisplayName("Should pass validation when only min or only max bound is provided")
+        void should_pass_validation_when_only_one_bound_provided() {
+            final var onlyMinRequest = PetV2SearchCriteriaRequest.builder()
+                .minSize(BigDecimal.valueOf(10))
+                .minWeight(BigDecimal.valueOf(5.0))
+                .minAge(2)
+                .build();
+
+            final var onlyMaxRequest = PetV2SearchCriteriaRequest.builder()
+                .maxSize(BigDecimal.valueOf(50))
+                .maxWeight(BigDecimal.valueOf(25.0))
+                .maxAge(8)
+                .build();
+
+            final var equalBoundsRequest = PetV2SearchCriteriaRequest.builder()
+                .minSize(BigDecimal.valueOf(30))
+                .maxSize(BigDecimal.valueOf(30))
+                .minWeight(BigDecimal.valueOf(10.0))
+                .maxWeight(BigDecimal.valueOf(10.0))
+                .minAge(4)
+                .maxAge(4)
+                .build();
+
+            assertThat(validator.validate(onlyMinRequest)).isEmpty();
+            assertThat(onlyMinRequest.isSizeRangeValid()).isTrue();
+            assertThat(onlyMinRequest.isWeightRangeValid()).isTrue();
+            assertThat(onlyMinRequest.isAgeRangeValid()).isTrue();
+
+            assertThat(validator.validate(onlyMaxRequest)).isEmpty();
+            assertThat(onlyMaxRequest.isSizeRangeValid()).isTrue();
+            assertThat(onlyMaxRequest.isWeightRangeValid()).isTrue();
+            assertThat(onlyMaxRequest.isAgeRangeValid()).isTrue();
+
+            assertThat(validator.validate(equalBoundsRequest)).isEmpty();
+            assertThat(equalBoundsRequest.isSizeRangeValid()).isTrue();
+            assertThat(equalBoundsRequest.isWeightRangeValid()).isTrue();
+            assertThat(equalBoundsRequest.isAgeRangeValid()).isTrue();
+        }
     }
 
     @Nested

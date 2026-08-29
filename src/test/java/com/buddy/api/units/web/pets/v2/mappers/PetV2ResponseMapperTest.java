@@ -1,5 +1,6 @@
 package com.buddy.api.units.web.pets.v2.mappers;
 
+import static org.apache.commons.lang3.RandomStringUtils.secure;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.buddy.api.domains.pet.dtos.v2.PetV2Dto;
@@ -38,18 +39,21 @@ class PetV2ResponseMapperTest {
             final var petId = UUID.randomUUID();
             final var profileId = UUID.randomUUID();
             final var imageId = UUID.randomUUID();
+            final var petName = secure().nextAlphabetic(8);
+            final var description = secure().nextAlphabetic(20);
+            final var photoUrl = "https://cdn.buddy.com/" + secure().nextAlphabetic(10) + ".jpg";
             final var now = LocalDateTime.now();
 
             final var imageDto = PetV2ImageDto.builder()
                 .id(imageId)
-                .url("http://cdn.buddy.com/photo.jpg")
+                .url(photoUrl)
                 .displayOrder(0)
                 .build();
 
             final var dto = PetV2Dto.builder()
                 .id(petId)
                 .guardianProfileId(profileId)
-                .name("Bella")
+                .name(petName)
                 .species(PetSpecies.CAT)
                 .gender(PetGender.FEMALE)
                 .approximateAge(1)
@@ -58,8 +62,8 @@ class PetV2ResponseMapperTest {
                 .weight(BigDecimal.valueOf(3))
                 .isNeutered(false)
                 .isForAdoption(true)
-                .description("Playful kitten")
-                .coverImageUrl("http://cdn.buddy.com/photo.jpg")
+                .description(description)
+                .coverImageUrl(photoUrl)
                 .images(List.of(imageDto))
                 .creationDate(now)
                 .updatedDate(now)
@@ -70,12 +74,12 @@ class PetV2ResponseMapperTest {
             assertThat(response).isNotNull();
             assertThat(response.id()).isEqualTo(petId);
             assertThat(response.guardianProfileId()).isEqualTo(profileId);
-            assertThat(response.name()).isEqualTo("Bella");
+            assertThat(response.name()).isEqualTo(petName);
             assertThat(response.species()).isEqualTo(PetSpecies.CAT);
             assertThat(response.gender()).isEqualTo(PetGender.FEMALE);
-            assertThat(response.coverImageUrl()).isEqualTo("http://cdn.buddy.com/photo.jpg");
+            assertThat(response.coverImageUrl()).isEqualTo(photoUrl);
             assertThat(response.images()).hasSize(1);
-            assertThat(response.images().get(0).id()).isEqualTo(imageId);
+            assertThat(response.images().getFirst().id()).isEqualTo(imageId);
         }
 
         @Test
@@ -96,12 +100,14 @@ class PetV2ResponseMapperTest {
         void should_map_to_summary_response() {
             final var petId = UUID.randomUUID();
             final var profileId = UUID.randomUUID();
+            final var petName = secure().nextAlphabetic(8);
+            final var coverUrl = "https://cdn.buddy.com/" + secure().nextAlphabetic(10) + ".jpg";
             final var now = LocalDateTime.now();
 
             final var dto = PetV2Dto.builder()
                 .id(petId)
                 .guardianProfileId(profileId)
-                .name("Buddy")
+                .name(petName)
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)
                 .approximateAge(4)
@@ -109,7 +115,7 @@ class PetV2ResponseMapperTest {
                 .weight(BigDecimal.valueOf(20))
                 .isNeutered(true)
                 .isForAdoption(true)
-                .coverImageUrl("http://cdn.buddy.com/cover.jpg")
+                .coverImageUrl(coverUrl)
                 .creationDate(now)
                 .build();
 
@@ -118,8 +124,8 @@ class PetV2ResponseMapperTest {
             assertThat(summary).isNotNull();
             assertThat(summary.id()).isEqualTo(petId);
             assertThat(summary.guardianProfileId()).isEqualTo(profileId);
-            assertThat(summary.name()).isEqualTo("Buddy");
-            assertThat(summary.coverImageUrl()).isEqualTo("http://cdn.buddy.com/cover.jpg");
+            assertThat(summary.name()).isEqualTo(petName);
+            assertThat(summary.coverImageUrl()).isEqualTo(coverUrl);
             assertThat(summary.creationDate()).isEqualTo(now);
         }
     }

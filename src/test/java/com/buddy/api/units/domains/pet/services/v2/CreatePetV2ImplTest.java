@@ -1,5 +1,6 @@
 package com.buddy.api.units.domains.pet.services.v2;
 
+import static org.apache.commons.lang3.RandomStringUtils.secure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
@@ -56,12 +57,12 @@ class CreatePetV2ImplTest {
         @Test
         @DisplayName("Should create pet successfully when account and shelter profile are active")
         void should_create_pet_successfully() {
-            // Arrange
             final var accountId = UUID.randomUUID();
             final var petId = UUID.randomUUID();
+            final var petName = secure().nextAlphabetic(8);
             final var dto = CreatePetV2Dto.builder()
                 .accountId(accountId)
-                .name("Max")
+                .name(petName)
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)
                 .isForAdoption(true)
@@ -74,17 +75,17 @@ class CreatePetV2ImplTest {
                 .build();
 
             final var entity = PetV2Entity.builder()
-                .name("Max")
+                .name(petName)
                 .build();
 
             final var savedEntity = PetV2Entity.builder()
                 .petV2Id(petId)
-                .name("Max")
+                .name(petName)
                 .build();
 
             final var expectedDto = PetV2Dto.builder()
                 .id(petId)
-                .name("Max")
+                .name(petName)
                 .build();
 
             when(findAccount.findActiveById(accountId))
@@ -95,10 +96,8 @@ class CreatePetV2ImplTest {
             when(petV2Repository.save(entity)).thenReturn(savedEntity);
             when(domainMapper.toDto(savedEntity)).thenReturn(expectedDto);
 
-            // Act
             final var result = createPetService.create(dto);
 
-            // Assert
             assertThat(result).isNotNull().isEqualTo(expectedDto);
             verify(findAccount).findActiveById(accountId);
             verify(findProfile).findActiveShelterProfileByAccountId(accountId);
@@ -108,7 +107,6 @@ class CreatePetV2ImplTest {
         @Test
         @DisplayName("Should throw when shelter profile not found")
         void should_throw_when_shelter_profile_not_found() {
-            // Arrange
             final var accountId = UUID.randomUUID();
             final var dto = CreatePetV2Dto.builder()
                 .accountId(accountId)
@@ -119,7 +117,6 @@ class CreatePetV2ImplTest {
             when(findProfile.findActiveShelterProfileByAccountId(accountId))
                 .thenReturn(Optional.empty());
 
-            // Act & Assert
             assertThatThrownBy(() -> createPetService.create(dto))
                 .isInstanceOf(ActiveShelterProfileNotFoundException.class)
                 .hasMessageContaining("Active shelter profile not found for account");
