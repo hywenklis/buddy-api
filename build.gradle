@@ -10,7 +10,7 @@ plugins {
     id 'jacoco'
     id 'checkstyle'
     id 'com.github.spotbugs' version '6.5.11'
-    id 'com.palantir.git-version' version '5.0.0'
+    id 'com.palantir.git-version' version '5.1.0'
     id 'pmd'
 }
 
@@ -47,7 +47,7 @@ ext {
     awaitilityVersion = "4.3.0"
     findsecbugsVersion = "1.14.0"
     testcontainersVersion = "1.21.4"
-    resilience4jVersion = "2.3.0"
+    resilience4jVersion = "2.4.0"
 }
 
 dependencies {
