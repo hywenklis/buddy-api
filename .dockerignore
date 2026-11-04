@@ -1,0 +1,9 @@
+# .git NÃO entra aqui de propósito: a versão do jar vem da tag git (com.palantir.git-version).
+build/
+.gradle/
+.idea/
+.vscode/
+*.iml
+out/
+bin/
+compose.yml

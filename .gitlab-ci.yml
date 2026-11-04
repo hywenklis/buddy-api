@@ -1,0 +1,16 @@
+# Jobs vêm de devhigo-infra/ci-templates — ver o README de lá pras variáveis
+# de grupo (RELEASE_BOT_TOKEN, OPENROUTER_API_KEY, ENXAME_*).
+include:
+  - project: devhigo-infra/ci-templates
+    ref: main
+    file:
+      - /templates/base.yml
+      - /templates/ai-review.yml
+      - /templates/gitflow.yml
+      - /templates/jvm.yml
+      - /templates/docker.yml
+
+variables:
+  RELEASE_VERSION_FILE: "none"
+  JDK_VERSION: "21"
+  IMAGE_PUBLISH_MODE: "release"
