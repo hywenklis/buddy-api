@@ -1,0 +1,76 @@
+schema: spec-driven
+
+context: |
+  Idioma padrão dos artefatos OpenSpec:
+  - Escreva toda a narrativa, explicações, critérios e tarefas em português (pt-BR).
+  - Mantenha em inglês: termos técnicos consagrados, nomes de classes/pacotes/rotas/campos, cabeçalhos canônicos do OpenSpec (`## Purpose`, `## Requirements`, `### Requirement:`, `#### Scenario:`) e palavras-chave normativas (`SHALL`, `MUST`, `WHEN`, `THEN`, `AND`).
+
+  Tech stack real do projeto (`buddy-api`):
+  - Java 21, Spring Boot 4.1.1 (`spring-boot-starter-webmvc`), Gradle (`./gradlew`).
+  - PostgreSQL 15 com JPA/Hibernate e migrações Flyway (`src/main/resources/db/migration/V<YYYYMMDD>_<seq>__<descricao>.sql`).
+  - Redis para cache, rate limiting (Bucket4j) e blocklist/revogação de JWT.
+  - Spring Security com JJWT 0.13.0 (entrega via cookies e Bearer token).
+  - Spring Cloud OpenFeign (clientes HTTP com Anti-Corruption Layer), Resilience4j, MapStruct 1.6.3 (`componentModel=spring`, `unmappedTargetPolicy=IGNORE`), Lombok (`addLombokGeneratedAnnotation=true`), SpringDoc OpenAPI 3.1.0.
+
+  Arquitetura DDD e fronteiras entre camadas:
+  - Bounded contexts isolados em `com.buddy.api.domains.<context>` (`account`, `address`, `adoption`, `audit`, `authentication`, `image`, `pet`, `profile`, `shelter`, `terms`, `valueobjects`), organizados em `.dtos`, `.entities`, `.enums`, `.mappers`, `.repositories`, `.services` (`impl`), `.specifications`.
+  - Domínios NÃO acessam repositories de outros domínios; comunicação inter-domínio ocorre exclusivamente via interfaces de Service (ex.: `account` -> `SecurityAuditService`).
+  - Infraestrutura e preocupações transversais ficam em `com.buddy.api.commons` (security, cache, exceptions, converters, enums, pagination, http).
+  - Controllers REST ficam em `com.buddy.api.web.<resource>` (com interfaces Swagger `*ControllerDoc` e mappers `*MapperRequest`). Controllers lidam apenas com HTTP, validação na borda e mapeamento; regra de negócio pertence à camada `domains`.
+  - Integrações externas ficam isoladas via ACL em `com.buddy.api.integrations.clients` (Feign + mapeamentos WireMock para desenvolvimento/testes).
+
+  Padrões de código obrigatórios:
+  - DTOs devem ser Java `record`s puros, sem lógica de negócio ou conversão interna; toda conversão entre Request/DTO/Entity pertence a mappers MapStruct dedicados.
+  - Validação precisa na borda (controllers/request records) usando Bean Validation (`@NotBlank`, `@Size`, `@Pattern`, `@PastOrPresent`, `@Unique`, `PasswordPolicy`).
+  - Parsing defensivo de enums/strings: verificar null, normalizar com `.toUpperCase(Locale.ROOT)` e fazer fallback seguro para `UNKNOWN`.
+  - Efeitos colaterais pós-transação em fluxos críticos (revogação no Redis, auditoria, disparo de e-mails) devem ser disparados via `ApplicationEventPublisher` e tratados com `@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)`.
+
+  Segurança, LGPD e Rate Limiting:
+  - `TermsAcceptanceEntity` é um recibo legal imutável de consentimento (LGPD) e não deve ser alterada ou reutilizada para auditoria genérica; eventos de segurança devem usar `SecurityAuditEventEntity` (`domains.audit`) com IP criptografado via `IpAddressEncryptor`.
+  - Revogação global de sessões utiliza timestamp por usuário no Redis (`TokenBlocklistService.revokeAllUserTokens`), sem deleção física de refresh tokens.
+  - `@RateLimited` usa buckets independentes por operação/e-mail e operação/IP, desabilitando o bucket por IP quando `useIp = false`.
+
+  Qualidade, análise estática e CI/CD:
+  - Checkstyle 13.3.0 (`maxWarnings = 0`): indentação 4 espaços, máximo 100 caracteres/linha, `FinalParameters`, proibido star imports (`*`), ordem de imports (`STATIC` e depois `THIRD_PARTY` ordenados alfabeticamente), `AbbreviationAsWordInName = 0`, `MissingSwitchDefault`.
+  - SpotBugs (`Effort.MAX`, `Confidence.HIGH`, FindSecBugs) e PMD 7.22.0 (`sourceSets.main`) com falha no build em violações.
+  - Pre-commit hooks: Checkstyle, Gitleaks, `end-of-file-fixer` e `trailing-whitespace`.
+  - GitHub Actions: actions pinadas por commit SHA, `permissions: read-all` e `persist-credentials: false` em checkouts read-only.
+
+  Convenções de testes:
+  - Testes unitários em `src/test/java/com/buddy/api/units/...` (JUnit 5 + Mockito `@ExtendWith(MockitoExtension.class)`).
+  - Testes de integração/API em `src/test/java/com/buddy/api/integrations/...` estendendo `IntegrationTestAbstract` (Testcontainers PostgreSQL + Redis + WireMock + MockMvc).
+  - Reutilizar `builders/`, `components/`, `customverifications/` e `utils/` existentes em `src/test/java/com/buddy/api/`.
+  - Usar AssertJ (`assertThat`, `assertThatThrownBy`) e `@DisplayName`; NÃO escrever comentários dentro do código de teste; para verificações assíncronas no WireMock usar Awaitility (`waitUntilWireMockReceives`).
+
+  Gitflow, PRs e organização OpenSpec:
+  - Branches `feature/*` e `fix/*` partem de `develop`; cada PR deve cobrir um único concern coeso (Squash & Merge em `develop`); seguir Conventional Commits.
+  - Capabilities em `openspec/specs/` devem seguir a estrutura `<dominio>/<capacidade>/spec.md` (ex.: `account/reset-password`).
+
+rules:
+  proposal:
+    - Escrever em português (pt-BR), mantendo termos técnicos, rotas e identificadores de código em inglês.
+    - Escopar cada change a um único concern coeso (equivalente a 1 PR), sem misturar refatorações não relacionadas.
+    - Incluir explicitamente uma seção de "Fora de Escopo" (Out of Scope) e listar os bounded contexts/camadas impactados.
+  specs:
+    - Escrever descrições e regras em português (pt-BR), mantendo os cabeçalhos canônicos (`## Purpose`, `## Requirements`, `### Requirement:`, `#### Scenario:`) e as palavras-chave normativas (`SHALL`, `MUST`, `WHEN`, `THEN`, `AND`) em inglês.
+    - Organizar delta specs e main specs sob `<dominio>/<capacidade>/spec.md` respeitando os bounded contexts existentes.
+    - Cobrir cenários de sucesso, validação de borda (400), autenticação/autorização (401/403), erros de domínio/recurso inexistente (404), rate limiting (429) e invariantes pós-commit/LGPD quando aplicáveis.
+  design:
+    - Escrever em português (pt-BR) referenciando classes, pacotes, endpoints e tabelas exatos do projeto.
+    - Respeitar fronteiras DDD (sem acesso direto a repositories de outro domínio), DTOs `record` puros com MapStruct, parsing defensivo de enums (`Locale.ROOT` + `UNKNOWN`), eventos `AFTER_COMMIT` para efeitos externos, migrações Flyway (`V<YYYYMMDD>_<seq>__<descricao>.sql`), criptografia LGPD (`IpAddressEncryptor`) e stubs WireMock quando houver integração externa.
+  tasks:
+    - Escrever tarefas em português (pt-BR) com caminhos de arquivo e comandos Gradle em inglês.
+    - Dividir em tarefas granulares por componente/camada especificando o tipo de teste obrigatório (`units/` para Service, Mapper, DTO/Bean Validation e Utility; `integrations/` estendendo `IntegrationTestAbstract` para Controller/API e persistência).
+    - Incluir tarefa final obrigatória de verificação executando `./gradlew build` (compilação, testes, Checkstyle com 0 warnings, SpotBugs e PMD).
+
+operations:
+  apply:
+    guidance:
+      - Cumprir Checkstyle 13.3.0 (maxWarnings = 0, max 100 colunas, `final` em parâmetros, sem star imports, ordem STATIC/THIRD_PARTY), SpotBugs/FindSecBugs e PMD 7.22.0 em todo código criado ou alterado.
+      - Manter DTOs como Java `record`s puros com conversão em mappers MapStruct; aplicar parsing defensivo de enums (`Locale.ROOT` + `UNKNOWN`) e validação precisa na borda.
+      - Escrever testes seguindo o padrão do projeto (AssertJ, `@DisplayName`, zero comentários no código de teste, reutilizando `builders/`, `components/`, `customverifications/` e Awaitility para WireMock).
+      - Rodar `./gradlew test` ao concluir implementações por camada e obrigatoriamente rodar `./gradlew build` antes de dar a change como concluída.
+  archive:
+    guidance:
+      - Confirmar que todas as tasks estão concluídas e que `./gradlew build` passou antes de arquivar.
+      - Após sincronizar delta specs para `openspec/specs/`, validar todas as specs com `openspec validate --specs --strict` e resumir as capabilities atualizadas.
