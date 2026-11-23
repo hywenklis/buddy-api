@@ -14,6 +14,11 @@ plugins {
     id 'pmd'
 }
 
+// Versão = última tag vX.Y.Z sem o "v" (igual à imagem :X.Y.Z do GitLab e ao "Starting ... vX.Y.Z" do log);
+// sem tag, o lastTag do palantir é o hash do commit — daí o SNAPSHOT.
+def lastReleaseTag = versionDetails().lastTag
+version = lastReleaseTag ==~ /v\d+\.\d+\.\d+/ ? lastReleaseTag.substring(1) : '0.0.0-SNAPSHOT'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -125,7 +130,7 @@ springBoot {
     buildInfo {
         properties {
             group = "com.buddy.api"
-            version = versionDetails().lastTag ?: "0.0.0"
+            version = project.version.toString()
             additional = ['developers': 'hywenklis.']
         }
     }
