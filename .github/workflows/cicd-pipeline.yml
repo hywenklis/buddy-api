@@ -87,6 +87,28 @@ jobs:
           slug: ${{ github.repository }}
           fail_ci_if_error: false
 
+  validate_docker_image:
+    name: Build Docker Image (PR)
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.action != 'labeled'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Só valida (sem push): o Dockerfile quebrado aparece na PR, não na hora da release.
+      - name: Build image
+        run: docker build --pull -t buddy-api:pr-check .
+
   dependency_review:
     name: Dependency Review
     if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.action != 'labeled'
@@ -442,23 +464,79 @@ jobs:
           echo "Deleting merged release/hotfix branch: ${BRANCH_TO_DELETE}"
           git push origin --delete "${BRANCH_TO_DELETE}"
 
-  deploy_to_jenkins:
-    name: Deploy to Jenkins
+  publish_image:
+    name: Publish Image (GHCR)
     runs-on: ubuntu-latest
     needs: finalize_release
     if: needs.finalize_release.result == 'success' && needs.finalize_release.outputs.tagged == 'true'
     permissions:
       contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
     steps:
-      - name: "Deploy to Jenkins"
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      # fetch-depth 0: o com.palantir.git-version resolve a versão do jar pela tag dentro do docker build.
+      - name: Checkout release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.finalize_release.outputs.new_tag }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build and push image
+        id: publish
         env:
           NEW_TAG: ${{ needs.finalize_release.outputs.new_tag }}
-          JENKINS_URL: ${{ secrets.JENKINS_URL }}
-          JENKINS_JOB: ${{ secrets.JENKINS_JOB }}
-          JENKINS_PROJECT: ${{ secrets.JENKINS_PROJECT }}
-          JENKINS_USER: ${{ secrets.JENKINS_USER }}
-          JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Triggering Jenkins deploy for tag: ${NEW_TAG}"
-          curl -X POST "${JENKINS_URL}/job/${JENKINS_JOB}/buildWithParameters?PROJECT=${JENKINS_PROJECT}&GIT_BRANCH=main" \
-          --user "${JENKINS_USER}:${JENKINS_API_TOKEN}"
+          IMAGE_REPO="ghcr.io/${GITHUB_REPOSITORY,,}"
+          VERSION="${NEW_TAG#v}"
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker build --pull -t "$IMAGE_REPO:$VERSION" -t "$IMAGE_REPO:latest" .
+          docker push "$IMAGE_REPO:$VERSION"
+          docker push "$IMAGE_REPO:latest"
+          echo "image=$IMAGE_REPO:$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publicado: $IMAGE_REPO:$VERSION"
+
+  # Substitui o deploy via Jenkins (propresto-deployer): o Enxame registra o deploy como pendente,
+  # sobe um canário com a imagem nova e só troca a produção depois de aprovado no painel.
+  deploy_to_enxame:
+    name: Request Deploy (Enxame)
+    runs-on: ubuntu-latest
+    needs: publish_image
+    permissions: {}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      - name: Send signed webhook to Enxame
+        env:
+          ENXAME_URL: ${{ vars.ENXAME_URL }}
+          ENXAME_WEBHOOK_SECRET: ${{ secrets.ENXAME_WEBHOOK_SECRET }}
+          ENXAME_SERVICE_ID: ${{ vars.ENXAME_SERVICE_ID || 'buddy-api_buddy-api' }}
+          IMAGE: ${{ needs.publish_image.outputs.image }}
+        run: |
+          if [ -z "$ENXAME_URL" ] || [ -z "$ENXAME_WEBHOOK_SECRET" ]; then
+            echo "::warning::ENXAME_URL/ENXAME_WEBHOOK_SECRET não configurados — $IMAGE publicada, mas deploy NÃO pedido."
+            exit 0
+          fi
+          BODY=$(jq -nc --arg s "$ENXAME_SERVICE_ID" --arg i "$IMAGE" '{service_id: $s, image: $i}')
+          SIGNATURE=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$ENXAME_WEBHOOK_SECRET" | awk '{print $NF}')
+          HTTP_STATUS=$(curl --silent --show-error --max-time 30 -w "%{http_code}" -o response.json \
+            -X POST "${ENXAME_URL}/api/v1/webhooks/deploy" \
+            -H "Content-Type: application/json" \
+            -H "X-Enxame-Signature: $SIGNATURE" \
+            --data-binary "$BODY")
+          cat response.json; echo
+          if [ "$HTTP_STATUS" != "202" ]; then
+            echo "::error::Enxame respondeu HTTP $HTTP_STATUS — deploy de $IMAGE em $ENXAME_SERVICE_ID NÃO registrado."
+            exit 1
+          fi
+          echo "Deploy de $IMAGE em $ENXAME_SERVICE_ID aguardando aprovação no Enxame."

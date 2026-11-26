@@ -204,6 +204,39 @@ Este é o processo para publicar uma nova versão (MINOR ou MAJOR).
 * **Robô:** Branches `release/*` e `hotfix/*` são deletadas **automaticamente pelo robô** após o merge na `main`.
 * **NÃO** delete `main` ou `develop`.
 
+-----
+
+## 🤖 Desenvolvimento Assistido por IA (OpenSpec)
+
+O projeto adota o **OpenSpec** como padrão oficial de **Spec-Driven Development (SDD)**. Toda especificação, decisão de design e plano de tarefas para novas features ou correções deve passar pela estrutura `openspec/`:
+
+* **[`AGENTS.md`](AGENTS.md)**: Ponto de entrada com as regras rápidas e guardrails para qualquer ferramenta de IA.
+* **[`openspec/config.yaml`](openspec/config.yaml)**: Contexto técnico, regras por artefato (`proposal`, `specs`, `design`, `tasks`) e orientações de implementação/arquivamento.
+* **`openspec/specs/`**: Especificações canônicas por domínio (`<dominio>/<capacidade>/spec.md`).
+* **`openspec/changes/`**: Propostas ativas e histórico arquivado de mudanças.
+
+### Configuração Local do OpenSpec
+
+Para manter o repositório limpo de arquivos específicos de cada IDE ou assistente, as skills são configuradas em escopo **global** na sua máquina (não versionadas no Git):
+
+```bash
+# Instale o OpenSpec CLI (v2+) e configure as skills para sua ferramenta:
+openspec init --scope global --tools <sua-ferramenta>
+
+# Para atualizar as skills instaladas globalmente:
+openspec update
+```
+
+### Ciclo Padrão de Mudança
+
+1. **Explorar** (`openspec explore`) — investigar requisitos e impacto no código antes de propor.
+2. **Propor** (`openspec propose`) — gerar `proposal.md`, delta `specs/`, `design.md` e `tasks.md` sob `openspec/changes/<nome>/`.
+3. **Implementar** (`openspec apply`) — executar as tarefas seguindo os padrões DDD, Checkstyle, SpotBugs e PMD.
+4. **Validar** — executar `./gradlew build` antes de abrir o PR para `develop`.
+5. **Arquivar** (`openspec archive`) — sincronizar as delta specs para `openspec/specs/` e validar com `openspec validate --specs --strict`.
+
+-----
+
 ### Recursos Adicionais
 
 * [Documentação do Git](https://git-scm.com/doc)
