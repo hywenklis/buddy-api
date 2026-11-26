@@ -64,11 +64,11 @@ buddy:
       verification:
         subject: "Confirme seu e-mail no Buddy"
         template-path: "templates/email-verification.html"
-        url: https://buddyclient.vercel.app/confirm-email?token=
+        url: https://buddyclient.vercel.app/auth/verify-email?token=
       forgot-password:
         subject: "Recuperar Senha - Buddy"
         template-path: "templates/email-forgot-password.html"
-        url: https://buddyclient.vercel.app/reset-password?token=
+        url: https://buddyclient.vercel.app/auth/reset-password?token=
       password-changed:
         subject: "Sua senha foi alterada com sucesso"
         template-path: "templates/email-password-changed.html"

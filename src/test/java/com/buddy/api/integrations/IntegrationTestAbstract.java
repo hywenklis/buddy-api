@@ -112,7 +112,7 @@ public abstract class IntegrationTestAbstract {
 
     protected static final String TERMS_BASE_URL = "/v1/terms";
     protected static final String PET_BASE_URL = "/v1/pets";
-    protected static final String EMBEDDED_PET_RESPONSES = "$._embedded.petParamsResponseList";
+    protected static final String EMBEDDED_PET_RESPONSES = "$._embedded.pets";
     protected static final String AUTH_URL = "/v1/auth/login";
     protected static final String REFRESH_URL = "/v1/auth/refresh";
     protected static final String ACCESS_TOKEN_NAME = "access_token";

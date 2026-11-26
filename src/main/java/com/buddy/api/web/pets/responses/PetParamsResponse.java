@@ -5,8 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
+import org.springframework.hateoas.server.core.Relation;
 
 @Builder
+@Relation(collectionRelation = "pets")
 public record PetParamsResponse(UUID id,
                                 UUID shelterId,
                                 String name,
