@@ -1,4 +1,4 @@
-package com.buddy.api.units.domains.pet.mappers;
+package com.buddy.api.units.domains.pet.mappers.v2;
 
 import static org.apache.commons.lang3.RandomStringUtils.secure;
 import static org.assertj.core.api.Assertions.assertThat;

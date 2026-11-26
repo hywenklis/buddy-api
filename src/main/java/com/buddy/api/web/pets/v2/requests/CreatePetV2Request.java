@@ -3,6 +3,7 @@ package com.buddy.api.web.pets.v2.requests;
 import com.buddy.api.domains.pet.enums.PetGender;
 import com.buddy.api.domains.pet.enums.PetSpecies;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -34,10 +35,20 @@ public record CreatePetV2Request(
     Integer approximateAge,
 
     @Positive(message = "Size must be greater than zero")
+    @Digits(
+        integer = 8,
+        fraction = 2,
+        message = "Size must have at most 8 integer digits and 2 decimals"
+    )
     @Schema(example = "45.50", description = "Size in centimeters")
     BigDecimal size,
 
     @Positive(message = "Weight must be greater than zero")
+    @Digits(
+        integer = 8,
+        fraction = 2,
+        message = "Weight must have at most 8 integer digits and 2 decimals"
+    )
     @Schema(example = "14.20", description = "Weight in kilograms")
     BigDecimal weight,
 

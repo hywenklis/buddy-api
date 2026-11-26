@@ -99,7 +99,13 @@ public class PetV2Controller implements PetV2ControllerDoc {
     @Override
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('SHELTER') and hasAuthority('SCOPE_VERIFIED')")
+    @PreAuthorize("(hasRole('SHELTER') or hasRole('ADMIN')) and hasAuthority('SCOPE_VERIFIED')")
+    @RateLimited(
+        useIp = true,
+        operation = "updatePetV2",
+        limitMessage =
+            "Too many pet update requests. Please wait a minute before trying again."
+    )
     public PetV2Response updatePet(
         @PathVariable final UUID id,
         @AuthenticationPrincipal final AuthenticatedUser authenticatedUser,

@@ -22,7 +22,7 @@ BEGIN
             creation_date,
             updated_date
         )
-        SELECT
+        SELECT DISTINCT ON (p.id)
             p.id AS pet_v2_id,
             pr.profile_id,
             p.name,
@@ -56,7 +56,11 @@ BEGIN
         FROM pet p
         JOIN shelter s ON s.id = p.shelter_id
         JOIN account a ON a.email = s.email
-        JOIN profile pr ON pr.account_id = a.account_id AND pr.is_deleted = FALSE
+        JOIN profile pr
+            ON pr.account_id = a.account_id
+           AND pr.is_deleted = FALSE
+           AND pr.profile_type = 'SHELTER'
+        ORDER BY p.id, pr.creation_date ASC, pr.profile_id ASC
         ON CONFLICT (pet_v2_id) DO NOTHING;
 
         -- Migrate avatar from legacy pet into image table

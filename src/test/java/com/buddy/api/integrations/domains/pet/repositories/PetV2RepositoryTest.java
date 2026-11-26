@@ -48,7 +48,6 @@ class PetV2RepositoryTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should persist and retrieve PetV2Entity successfully")
     void should_persist_and_retrieve_pet_v2() {
-        // Arrange
         final var pet = PetV2Entity.builder()
             .guardianProfile(shelterProfile)
             .name("Zeus")
@@ -63,11 +62,9 @@ class PetV2RepositoryTest extends IntegrationTestAbstract {
             .description("Gentle giant")
             .build();
 
-        // Act
         final var saved = petV2Repository.save(pet);
         final var found = petV2Repository.findById(saved.getPetV2Id());
 
-        // Assert
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo("Zeus");
         assertThat(found.get().getSpecies()).isEqualTo(PetSpecies.DOG);
@@ -82,7 +79,6 @@ class PetV2RepositoryTest extends IntegrationTestAbstract {
     @Test
     @DisplayName("Should filter PetV2Entity with PetV2Specifications")
     void should_filter_pet_v2_with_specifications() {
-        // Arrange
         final var dog = petV2Repository.save(PetV2Entity.builder()
             .guardianProfile(shelterProfile)
             .name("Thor")
@@ -101,14 +97,12 @@ class PetV2RepositoryTest extends IntegrationTestAbstract {
             .isNeutered(false)
             .build());
 
-        // Act
         final var spec = PetV2BasicSpecifications.hasSpecies(PetSpecies.DOG)
             .and(PetV2BasicSpecifications.isNeutered(true));
         final var page = petV2Repository.findAll(spec, PageRequest.of(0, 10));
 
-        // Assert
         assertThat(page.getTotalElements()).isEqualTo(1L);
-        assertThat(page.getContent().get(0).getPetV2Id()).isEqualTo(dog.getPetV2Id());
-        assertThat(page.getContent().get(0).getName()).isEqualTo("Thor");
+        assertThat(page.getContent().getFirst().getPetV2Id()).isEqualTo(dog.getPetV2Id());
+        assertThat(page.getContent().getFirst().getName()).isEqualTo("Thor");
     }
 }

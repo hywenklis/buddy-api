@@ -24,7 +24,7 @@ public record PetV2SearchCriteriaRequest(
     @Parameter(description = "Filter by neutered status")
     Boolean isNeutered,
 
-    @Parameter(description = "Filter by adoption availability (default: true)")
+    @Parameter(description = "Optional filter by adoption availability (returns all if omitted)")
     Boolean isForAdoption,
 
     @Parameter(description = "Filter by guardian profile UUID")

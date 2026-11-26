@@ -1,4 +1,4 @@
-package com.buddy.api.units.domains.pet.specifications;
+package com.buddy.api.units.domains.pet.specifications.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

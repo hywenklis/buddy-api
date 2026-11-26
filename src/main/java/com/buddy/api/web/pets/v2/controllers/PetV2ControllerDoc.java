@@ -60,7 +60,7 @@ public interface PetV2ControllerDoc {
 
     @Operation(
         summary = "Search pets with pagination (V2)",
-        description = "Public endpoint to search and filter pets available for adoption."
+        description = "Public endpoint to search and filter pets with optional criteria."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Paginated list of pets",
@@ -117,6 +117,9 @@ public interface PetV2ControllerDoc {
                 schema = @Schema(implementation = ErrorResponse.class))
         ),
         @ApiResponse(responseCode = "404", description = "Pet not found",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "429", description = "Too many requests",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = ErrorResponse.class)))
     })

@@ -3,8 +3,10 @@ package com.buddy.api.web.pets.v2.requests;
 import com.buddy.api.domains.pet.enums.PetGender;
 import com.buddy.api.domains.pet.enums.PetSpecies;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -14,6 +16,7 @@ import lombok.Builder;
 @Schema(name = "UpdatePetV2Request", description = "Payload for updating an existing pet (V2)")
 public record UpdatePetV2Request(
     @Size(min = 2, max = 100, message = "Pet name must have between 2 and 100 characters")
+    @Pattern(regexp = ".*\\S.*", message = "Pet name cannot be blank")
     @Schema(example = "Thor Updated", description = "Name of the pet")
     String name,
 
@@ -29,10 +32,20 @@ public record UpdatePetV2Request(
     Integer approximateAge,
 
     @Positive(message = "Size must be greater than zero")
+    @Digits(
+        integer = 8,
+        fraction = 2,
+        message = "Size must have at most 8 integer digits and 2 decimals"
+    )
     @Schema(example = "48.00", description = "Size in centimeters")
     BigDecimal size,
 
     @Positive(message = "Weight must be greater than zero")
+    @Digits(
+        integer = 8,
+        fraction = 2,
+        message = "Weight must have at most 8 integer digits and 2 decimals"
+    )
     @Schema(example = "15.00", description = "Weight in kilograms")
     BigDecimal weight,
 

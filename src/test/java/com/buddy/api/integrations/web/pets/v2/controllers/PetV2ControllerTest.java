@@ -2,6 +2,7 @@ package com.buddy.api.integrations.web.pets.v2.controllers;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,12 +10,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.buddy.api.commons.exceptions.ActiveShelterProfileNotFoundException;
 import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.image.entities.ImageEntity;
 import com.buddy.api.domains.image.repositories.ImageRepository;
+import com.buddy.api.domains.pet.dtos.v2.CreatePetV2Dto;
+import com.buddy.api.domains.pet.dtos.v2.UpdatePetV2Dto;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
 import com.buddy.api.domains.pet.enums.PetGender;
 import com.buddy.api.domains.pet.enums.PetSpecies;
+import com.buddy.api.domains.pet.services.v2.CreatePetV2;
+import com.buddy.api.domains.pet.services.v2.UpdatePetV2;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.valueobjects.EmailAddress;
@@ -30,6 +36,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 @DisplayName("PetV2Controller — Integration Tests (/v2/pets)")
 class PetV2ControllerTest extends IntegrationTestAbstract {
@@ -38,6 +45,12 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private CreatePetV2 createPetV2;
+
+    @Autowired
+    private UpdatePetV2 updatePetV2;
 
     private AccountEntity shelterAccount;
     private ProfileEntity shelterProfile;
@@ -114,7 +127,7 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                 .build();
 
             mockMvc.perform(post(BASE_URL + "/register")
-                    .header("Authorization", "Bearer " + shelterToken)
+                    .header(AUTHORIZATION, BEARER + shelterToken)
                     .contentType(APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -142,6 +155,109 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
         }
 
         @Test
+        @DisplayName("Should return 403 Forbidden when account has only USER role")
+        void should_return_403_when_not_shelter_role() throws Exception {
+            final var userAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("user-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(userAccount)
+                    .name("Regular User")
+                    .profileType(ProfileTypeEnum.USER)
+                    .isDeleted(false)
+                    .build()
+            );
+            final var userToken = jwtUtil.generateAccessToken(
+                userAccount.getEmail().value(),
+                List.of("ROLE_USER", "SCOPE_VERIFIED")
+            );
+            final var request = CreatePetV2Request.builder()
+                .name("Zeus")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .build();
+
+            mockMvc.perform(post(BASE_URL + "/register")
+                    .header(AUTHORIZATION, BEARER + userToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should return 403 Forbidden when shelter account is not verified")
+        void should_return_403_when_not_verified() throws Exception {
+            final var unverifiedAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("unverified-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(false)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(unverifiedAccount)
+                    .name("Unverified Shelter")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(false)
+                    .build()
+            );
+            final var unverifiedToken = jwtUtil.generateAccessToken(
+                unverifiedAccount.getEmail().value(),
+                List.of("ROLE_SHELTER")
+            );
+            final var request = CreatePetV2Request.builder()
+                .name("Zeus")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .build();
+
+            mockMvc.perform(post(BASE_URL + "/register")
+                    .header(AUTHORIZATION, BEARER + unverifiedToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should enforce active shelter profile validation (422) on domain creation")
+        void should_throw_422_when_active_shelter_profile_missing() {
+            final var noShelterAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("noshelter-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(noShelterAccount)
+                    .name("Deleted Shelter")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(true)
+                    .build()
+            );
+
+            final var dto = CreatePetV2Dto.builder()
+                .accountId(noShelterAccount.getAccountId())
+                .name("Zeus")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build();
+
+            assertThatThrownBy(() -> createPetV2.create(dto))
+                .isInstanceOf(ActiveShelterProfileNotFoundException.class)
+                .satisfies(ex -> {
+                    final var domainEx = (ActiveShelterProfileNotFoundException) ex;
+                    assertThat(domainEx.getHttpStatus()).isEqualTo(HttpStatus.resolve(422));
+                    assertThat(domainEx.getFieldName()).isEqualTo("profile");
+                });
+        }
+
+        @Test
         @DisplayName("Should return 400 Bad Request on invalid payload")
         void should_return_400_on_invalid_payload() throws Exception {
             final var request = CreatePetV2Request.builder()
@@ -151,10 +267,35 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                 .build();
 
             mockMvc.perform(post(BASE_URL + "/register")
-                    .header("Authorization", "Bearer " + shelterToken)
+                    .header(AUTHORIZATION, BEARER + shelterToken)
                     .contentType(APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 429 Too Many Requests when registration rate limit is exceeded")
+        void should_return_429_when_register_rate_limit_exceeded() throws Exception {
+            final var request = CreatePetV2Request.builder()
+                .name("Zeus")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .build();
+            final var body = objectMapper.writeValueAsString(request);
+
+            for (int attempt = 0; attempt < 5; attempt++) {
+                mockMvc.perform(post(BASE_URL + "/register")
+                        .header(AUTHORIZATION, BEARER + shelterToken)
+                        .contentType(APPLICATION_JSON)
+                        .content(body))
+                    .andExpect(status().isCreated());
+            }
+
+            mockMvc.perform(post(BASE_URL + "/register")
+                    .header(AUTHORIZATION, BEARER + shelterToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(body))
+                .andExpect(status().isTooManyRequests());
         }
     }
 
@@ -190,6 +331,40 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                 .andExpect(jsonPath("$.content[0].name").value("Thor"))
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.hasNext").value(false));
+        }
+
+        @Test
+        @DisplayName("Should return all pets when isForAdoption omitted and filter when specified")
+        void should_return_all_pets_when_is_for_adoption_omitted() throws Exception {
+            petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Available Dog")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+
+            petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Adopted Dog")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.FEMALE)
+                .isForAdoption(false)
+                .build());
+
+            mockMvc.perform(get(BASE_URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+            mockMvc.perform(get(BASE_URL).param("isForAdoption", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Available Dog"));
+
+            mockMvc.perform(get(BASE_URL).param("isForAdoption", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Adopted Dog"));
         }
 
         @Test
@@ -265,7 +440,7 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                 .build();
 
             mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
-                    .header("Authorization", "Bearer " + shelterToken)
+                    .header(AUTHORIZATION, BEARER + shelterToken)
                     .contentType(APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -275,6 +450,51 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
             final var updated = petV2Repository.findById(pet.getPetV2Id()).orElseThrow();
             assertThat(updated.getName()).isEqualTo("Rex Updated");
             assertThat(updated.getIsForAdoption()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should return 200 OK when verified ADMIN without shelter profile updates pet")
+        void should_update_pet_when_admin() throws Exception {
+            final var adminAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("admin-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(adminAccount)
+                    .name("Platform Admin")
+                    .profileType(ProfileTypeEnum.ADMIN)
+                    .isDeleted(false)
+                    .build()
+            );
+            final var adminToken = jwtUtil.generateAccessToken(
+                adminAccount.getEmail().value(),
+                List.of("ROLE_ADMIN", "SCOPE_VERIFIED")
+            );
+
+            final var pet = petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Rex")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+
+            final var request = UpdatePetV2Request.builder()
+                .name("Rex Admin Updated")
+                .build();
+
+            mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
+                    .header(AUTHORIZATION, BEARER + adminToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Rex Admin Updated"));
+
+            final var updated = petV2Repository.findById(pet.getPetV2Id()).orElseThrow();
+            assertThat(updated.getName()).isEqualTo("Rex Admin Updated");
         }
 
         @Test
@@ -293,10 +513,123 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                 .build();
 
             mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
-                    .header("Authorization", "Bearer " + otherToken)
+                    .header(AUTHORIZATION, BEARER + otherToken)
                     .contentType(APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should return 403 Forbidden when updating without token")
+        void should_return_403_when_unauthenticated() throws Exception {
+            final var request = UpdatePetV2Request.builder()
+                .name("Rex Updated")
+                .build();
+
+            mockMvc.perform(put(BASE_URL + "/" + UUID.randomUUID())
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should return 400 Bad Request when update payload is invalid")
+        void should_return_400_on_invalid_update_payload() throws Exception {
+            final var pet = petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Rex")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+
+            final var request = UpdatePetV2Request.builder()
+                .name("   ")
+                .build();
+
+            mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
+                    .header(AUTHORIZATION, BEARER + shelterToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 404 Not Found when updating non-existent pet")
+        void should_return_404_when_updating_non_existent_pet() throws Exception {
+            final var request = UpdatePetV2Request.builder()
+                .name("Ghost Pet")
+                .build();
+
+            mockMvc.perform(put(BASE_URL + "/" + UUID.randomUUID())
+                    .header(AUTHORIZATION, BEARER + shelterToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("Should enforce active shelter profile validation (422) on domain update")
+        void should_throw_422_when_updating_without_active_shelter_profile() {
+            final var pet = petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Rex")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+
+            final var noShelterAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("noshelter-upd-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+
+            final var dto = UpdatePetV2Dto.builder()
+                .id(pet.getPetV2Id())
+                .name("Updated Name")
+                .build();
+
+            assertThatThrownBy(() ->
+                updatePetV2.update(dto, noShelterAccount.getAccountId(), false))
+                .isInstanceOf(ActiveShelterProfileNotFoundException.class)
+                .satisfies(ex -> {
+                    final var domainEx = (ActiveShelterProfileNotFoundException) ex;
+                    assertThat(domainEx.getHttpStatus()).isEqualTo(HttpStatus.resolve(422));
+                    assertThat(domainEx.getFieldName()).isEqualTo("profile");
+                });
+        }
+
+        @Test
+        @DisplayName("Should return 429 Too Many Requests when update rate limit is exceeded")
+        void should_return_429_when_update_rate_limit_exceeded() throws Exception {
+            final var pet = petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Rex")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+
+            final var request = UpdatePetV2Request.builder()
+                .name("Rex Updated")
+                .build();
+            final var body = objectMapper.writeValueAsString(request);
+
+            for (int attempt = 0; attempt < 5; attempt++) {
+                mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
+                        .header(AUTHORIZATION, BEARER + shelterToken)
+                        .contentType(APPLICATION_JSON)
+                        .content(body))
+                    .andExpect(status().isOk());
+            }
+
+            mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
+                    .header(AUTHORIZATION, BEARER + shelterToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(body))
+                .andExpect(status().isTooManyRequests());
         }
     }
 }
