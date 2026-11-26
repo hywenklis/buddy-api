@@ -45,6 +45,6 @@ RUN timeout 15s java ${OPENJ9_OPTS} -jar app.jar --spring.main.web-application-t
 EXPOSE 8080
 # SERVER_PORT vem do serviço no Swarm (21060); o actuator do buddy fica fora do context-path.
 HEALTHCHECK --interval=5s --timeout=3s --retries=5 --start-period=300s \
-  CMD curl -sS "http://localhost:${SERVER_PORT:-8080}/actuator/health" 2>/dev/null | grep -q '"status":"UP"' || exit 1
+  CMD curl -sS "http://localhost:${SERVER_PORT:-8080}/api/actuator/health" 2>/dev/null | grep -q '"status":"UP"' || exit 1
 
 ENTRYPOINT ["sh", "-c", "exec java ${OPENJ9_OPTS} ${JAVA_OPTS} -jar app.jar"]
