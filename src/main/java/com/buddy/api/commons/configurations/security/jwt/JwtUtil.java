@@ -33,12 +33,14 @@ public class JwtUtil {
     private static final String X_REFRESH_TOKEN_HEADER = "X-Refresh-Token";
     private static final String REFRESH_TOKEN_HEADER = "Refresh-Token";
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ISSUED_AT_MS_CLAIM = "iatMs";
 
     public String generateAccessToken(final String email, final List<String> profiles) {
         Instant now = Instant.now();
         return Jwts.builder()
             .subject(email)
             .claim("profiles", profiles)
+            .claim(ISSUED_AT_MS_CLAIM, now.toEpochMilli())
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusMillis(properties.accessTokenExpiration())))
             .signWith(key())
@@ -54,6 +56,7 @@ public class JwtUtil {
         return Jwts.builder()
             .subject(email)
             .id(jti)
+            .claim(ISSUED_AT_MS_CLAIM, now.toEpochMilli())
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusMillis(properties.refreshTokenExpiration())))
             .signWith(key())
@@ -104,6 +107,18 @@ public class JwtUtil {
             throw new JwtException("Token with no issuedAt claim iat");
         }
         return claims.getIssuedAt().toInstant();
+    }
+
+    public long getIssuedAtMillisFromToken(final String token) throws JwtException {
+        var claims = parseClaims(token);
+        Number issuedAtMs = claims.get(ISSUED_AT_MS_CLAIM, Number.class);
+        if (issuedAtMs != null) {
+            return issuedAtMs.longValue();
+        }
+        if (claims.getIssuedAt() == null) {
+            throw new JwtException("Token with no issuedAt claim iat");
+        }
+        return claims.getIssuedAt().toInstant().toEpochMilli();
     }
 
     public boolean validateToken(final String token, final String username) {

@@ -6,7 +6,11 @@ import static com.buddy.api.customverifications.CustomCreatedVerifications.expec
 import static com.buddy.api.customverifications.CustomErrorVerifications.expectBadRequestFrom;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmail;
 import static com.buddy.api.utils.RandomEmailUtils.generateValidEmailAddress;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,8 +19,10 @@ import com.buddy.api.domains.account.entities.AccountEntity;
 import com.buddy.api.domains.valueobjects.EmailAddress;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.AccountRequest;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,12 +33,21 @@ class CreateAccountControllerTest extends IntegrationTestAbstract {
     private static final String ACCOUNT_REGISTER_URL = "/v1/accounts/register";
 
     @Test
-    @DisplayName("Should register a new account successfully")
+    @DisplayName("Should register a new account successfully and dispatch verification email")
     void register_new_account_success() throws Exception {
+        WireMock.setScenarioState("MANAGER_AUTH_SCENARIO", "SUCCESS_STATE");
+        WireMock.setScenarioState("MANAGER_NOTIFICATION_EMAIL_SCENARIO", "SUCCESS_STATE");
         var request = validAccountRequest().build();
 
         expectCreatedFrom(performCreateAccountRequest(request));
         assertAccountExists(request);
+
+        await()
+            .atMost(5, TimeUnit.SECONDS)
+            .pollInterval(100, TimeUnit.MILLISECONDS)
+            .untilAsserted(() ->
+                verify(1, postRequestedFor(urlEqualTo(MANAGER_NOTIFICATION_API_URL)))
+            );
     }
 
     @Test

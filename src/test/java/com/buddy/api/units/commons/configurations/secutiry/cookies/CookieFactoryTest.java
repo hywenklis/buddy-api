@@ -1,6 +1,8 @@
 package com.buddy.api.units.commons.configurations.secutiry.cookies;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +20,9 @@ import org.mockito.Mock;
 
 class CookieFactoryTest extends UnitTestAbstract {
 
+    private static final String SAME_SITE_ATTR = "SameSite";
+    private static final String SAME_SITE_STRICT = "Strict";
+
     @Mock
     private AuthProperties authProperties;
 
@@ -28,7 +33,7 @@ class CookieFactoryTest extends UnitTestAbstract {
     private CookieFactory cookieFactory;
 
     @Test
-    @DisplayName("Should add authentication cookies with correct attributes")
+    @DisplayName("Should add auth cookies with correct attributes and no duplicate headers")
     void addAuthCookies_addsCookiesCorrectly() {
         when(authProperties.getAccessTokenExpirationInSeconds()).thenReturn(ONE_HOUR_IN_SECONDS);
         when(authProperties.getRefreshTokenExpirationInSeconds()).thenReturn(SEVEN_DAYS_IN_SECONDS);
@@ -37,6 +42,7 @@ class CookieFactoryTest extends UnitTestAbstract {
 
         ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
         verify(response, times(2)).addCookie(cookieCaptor.capture());
+        verify(response, never()).addHeader(anyString(), anyString());
 
         var cookies = cookieCaptor.getAllValues();
         assertThat(cookies).hasSize(2);
@@ -48,6 +54,7 @@ class CookieFactoryTest extends UnitTestAbstract {
         assertThat(accessCookie.isHttpOnly()).isTrue();
         assertThat(accessCookie.getSecure()).isTrue();
         assertThat(accessCookie.getPath()).isEqualTo("/");
+        assertThat(accessCookie.getAttribute(SAME_SITE_ATTR)).isEqualTo(SAME_SITE_STRICT);
 
         Cookie refreshCookie = cookies.get(1);
         assertThat(refreshCookie.getName()).isEqualTo(REFRESH_TOKEN_NAME);
@@ -56,15 +63,7 @@ class CookieFactoryTest extends UnitTestAbstract {
         assertThat(refreshCookie.isHttpOnly()).isTrue();
         assertThat(refreshCookie.getSecure()).isTrue();
         assertThat(refreshCookie.getPath()).isEqualTo("/");
-
-        verify(response).addHeader(SET_COOKIE_HEADER,
-            String.format("%s=%s; Max-Age=%d; %s", ACCESS_TOKEN_NAME, ACCESS_TOKEN,
-                ONE_HOUR_IN_SECONDS,
-                COOKIE_ATTRIBUTES));
-        verify(response).addHeader(SET_COOKIE_HEADER,
-            String.format("%s=%s; Max-Age=%d; %s", REFRESH_TOKEN_NAME, REFRESH_TOKEN,
-                SEVEN_DAYS_IN_SECONDS,
-                COOKIE_ATTRIBUTES));
+        assertThat(refreshCookie.getAttribute(SAME_SITE_ATTR)).isEqualTo(SAME_SITE_STRICT);
     }
 
     @Test
@@ -74,29 +73,27 @@ class CookieFactoryTest extends UnitTestAbstract {
 
         ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
         verify(response, times(2)).addCookie(cookieCaptor.capture());
+        verify(response, never()).addHeader(anyString(), anyString());
 
         var cookies = cookieCaptor.getAllValues();
         assertThat(cookies).hasSize(2);
 
         Cookie accessCookie = cookies.get(0);
         assertThat(accessCookie.getName()).isEqualTo(ACCESS_TOKEN_NAME);
-        assertThat(accessCookie.getValue()).isNull();
+        assertThat(accessCookie.getValue()).isEmpty();
         assertThat(accessCookie.getMaxAge()).isZero();
         assertThat(accessCookie.isHttpOnly()).isTrue();
         assertThat(accessCookie.getSecure()).isTrue();
         assertThat(accessCookie.getPath()).isEqualTo("/");
+        assertThat(accessCookie.getAttribute(SAME_SITE_ATTR)).isEqualTo(SAME_SITE_STRICT);
 
         Cookie refreshCookie = cookies.get(1);
         assertThat(refreshCookie.getName()).isEqualTo(REFRESH_TOKEN_NAME);
-        assertThat(refreshCookie.getValue()).isNull();
+        assertThat(refreshCookie.getValue()).isEmpty();
         assertThat(refreshCookie.getMaxAge()).isZero();
         assertThat(refreshCookie.isHttpOnly()).isTrue();
         assertThat(refreshCookie.getSecure()).isTrue();
         assertThat(refreshCookie.getPath()).isEqualTo("/");
-
-        verify(response).addHeader(SET_COOKIE_HEADER,
-            String.format("%s=; Max-Age=0; %s", ACCESS_TOKEN_NAME, COOKIE_ATTRIBUTES));
-        verify(response).addHeader(SET_COOKIE_HEADER,
-            String.format("%s=; Max-Age=0; %s", REFRESH_TOKEN_NAME, COOKIE_ATTRIBUTES));
+        assertThat(refreshCookie.getAttribute(SAME_SITE_ATTR)).isEqualTo(SAME_SITE_STRICT);
     }
 }

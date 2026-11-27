@@ -7,14 +7,20 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.buddy.api.commons.configurations.security.jwt.TokenBlocklistService;
 import com.buddy.api.components.AccountComponent.AuthenticatedTestUser;
 import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.audit.entities.SecurityAuditEventEntity;
+import com.buddy.api.domains.audit.enums.SecurityEventType;
 import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.accounts.requests.ChangePasswordRequest;
+import com.buddy.api.web.authentication.requests.AuthRequest;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -75,6 +81,38 @@ class ChangePasswordControllerTest extends IntegrationTestAbstract {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
+
+            List<SecurityAuditEventEntity> auditEvents = securityAuditEventRepository.findAll()
+                .stream()
+                .filter(event -> event.getAccountId().equals(testUser.account().getAccountId()))
+                .toList();
+            assertThat(auditEvents).hasSize(1);
+            assertThat(auditEvents.getFirst().getEventType())
+                .isEqualTo(SecurityEventType.PASSWORD_CHANGED);
+
+            AuthRequest loginRequest = AuthRequest.builder()
+                .email(testUser.account().getEmail().value())
+                .password(newPassword)
+                .build();
+            String loginBody = mockMvc.perform(post(AUTH_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+            JsonNode loginJson = objectMapper.readTree(loginBody);
+            String newAccessToken = loginJson.get("accessToken").asText();
+
+            ChangePasswordRequest verifyTokenRequest = new ChangePasswordRequest(
+                "WrongCurrentPassword1!",
+                RandomStringUtils.secure().nextAlphanumeric(10) + "aA1!"
+            );
+            mockMvc.perform(patch(CHANGE_PASSWORD_URL)
+                    .header(AUTHORIZATION, BEARER + newAccessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(verifyTokenRequest)))
+                .andExpect(status().isBadRequest());
 
             waitUntilWireMockReceives(1);
         }

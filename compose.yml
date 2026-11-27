@@ -10,6 +10,14 @@ services:
       - "5432:5432"
     volumes:
       - buddy-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U buddyuser -d buddydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - buddy-net
+
   redis:
     image: redis:latest
     container_name: buddy-redis
@@ -17,6 +25,13 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - buddy-net
 
   wiremock:
     image: wiremock/wiremock:latest
@@ -24,11 +39,48 @@ services:
     ports:
       - "8089:8080"
     volumes:
-      - ./config/wiremock/mappings:/home/wiremock/mappings
+      - ./config/wiremock/mappings:/home/wiremock/mappings:ro
     entrypoint: [ "/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose" ]
+    networks:
+      - buddy-net
+
+  buddy-api:
+    build:
+      context: .
+    container_name: buddy-api
+    ports:
+      - "8080:8080"
+    labels:
+      - "org.springframework.boot.ignore=true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      wiremock:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      JAVA_OPTS: ""
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/buddydb
+      SPRING_DATASOURCE_USERNAME: buddyuser
+      SPRING_DATASOURCE_PASSWORD: buddypassword
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      MANAGER_API_BASE_URL: http://wiremock:8080
+      BUDDY_EMAIL_TEMPLATES_VERIFICATION_URL: http://localhost:3000/auth/verify-email?token=
+      BUDDY_EMAIL_TEMPLATES_FORGOT_PASSWORD_URL: http://localhost:3000/auth/reset-password?token=
+    networks:
+      - buddy-net
 
 volumes:
   buddy-pgdata:
     driver: local
   redis-data:
     driver: local
+
+networks:
+  buddy-net:
+    name: buddy-net
+    driver: bridge

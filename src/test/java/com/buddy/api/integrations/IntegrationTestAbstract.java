@@ -8,6 +8,7 @@ import com.buddy.api.components.ShelterComponent;
 import com.buddy.api.components.TermsComponent;
 import com.buddy.api.domains.account.repositories.AccountRepository;
 import com.buddy.api.domains.adoption.repositories.AdoptionRequestRepository;
+import com.buddy.api.domains.audit.repositories.SecurityAuditEventRepository;
 import com.buddy.api.domains.pet.repositories.PetImageRepository;
 import com.buddy.api.domains.pet.repositories.PetRepository;
 import com.buddy.api.domains.profile.repositories.ProfileRepository;
@@ -110,6 +111,9 @@ public abstract class IntegrationTestAbstract {
     @Autowired
     protected TermsComponent termsComponent;
 
+    @Autowired
+    protected SecurityAuditEventRepository securityAuditEventRepository;
+
     protected static final String TERMS_BASE_URL = "/v1/terms";
     protected static final String PET_BASE_URL = "/v1/pets";
     protected static final String EMBEDDED_PET_RESPONSES = "$._embedded.pets";
@@ -131,6 +135,7 @@ public abstract class IntegrationTestAbstract {
     protected ShelterEntity shelter;
 
     protected void clearRepositories() {
+        securityAuditEventRepository.deleteAll();
         termsAcceptanceRepository.deleteAll();
         termsVersionRepository.deleteAll();
         petImageRepository.deleteAll();
