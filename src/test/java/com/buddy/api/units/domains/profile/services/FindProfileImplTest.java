@@ -108,11 +108,98 @@ class FindProfileImplTest {
     }
 
     @Nested
+    @DisplayName("findActiveProfilesByAccountIdAndType")
+    class FindActiveProfilesByTypeTests {
+
+        @Test
+        @DisplayName("Should return ordered active profiles for given account and type")
+        void should_return_ordered_profiles_when_found() {
+            final var accountId = UUID.randomUUID();
+            final var firstProfile = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var secondProfile = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+
+            when(profileRepository.findActiveByAccountIdAndTypeOrdered(
+                accountId, ProfileTypeEnum.SHELTER
+            )).thenReturn(List.of(firstProfile, secondProfile));
+
+            final var result = findProfileService
+                .findActiveProfilesByAccountIdAndType(accountId, ProfileTypeEnum.SHELTER);
+
+            assertThat(result).containsExactly(firstProfile, secondProfile);
+            verify(profileRepository).findActiveByAccountIdAndTypeOrdered(
+                accountId, ProfileTypeEnum.SHELTER
+            );
+        }
+
+        @Test
+        @DisplayName("Should return empty list when accountId or profileType is null")
+        void should_return_empty_list_when_null() {
+            assertThat(findProfileService.findActiveProfilesByAccountIdAndType(null, null))
+                .isEmpty();
+            assertThat(findProfileService.findActiveProfilesByAccountIdAndType(
+                UUID.randomUUID(), null
+            )).isEmpty();
+            verifyNoInteractions(profileRepository);
+        }
+    }
+
+    @Nested
+    @DisplayName("findActiveShelterProfilesByAccountId")
+    class FindActiveShelterProfilesTests {
+
+        @Test
+        @DisplayName("Should return all active shelter profiles for account")
+        void should_return_all_shelter_profiles() {
+            final var accountId = UUID.randomUUID();
+            final var firstProfile = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var secondProfile = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+
+            when(profileRepository.findActiveByAccountIdAndTypeOrdered(
+                accountId, ProfileTypeEnum.SHELTER
+            )).thenReturn(List.of(firstProfile, secondProfile));
+
+            final var result = findProfileService.findActiveShelterProfilesByAccountId(accountId);
+
+            assertThat(result).containsExactly(firstProfile, secondProfile);
+        }
+
+        @Test
+        @DisplayName("Should return empty list when accountId is null or no shelters exist")
+        void should_return_empty_list_when_none_found() {
+            final var accountId = UUID.randomUUID();
+            when(profileRepository.findActiveByAccountIdAndTypeOrdered(
+                accountId, ProfileTypeEnum.SHELTER
+            )).thenReturn(List.of());
+
+            assertThat(findProfileService.findActiveShelterProfilesByAccountId(accountId))
+                .isEmpty();
+            assertThat(findProfileService.findActiveShelterProfilesByAccountId(null))
+                .isEmpty();
+        }
+    }
+
+    @Nested
     @DisplayName("findActiveProfileByAccountIdAndType")
     class FindActiveProfileByTypeTests {
 
         @Test
-        @DisplayName("Should return active profile for given account and type")
+        @DisplayName("Should return first active profile for given account and type")
         void should_return_profile_when_found() {
             final var accountId = UUID.randomUUID();
             final var profile = ProfileEntity.builder()
@@ -120,9 +207,9 @@ class FindProfileImplTest {
                 .isDeleted(false)
                 .build();
 
-            when(profileRepository.findByAccount_AccountIdAndProfileTypeAndIsDeletedFalse(
+            when(profileRepository.findActiveByAccountIdAndTypeOrdered(
                 accountId, ProfileTypeEnum.SHELTER
-            )).thenReturn(Optional.of(profile));
+            )).thenReturn(List.of(profile));
 
             final var result = findProfileService
                 .findActiveProfileByAccountIdAndType(accountId, ProfileTypeEnum.SHELTER);
@@ -147,21 +234,40 @@ class FindProfileImplTest {
     class FindActiveShelterProfileTests {
 
         @Test
-        @DisplayName("Should return active shelter profile")
-        void should_return_shelter_profile() {
+        @DisplayName("Should deterministically return first active shelter profile")
+        void should_return_first_shelter_profile_when_multiple_exist() {
             final var accountId = UUID.randomUUID();
-            final var profile = ProfileEntity.builder()
+            final var oldestProfile = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var newestProfile = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
                 .profileType(ProfileTypeEnum.SHELTER)
                 .isDeleted(false)
                 .build();
 
-            when(profileRepository.findByAccount_AccountIdAndProfileTypeAndIsDeletedFalse(
+            when(profileRepository.findActiveByAccountIdAndTypeOrdered(
                 accountId, ProfileTypeEnum.SHELTER
-            )).thenReturn(Optional.of(profile));
+            )).thenReturn(List.of(oldestProfile, newestProfile));
 
             final var result = findProfileService.findActiveShelterProfileByAccountId(accountId);
 
-            assertThat(result).contains(profile);
+            assertThat(result).contains(oldestProfile);
+        }
+
+        @Test
+        @DisplayName("Should return empty when no active shelter profile exists")
+        void should_return_empty_when_none_exist() {
+            final var accountId = UUID.randomUUID();
+            when(profileRepository.findActiveByAccountIdAndTypeOrdered(
+                accountId, ProfileTypeEnum.SHELTER
+            )).thenReturn(List.of());
+
+            final var result = findProfileService.findActiveShelterProfileByAccountId(accountId);
+
+            assertThat(result).isEmpty();
         }
     }
 

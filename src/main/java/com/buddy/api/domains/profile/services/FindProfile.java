@@ -14,6 +14,13 @@ public interface FindProfile {
 
     List<ProfileEntity> findActiveProfilesByAccountId(UUID accountId);
 
+    List<ProfileEntity> findActiveProfilesByAccountIdAndType(
+        UUID accountId,
+        ProfileTypeEnum profileType
+    );
+
+    List<ProfileEntity> findActiveShelterProfilesByAccountId(UUID accountId);
+
     Optional<ProfileEntity> findActiveProfileByAccountIdAndType(
         UUID accountId,
         ProfileTypeEnum profileType

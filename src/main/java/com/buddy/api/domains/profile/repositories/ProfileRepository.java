@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -16,9 +18,17 @@ public interface ProfileRepository extends JpaRepository<ProfileEntity, UUID> {
 
     List<ProfileEntity> findByAccount_AccountIdAndIsDeletedFalse(UUID accountId);
 
-    Optional<ProfileEntity> findByAccount_AccountIdAndProfileTypeAndIsDeletedFalse(
-        UUID accountId,
-        ProfileTypeEnum profileType
+    @Query("""
+        SELECT p
+        FROM ProfileEntity p
+        WHERE p.account.accountId = :accountId
+          AND p.profileType = :profileType
+          AND p.isDeleted = false
+        ORDER BY p.creationDate ASC, p.profileId ASC
+        """)
+    List<ProfileEntity> findActiveByAccountIdAndTypeOrdered(
+        @Param("accountId") UUID accountId,
+        @Param("profileType") ProfileTypeEnum profileType
     );
 
     Optional<ProfileEntity> findByProfileIdAndAccount_AccountIdAndIsDeletedFalse(

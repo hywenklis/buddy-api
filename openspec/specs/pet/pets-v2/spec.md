@@ -8,12 +8,17 @@ Definir o contrato da API REST `/v2/pets` para cadastro, busca pública paginada
 
 ### Requirement: Pet V2 Registration
 
-O sistema SHALL permitir que usuários autenticados com perfil ativo de abrigo (`ROLE_SHELTER` e `SCOPE_VERIFIED`) cadastrem novos pets via `POST /v2/pets/register`, vinculando o registro ao seu perfil `SHELTER` ativo e retornando `201 Created`.
+O sistema SHALL permitir que usuários autenticados com perfil ativo de abrigo (`ROLE_SHELTER` e `SCOPE_VERIFIED`) cadastrem novos pets via `POST /v2/pets/register`, vinculando o registro ao seu perfil `SHELTER` ativo (selecionando deterministicamente o perfil ativo mais antigo por `creation_date ASC, profile_id ASC` quando a conta possuir múltiplos perfis `SHELTER` ativos) e retornando `201 Created`.
 
 #### Scenario: Cadastro completo de pet por abrigo autenticado e verificado
 
 - **WHEN** um usuário com `ROLE_SHELTER`, `SCOPE_VERIFIED`, conta ativa e perfil `SHELTER` não deletado envia `POST /v2/pets/register` com `name`, `species`, `gender`, `approximateAge`, `size`, `weight`, `isNeutered`, `isForAdoption` e `description` válidos
 - **THEN** o sistema SHALL persistir o registro em `pet_v2` associado ao `profile_id` do abrigo autenticado, definir `ageReportDate` com a data atual quando `approximateAge` for informado e retornar `201 Created` com `CreatedSuccessResponse`.
+
+#### Scenario: Cadastro por conta com múltiplos perfis SHELTER ativos
+
+- **WHEN** um usuário autenticado com `ROLE_SHELTER`, `SCOPE_VERIFIED` e conta ativa possui dois ou mais perfis `SHELTER` com `isDeleted = false` e envia `POST /v2/pets/register` com payload válido
+- **THEN** o sistema SHALL selecionar deterministicamente o perfil `SHELTER` ativo mais antigo ordenado por `creation_date ASC, profile_id ASC`, sem lançar erro de multiplicidade, persistir o pet vinculado a esse perfil e retornar `201 Created`.
 
 #### Scenario: Cadastro omitindo isForAdoption e approximateAge
 
@@ -34,6 +39,11 @@ O sistema SHALL permitir que usuários autenticados com perfil ativo de abrigo (
 
 - **WHEN** um usuário autenticado sem `ROLE_SHELTER` ou sem `SCOPE_VERIFIED` envia `POST /v2/pets/register`
 - **THEN** o sistema SHALL bloquear o acesso retornando `403 Forbidden`.
+
+#### Scenario: Requisição de cadastro com JWT de conta cujo perfil SHELTER foi deletado
+
+- **WHEN** um cliente envia `POST /v2/pets/register` com token JWT válido para uma conta ativa e verificada cujo único perfil `SHELTER` possui `isDeleted = true`
+- **THEN** a camada de autenticação SHALL derivar as permissões a partir dos perfis ativos no banco sem conceder `ROLE_SHELTER` e bloquear a requisição com `403 Forbidden`.
 
 #### Scenario: Conta autenticada deletada, bloqueada ou não verificada no cadastro
 
@@ -100,12 +110,17 @@ O sistema SHALL expor consulta pública detalhada de um pet via `GET /v2/pets/{i
 
 ### Requirement: Pet V2 Partial Update and Anti-IDOR Authorization
 
-O sistema SHALL permitir atualização parcial via `PUT /v2/pets/{id}` apenas para `ROLE_SHELTER` proprietário do pet ou `ROLE_ADMIN` com conta ativa e verificada (`SCOPE_VERIFIED`), aplicando proteção Anti-IDOR e retornando `200 OK`.
+O sistema SHALL permitir atualização parcial via `PUT /v2/pets/{id}` apenas para `ROLE_SHELTER` proprietário do pet (validando o `guardianProfile` contra todos os perfis `SHELTER` ativos da conta autenticada) ou `ROLE_ADMIN` com conta ativa e verificada (`SCOPE_VERIFIED`), aplicando proteção Anti-IDOR e retornando `200 OK`.
 
 #### Scenario: Atualização parcial bem-sucedida pelo abrigo proprietário
 
 - **WHEN** o usuário autenticado (`ROLE_SHELTER` + `SCOPE_VERIFIED`) cujo perfil `SHELTER` ativo é o `guardianProfile` do pet envia `PUT /v2/pets/{id}` com um subconjunto de campos válidos
 - **THEN** o sistema SHALL atualizar apenas os campos não nulos enviados, atualizar `ageReportDate = LocalDate.now()` caso `approximateAge` seja informado e retornar `200 OK` com `PetV2Response` atualizado e suas imagens ordenadas.
+
+#### Scenario: Atualização por conta com múltiplos perfis SHELTER ativos
+
+- **WHEN** um usuário não administrador com `ROLE_SHELTER` e `SCOPE_VERIFIED` possui dois ou mais perfis `SHELTER` ativos (`isDeleted = false`) e envia `PUT /v2/pets/{id}` para um pet cujo `guardianProfile` pertence a qualquer um desses perfis ativos
+- **THEN** o sistema SHALL validar a propriedade comparando `guardianProfile` com todos os perfis `SHELTER` ativos da conta autenticada, sem lançar erro de multiplicidade, e retornar `200 OK` com o pet atualizado.
 
 #### Scenario: Atualização bem-sucedida por conta administrativa sem perfil SHELTER
 
@@ -115,6 +130,11 @@ O sistema SHALL permitir atualização parcial via `PUT /v2/pets/{id}` apenas pa
 #### Scenario: Tentativa de atualização por outro abrigo (Anti-IDOR)
 
 - **WHEN** um usuário com `ROLE_SHELTER` e `SCOPE_VERIFIED` tenta atualizar via `PUT /v2/pets/{id}` um pet pertencente a outro `guardianProfile`
+- **THEN** o sistema SHALL lançar `UnauthorizedEntityAccessException` retornando `403 Forbidden` sem modificar o registro.
+
+#### Scenario: Tentativa de atualização de pet com guardianProfile nulo por abrigo
+
+- **WHEN** um usuário não administrador com `ROLE_SHELTER`, `SCOPE_VERIFIED` e perfil `SHELTER` ativo envia `PUT /v2/pets/{id}` para um pet cujo `guardianProfile` é nulo
 - **THEN** o sistema SHALL lançar `UnauthorizedEntityAccessException` retornando `403 Forbidden` sem modificar o registro.
 
 #### Scenario: Atualização sem autenticação ou sem role autorizada

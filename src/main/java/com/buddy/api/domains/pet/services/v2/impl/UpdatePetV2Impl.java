@@ -13,6 +13,7 @@ import com.buddy.api.domains.pet.services.v2.UpdatePetV2;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.services.FindProfile;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -45,12 +46,13 @@ public class UpdatePetV2Impl implements UpdatePetV2 {
         findAccount.findActiveById(authenticatedAccountId);
 
         if (!isAdmin) {
-            final var activeShelterProfile = findProfile
-                .findActiveShelterProfileByAccountId(authenticatedAccountId)
-                .orElseThrow(
-                    () -> new ActiveShelterProfileNotFoundException(authenticatedAccountId));
+            final var activeShelterProfiles = findProfile
+                .findActiveShelterProfilesByAccountId(authenticatedAccountId);
+            if (activeShelterProfiles.isEmpty()) {
+                throw new ActiveShelterProfileNotFoundException(authenticatedAccountId);
+            }
 
-            validateOwnership(pet.getGuardianProfile(), activeShelterProfile.getProfileId());
+            validateOwnership(pet.getGuardianProfile(), activeShelterProfiles);
         }
 
         Optional.ofNullable(dto.name()).ifPresent(pet::setName);
@@ -74,11 +76,27 @@ public class UpdatePetV2Impl implements UpdatePetV2 {
         return domainMapper.toDto(saved, images);
     }
 
-    private void validateOwnership(final ProfileEntity guardian, final UUID accountProfileId) {
-        Optional.ofNullable(guardian)
-            .filter(profile -> profile.getProfileId().equals(accountProfileId))
-            .orElseThrow(() -> new UnauthorizedEntityAccessException(
+    private void validateOwnership(
+        final ProfileEntity guardian,
+        final List<ProfileEntity> activeShelterProfiles
+    ) {
+        final var guardianId = Optional.ofNullable(guardian)
+            .map(ProfileEntity::getProfileId)
+            .orElse(null);
+
+        if (guardianId == null || !isOwnedByAnyProfile(guardianId, activeShelterProfiles)) {
+            throw new UnauthorizedEntityAccessException(
                 "Access denied: You do not have permission to update this pet."
-            ));
+            );
+        }
+    }
+
+    private boolean isOwnedByAnyProfile(
+        final UUID guardianId,
+        final List<ProfileEntity> activeShelterProfiles
+    ) {
+        return activeShelterProfiles.stream()
+            .map(ProfileEntity::getProfileId)
+            .anyMatch(guardianId::equals);
     }
 }

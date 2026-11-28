@@ -7,7 +7,9 @@ import com.buddy.api.domains.pet.enums.PetSpecies;
 import com.buddy.api.web.pets.v2.requests.CreatePetV2Request;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import java.math.BigDecimal;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,12 +18,19 @@ import org.junit.jupiter.api.Test;
 @DisplayName("CreatePetV2Request — Unit Tests")
 class CreatePetV2RequestTest {
 
+    private static ValidatorFactory validatorFactory;
     private static Validator validator;
 
     @BeforeAll
     static void setUpValidator() {
-        try (var factory = Validation.buildDefaultValidatorFactory()) {
-            validator = factory.getValidator();
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+    }
+
+    @AfterAll
+    static void tearDownValidator() {
+        if (validatorFactory != null) {
+            validatorFactory.close();
         }
     }
 

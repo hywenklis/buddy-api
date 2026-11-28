@@ -48,17 +48,34 @@ public class FindProfileImpl implements FindProfile {
 
     @Override
     @Transactional(readOnly = true)
+    public List<ProfileEntity> findActiveProfilesByAccountIdAndType(
+        final UUID accountId,
+        final ProfileTypeEnum profileType
+    ) {
+        log.info("Searching active profiles by account ID '{}' and type '{}'",
+            accountId, profileType);
+        if (accountId == null || profileType == null) {
+            return List.of();
+        }
+        return profileRepository.findActiveByAccountIdAndTypeOrdered(accountId, profileType);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProfileEntity> findActiveShelterProfilesByAccountId(final UUID accountId) {
+        log.info("Searching active shelter profiles by account ID '{}'", accountId);
+        return findActiveProfilesByAccountIdAndType(accountId, ProfileTypeEnum.SHELTER);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<ProfileEntity> findActiveProfileByAccountIdAndType(
         final UUID accountId,
         final ProfileTypeEnum profileType
     ) {
         log.info("Searching active profile by account ID '{}' and type '{}'",
             accountId, profileType);
-        if (accountId == null || profileType == null) {
-            return Optional.empty();
-        }
-        return profileRepository
-            .findByAccount_AccountIdAndProfileTypeAndIsDeletedFalse(accountId, profileType);
+        return findActiveProfilesByAccountIdAndType(accountId, profileType).stream().findFirst();
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.buddy.api.integrations.web.pets.v2.controllers;
 
 import static com.buddy.api.builders.account.AccountBuilder.validAccountEntity;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,17 +9,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.buddy.api.commons.exceptions.ActiveShelterProfileNotFoundException;
+import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.entities.AccountEntity;
+import com.buddy.api.domains.authentication.dtos.AuthenticatedUser;
 import com.buddy.api.domains.image.entities.ImageEntity;
 import com.buddy.api.domains.image.repositories.ImageRepository;
-import com.buddy.api.domains.pet.dtos.v2.CreatePetV2Dto;
-import com.buddy.api.domains.pet.dtos.v2.UpdatePetV2Dto;
 import com.buddy.api.domains.pet.entities.PetV2Entity;
 import com.buddy.api.domains.pet.enums.PetGender;
 import com.buddy.api.domains.pet.enums.PetSpecies;
-import com.buddy.api.domains.pet.services.v2.CreatePetV2;
-import com.buddy.api.domains.pet.services.v2.UpdatePetV2;
 import com.buddy.api.domains.profile.entities.ProfileEntity;
 import com.buddy.api.domains.profile.enums.ProfileTypeEnum;
 import com.buddy.api.domains.valueobjects.EmailAddress;
@@ -28,16 +24,28 @@ import com.buddy.api.integrations.IntegrationTestAbstract;
 import com.buddy.api.web.pets.v2.requests.CreatePetV2Request;
 import com.buddy.api.web.pets.v2.requests.UpdatePetV2Request;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
+@Execution(ExecutionMode.SAME_THREAD)
 @DisplayName("PetV2Controller — Integration Tests (/v2/pets)")
 class PetV2ControllerTest extends IntegrationTestAbstract {
 
@@ -47,10 +55,10 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
     private ImageRepository imageRepository;
 
     @Autowired
-    private CreatePetV2 createPetV2;
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
-    private UpdatePetV2 updatePetV2;
+    private JdbcTemplate jdbcTemplate;
 
     private AccountEntity shelterAccount;
     private ProfileEntity shelterProfile;
@@ -223,8 +231,8 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
         }
 
         @Test
-        @DisplayName("Should enforce active shelter profile validation (422) on domain creation")
-        void should_throw_422_when_active_shelter_profile_missing() {
+        @DisplayName("Should return 422 Unprocessable Entity on POST when active shelter missing")
+        void should_return_422_when_active_shelter_profile_missing() throws Exception {
             final var noShelterAccount = accountRepository.save(
                 validAccountEntity()
                     .email(new EmailAddress("noshelter-" + UUID.randomUUID() + "@buddy.com"))
@@ -240,21 +248,110 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                     .build()
             );
 
-            final var dto = CreatePetV2Dto.builder()
-                .accountId(noShelterAccount.getAccountId())
+            final var request = CreatePetV2Request.builder()
                 .name("Zeus")
                 .species(PetSpecies.DOG)
                 .gender(PetGender.MALE)
                 .isForAdoption(true)
                 .build();
 
-            assertThatThrownBy(() -> createPetV2.create(dto))
-                .isInstanceOf(ActiveShelterProfileNotFoundException.class)
-                .satisfies(ex -> {
-                    final var domainEx = (ActiveShelterProfileNotFoundException) ex;
-                    assertThat(domainEx.getHttpStatus()).isEqualTo(HttpStatus.resolve(422));
-                    assertThat(domainEx.getFieldName()).isEqualTo("profile");
-                });
+            performAsAuthenticatedShelter(
+                post(BASE_URL + "/register")
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)),
+                noShelterAccount
+            )
+                .andExpect(status().is(422))
+                .andExpect(jsonPath("$.errors[0].field").value("profile"));
+        }
+
+        @Test
+        @DisplayName("Should return 403 Forbidden via JWT when account only has deleted shelter")
+        void should_return_403_when_jwt_account_only_has_deleted_shelter_profile()
+            throws Exception {
+            final var deletedShelterAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("delshelter-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(deletedShelterAccount)
+                    .name("Deleted Shelter JWT")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(true)
+                    .build()
+            );
+            final var token = jwtUtil.generateAccessToken(
+                deletedShelterAccount.getEmail().value(),
+                List.of("ROLE_SHELTER", "SCOPE_VERIFIED")
+            );
+            final var request = CreatePetV2Request.builder()
+                .name("Zeus")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .build();
+
+            mockMvc.perform(post(BASE_URL + "/register")
+                    .header(AUTHORIZATION, BEARER + token)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should bind pet to oldest active shelter when account has multiple shelters")
+        void should_bind_to_oldest_active_shelter_when_account_has_multiple_shelters()
+            throws Exception {
+            final var multiShelterAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("multishelter-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            final var oldestShelter = profileRepository.save(
+                ProfileEntity.builder()
+                    .account(multiShelterAccount)
+                    .name("Oldest Active Shelter")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(false)
+                    .build()
+            );
+            final var newestShelter = profileRepository.save(
+                ProfileEntity.builder()
+                    .account(multiShelterAccount)
+                    .name("Newest Active Shelter")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(false)
+                    .build()
+            );
+            updateProfileCreationDate(
+                oldestShelter.getProfileId(), LocalDateTime.of(2025, 1, 1, 10, 0)
+            );
+            updateProfileCreationDate(
+                newestShelter.getProfileId(), LocalDateTime.of(2025, 2, 1, 10, 0)
+            );
+            final var multiToken = jwtUtil.generateAccessToken(
+                multiShelterAccount.getEmail().value(),
+                List.of("ROLE_SHELTER", "SCOPE_VERIFIED")
+            );
+            final var request = CreatePetV2Request.builder()
+                .name("Bolt")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .build();
+
+            mockMvc.perform(post(BASE_URL + "/register")
+                    .header(AUTHORIZATION, BEARER + multiToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+            final var pets = petV2Repository.findAll();
+            assertThat(pets).hasSize(1);
+            assertThat(pets.get(0).getGuardianProfile().getProfileId())
+                .isEqualTo(oldestShelter.getProfileId());
         }
 
         @Test
@@ -569,8 +666,8 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
         }
 
         @Test
-        @DisplayName("Should enforce active shelter profile validation (422) on domain update")
-        void should_throw_422_when_updating_without_active_shelter_profile() {
+        @DisplayName("Should return 422 Unprocessable Entity on PUT when active shelter missing")
+        void should_return_422_when_updating_without_active_shelter_profile() throws Exception {
             final var pet = petV2Repository.save(PetV2Entity.builder()
                 .guardianProfile(shelterProfile)
                 .name("Rex")
@@ -586,19 +683,110 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                     .build()
             );
 
-            final var dto = UpdatePetV2Dto.builder()
-                .id(pet.getPetV2Id())
+            final var request = UpdatePetV2Request.builder()
                 .name("Updated Name")
                 .build();
 
-            assertThatThrownBy(() ->
-                updatePetV2.update(dto, noShelterAccount.getAccountId(), false))
-                .isInstanceOf(ActiveShelterProfileNotFoundException.class)
-                .satisfies(ex -> {
-                    final var domainEx = (ActiveShelterProfileNotFoundException) ex;
-                    assertThat(domainEx.getHttpStatus()).isEqualTo(HttpStatus.resolve(422));
-                    assertThat(domainEx.getFieldName()).isEqualTo("profile");
-                });
+            performAsAuthenticatedShelter(
+                put(BASE_URL + "/" + pet.getPetV2Id())
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)),
+                noShelterAccount
+            )
+                .andExpect(status().is(422))
+                .andExpect(jsonPath("$.errors[0].field").value("profile"));
+        }
+
+        @Test
+        @DisplayName("Should return 403 via JWT on PUT when account only has deleted shelter")
+        void should_return_403_when_updating_with_jwt_and_deleted_shelter_profile()
+            throws Exception {
+            final var pet = petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(shelterProfile)
+                .name("Rex")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+
+            final var deletedShelterAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("delshelter-upd-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(deletedShelterAccount)
+                    .name("Deleted Shelter Update")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(true)
+                    .build()
+            );
+            final var token = jwtUtil.generateAccessToken(
+                deletedShelterAccount.getEmail().value(),
+                List.of("ROLE_SHELTER", "SCOPE_VERIFIED")
+            );
+            final var request = UpdatePetV2Request.builder()
+                .name("Should Fail")
+                .build();
+
+            mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
+                    .header(AUTHORIZATION, BEARER + token)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should update pet owned by second active shelter on multi-shelter account")
+        void should_update_pet_owned_by_second_active_shelter_profile() throws Exception {
+            final var multiShelterAccount = accountRepository.save(
+                validAccountEntity()
+                    .email(new EmailAddress("multi-upd-" + UUID.randomUUID() + "@buddy.com"))
+                    .isVerified(true)
+                    .build()
+            );
+            profileRepository.save(
+                ProfileEntity.builder()
+                    .account(multiShelterAccount)
+                    .name("First Shelter")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(false)
+                    .build()
+            );
+            final var secondShelter = profileRepository.save(
+                ProfileEntity.builder()
+                    .account(multiShelterAccount)
+                    .name("Second Shelter")
+                    .profileType(ProfileTypeEnum.SHELTER)
+                    .isDeleted(false)
+                    .build()
+            );
+            final var pet = petV2Repository.save(PetV2Entity.builder()
+                .guardianProfile(secondShelter)
+                .name("Rex")
+                .species(PetSpecies.DOG)
+                .gender(PetGender.MALE)
+                .isForAdoption(true)
+                .build());
+            final var multiToken = jwtUtil.generateAccessToken(
+                multiShelterAccount.getEmail().value(),
+                List.of("ROLE_SHELTER", "SCOPE_VERIFIED")
+            );
+            final var request = UpdatePetV2Request.builder()
+                .name("Updated Second")
+                .build();
+
+            mockMvc.perform(put(BASE_URL + "/" + pet.getPetV2Id())
+                    .header(AUTHORIZATION, BEARER + multiToken)
+                    .contentType(APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Second"));
+
+            final var updated = petV2Repository.findById(pet.getPetV2Id()).orElseThrow();
+            assertThat(updated.getName()).isEqualTo("Updated Second");
         }
 
         @Test
@@ -631,5 +819,50 @@ class PetV2ControllerTest extends IntegrationTestAbstract {
                     .content(body))
                 .andExpect(status().isTooManyRequests());
         }
+    }
+
+    private ResultActions performAsAuthenticatedShelter(
+        final MockHttpServletRequestBuilder requestBuilder,
+        final AccountEntity account
+    ) throws Exception {
+        final var webContextMockMvc = MockMvcBuilders
+            .webAppContextSetup(webApplicationContext)
+            .build();
+        final var accountDto = AccountDto.builder()
+            .accountId(account.getAccountId())
+            .email(account.getEmail())
+            .password(account.getPassword())
+            .isDeleted(account.getIsDeleted())
+            .isBlocked(account.getIsBlocked())
+            .isVerified(account.getIsVerified())
+            .build();
+        final var authorities = List.of(
+            new SimpleGrantedAuthority("ROLE_SHELTER"),
+            new SimpleGrantedAuthority("SCOPE_VERIFIED")
+        );
+        final var authenticatedUser = new AuthenticatedUser(accountDto, authorities);
+        final var authentication = new UsernamePasswordAuthenticationToken(
+            authenticatedUser,
+            null,
+            authorities
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            return webContextMockMvc.perform(requestBuilder);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    private void updateProfileCreationDate(
+        final UUID profileId,
+        final LocalDateTime timestamp
+    ) {
+        jdbcTemplate.update(
+            "UPDATE profile SET creation_date = ? WHERE profile_id = ?",
+            Timestamp.valueOf(timestamp),
+            profileId
+        );
     }
 }

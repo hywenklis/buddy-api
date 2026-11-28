@@ -107,8 +107,8 @@ class UpdatePetV2ImplTest {
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
             when(findAccount.findActiveById(accountId))
                 .thenReturn(AccountDto.builder().accountId(accountId).build());
-            when(findProfile.findActiveShelterProfileByAccountId(accountId))
-                .thenReturn(Optional.of(shelter));
+            when(findProfile.findActiveShelterProfilesByAccountId(accountId))
+                .thenReturn(List.of(shelter));
             when(petV2Repository.save(existing)).thenReturn(saved);
             when(findImage.findByPetV2OrderByDisplayOrderAsc(saved)).thenReturn(List.of());
             when(domainMapper.toDto(saved, List.of())).thenReturn(expectedDto);
@@ -184,10 +184,112 @@ class UpdatePetV2ImplTest {
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
             when(findAccount.findActiveById(otherAccountId))
                 .thenReturn(AccountDto.builder().accountId(otherAccountId).build());
-            when(findProfile.findActiveShelterProfileByAccountId(otherAccountId))
-                .thenReturn(Optional.of(otherProfile));
+            when(findProfile.findActiveShelterProfilesByAccountId(otherAccountId))
+                .thenReturn(List.of(otherProfile));
 
             assertThatThrownBy(() -> updatePetService.update(dto, otherAccountId, false))
+                .isInstanceOf(UnauthorizedEntityAccessException.class)
+                .hasMessage("Access denied: You do not have permission to update this pet.");
+        }
+
+        @Test
+        @DisplayName("Should update pet when account has multiple shelters and second owns pet")
+        void should_update_pet_when_second_active_shelter_owns_pet() {
+            final var petId = UUID.randomUUID();
+            final var accountId = UUID.randomUUID();
+            final var firstShelterId = UUID.randomUUID();
+            final var secondShelterId = UUID.randomUUID();
+            final var newName = secure().nextAlphabetic(8);
+
+            final var firstShelter = ProfileEntity.builder()
+                .profileId(firstShelterId)
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var secondShelter = ProfileEntity.builder()
+                .profileId(secondShelterId)
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var existing = PetV2Entity.builder()
+                .petV2Id(petId)
+                .guardianProfile(secondShelter)
+                .name(secure().nextAlphabetic(8))
+                .build();
+            final var dto = UpdatePetV2Dto.builder().id(petId).name(newName).build();
+            final var expectedDto = PetV2Dto.builder().id(petId).name(newName).build();
+
+            when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(accountId))
+                .thenReturn(AccountDto.builder().accountId(accountId).build());
+            when(findProfile.findActiveShelterProfilesByAccountId(accountId))
+                .thenReturn(List.of(firstShelter, secondShelter));
+            when(petV2Repository.save(existing)).thenReturn(existing);
+            when(findImage.findByPetV2OrderByDisplayOrderAsc(existing)).thenReturn(List.of());
+            when(domainMapper.toDto(existing, List.of())).thenReturn(expectedDto);
+
+            final var result = updatePetService.update(dto, accountId, false);
+
+            assertThat(result).isEqualTo(expectedDto);
+            assertThat(existing.getName()).isEqualTo(newName);
+        }
+
+        @Test
+        @DisplayName("Should throw UnauthorizedEntityAccessException when non-owner multi-shelter")
+        void should_throw_unauthorized_when_multiple_shelters_do_not_own_pet() {
+            final var petId = UUID.randomUUID();
+            final var accountId = UUID.randomUUID();
+            final var guardian = ProfileEntity.builder().profileId(UUID.randomUUID()).build();
+            final var firstShelter = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var secondShelter = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var existing = PetV2Entity.builder()
+                .petV2Id(petId)
+                .guardianProfile(guardian)
+                .build();
+            final var dto = UpdatePetV2Dto.builder().id(petId).build();
+
+            when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(accountId))
+                .thenReturn(AccountDto.builder().accountId(accountId).build());
+            when(findProfile.findActiveShelterProfilesByAccountId(accountId))
+                .thenReturn(List.of(firstShelter, secondShelter));
+
+            assertThatThrownBy(() -> updatePetService.update(dto, accountId, false))
+                .isInstanceOf(UnauthorizedEntityAccessException.class)
+                .hasMessage("Access denied: You do not have permission to update this pet.");
+        }
+
+        @Test
+        @DisplayName("Should throw UnauthorizedEntityAccessException when guardianProfile is null")
+        void should_throw_unauthorized_when_guardian_profile_is_null() {
+            final var petId = UUID.randomUUID();
+            final var accountId = UUID.randomUUID();
+            final var shelter = ProfileEntity.builder()
+                .profileId(UUID.randomUUID())
+                .profileType(ProfileTypeEnum.SHELTER)
+                .isDeleted(false)
+                .build();
+            final var existing = PetV2Entity.builder()
+                .petV2Id(petId)
+                .guardianProfile(null)
+                .build();
+            final var dto = UpdatePetV2Dto.builder().id(petId).build();
+
+            when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
+            when(findAccount.findActiveById(accountId))
+                .thenReturn(AccountDto.builder().accountId(accountId).build());
+            when(findProfile.findActiveShelterProfilesByAccountId(accountId))
+                .thenReturn(List.of(shelter));
+
+            assertThatThrownBy(() -> updatePetService.update(dto, accountId, false))
                 .isInstanceOf(UnauthorizedEntityAccessException.class)
                 .hasMessage("Access denied: You do not have permission to update this pet.");
         }
@@ -203,8 +305,8 @@ class UpdatePetV2ImplTest {
             when(petV2Repository.findById(petId)).thenReturn(Optional.of(existing));
             when(findAccount.findActiveById(accountId))
                 .thenReturn(AccountDto.builder().accountId(accountId).build());
-            when(findProfile.findActiveShelterProfileByAccountId(accountId))
-                .thenReturn(Optional.empty());
+            when(findProfile.findActiveShelterProfilesByAccountId(accountId))
+                .thenReturn(List.of());
 
             assertThatThrownBy(() -> updatePetService.update(dto, accountId, false))
                 .isInstanceOf(ActiveShelterProfileNotFoundException.class)
