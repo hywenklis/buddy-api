@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         AccountDto account = findAccount.findAccountForAuthentication(username);
 
-        List<ProfileDto> profiles = findProfile.findByAccountEmail(account.email().value());
+        List<ProfileDto> profiles = findProfile.findByAccountEmail(account.email());
 
         List<GrantedAuthority> allAuthorities = new ArrayList<>();
 

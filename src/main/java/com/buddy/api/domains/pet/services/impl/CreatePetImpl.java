@@ -23,10 +23,10 @@ public class CreatePetImpl implements CreatePet {
     @Override
     @Transactional
     public void create(final PetDto petDto) {
-        var shelter = shelterRepository.findById(petDto.shelterId())
+        final var shelter = shelterRepository.findById(petDto.shelterId())
                 .orElseThrow(() -> new NotFoundException("shelterId", "Shelter not found"));
 
-        var petEntity = mapper.mapToEntity(petDto);
+        final var petEntity = mapper.mapToEntity(petDto);
         petEntity.setShelter(shelter);
 
         if (petEntity.getImages() != null) {

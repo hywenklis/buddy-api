@@ -8,6 +8,8 @@ public interface FindAccount {
 
     AccountDto findById(UUID accountId);
 
+    AccountDto findActiveById(UUID accountId);
+
     AccountDto findByEmail(String email);
 
     AccountDto findAccountForAuthentication(String email);

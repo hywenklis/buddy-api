@@ -12,8 +12,8 @@ public class CookieFactory {
 
     private static final String ACCESS_TOKEN_NAME = "access_token";
     private static final String REFRESH_TOKEN_NAME = "refresh_token";
-    private static final String SET_COOKIE_HEADER = "Set-Cookie";
-    private static final String COOKIE_ATTRIBUTES = "Path=/; HttpOnly; Secure; SameSite=Strict";
+    private static final String SAME_SITE_ATTRIBUTE = "SameSite";
+    private static final String SAME_SITE_STRICT = "Strict";
 
     private final AuthProperties authProperties;
 
@@ -38,15 +38,12 @@ public class CookieFactory {
                            final String value,
                            final int maxAge
     ) {
-        Cookie cookie = new Cookie(name, value);
+        Cookie cookie = new Cookie(name, value != null ? value : "");
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
+        cookie.setAttribute(SAME_SITE_ATTRIBUTE, SAME_SITE_STRICT);
         response.addCookie(cookie);
-
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; %s",
-            name, value != null ? value : "", maxAge, COOKIE_ATTRIBUTES);
-        response.addHeader(SET_COOKIE_HEADER, cookieHeader);
     }
 }

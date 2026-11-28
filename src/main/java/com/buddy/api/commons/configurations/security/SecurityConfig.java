@@ -41,6 +41,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/v1/auth/**",
                     "/v1/accounts/register",
+                    "/v1/accounts/verifications/request",
+                    "/v1/accounts/verifications/confirm",
                     "/v1/accounts/password/forgot",
                     "/v1/accounts/password/reset",
                     "/swagger-ui/**",
@@ -56,7 +58,11 @@ public class SecurityConfig {
                     "/api-docs/**",
                     "/v1/terms/active")
                 .permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/v1/pets/**")
+                .requestMatchers(
+                    org.springframework.http.HttpMethod.GET,
+                    "/v1/pets/**",
+                    "/v2/pets/**"
+                )
                 .permitAll()
                 .anyRequest().authenticated())
 

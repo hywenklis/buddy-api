@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.ResultActions;
 class FindPetControllerTest extends IntegrationTestAbstract {
 
     public static final String EMBEDDED = "$._embedded";
-    public static final String EMBEDDED_PET_RESPONSES = "$._embedded.petParamsResponseList";
+    public static final String EMBEDDED_PET_RESPONSES = "$._embedded.pets";
 
     @BeforeEach
     void setUp() {
@@ -101,6 +101,7 @@ class FindPetControllerTest extends IntegrationTestAbstract {
         mockMvc.perform(get(PET_BASE_URL + "?id=" + pet.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath(EMBEDDED).exists())
+            .andExpect(jsonPath("$._embedded.petParamsResponseList").doesNotExist())
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, isA(List.class)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES, hasSize(1)))
             .andExpect(jsonPath(EMBEDDED_PET_RESPONSES + "[0].id",

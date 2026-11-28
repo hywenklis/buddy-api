@@ -129,6 +129,33 @@ class JwtUtilTest extends UnitTestAbstract {
     }
 
     @Test
+    @DisplayName("Should extract issuedAtMillis from token with iatMs claim")
+    void getIssuedAtMillisFromToken_withIatMsClaim() {
+        String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);
+        Claims claims = parseClaims(token);
+        long expectedMs = claims.get("iatMs", Number.class).longValue();
+
+        long extractedMs = jwtUtil.getIssuedAtMillisFromToken(token);
+
+        assertThat(extractedMs).isEqualTo(expectedMs);
+    }
+
+    @Test
+    @DisplayName("Should fallback to iat claim when iatMs is absent")
+    void getIssuedAtMillisFromToken_fallbackToIat() {
+        Instant issuedAt = Instant.ofEpochSecond(1700000000L);
+        String legacyToken = Jwts.builder()
+            .subject(EMAIL_VALUE)
+            .issuedAt(java.util.Date.from(issuedAt))
+            .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+        long extractedMs = jwtUtil.getIssuedAtMillisFromToken(legacyToken);
+
+        assertThat(extractedMs).isEqualTo(issuedAt.toEpochMilli());
+    }
+
+    @Test
     @DisplayName("Should validate token when it matches username and is not expired")
     void validateToken_valid() {
         String token = jwtUtil.generateAccessToken(EMAIL_VALUE, PROFILES);

@@ -10,9 +10,11 @@ RUN apk add --no-cache git
 COPY gradlew ./
 COPY gradle ./gradle
 COPY *.gradle* ./
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew --no-daemon help > /dev/null 2>&1 || true
 
 COPY . .
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew --no-daemon bootJar -x test
 
 # ---- Runtime ----

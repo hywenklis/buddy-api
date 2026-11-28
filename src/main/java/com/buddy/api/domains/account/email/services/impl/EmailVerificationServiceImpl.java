@@ -2,11 +2,16 @@ package com.buddy.api.domains.account.email.services.impl;
 
 import com.buddy.api.commons.configurations.cache.CacheInitializer;
 import com.buddy.api.commons.configurations.cache.TokenManager;
+import com.buddy.api.commons.exceptions.AccountAlreadyVerifiedException;
+import com.buddy.api.commons.exceptions.AccountUnavailableException;
+import com.buddy.api.commons.exceptions.NotFoundException;
 import com.buddy.api.domains.account.dtos.AccountDto;
 import com.buddy.api.domains.account.email.services.AccountValidator;
 import com.buddy.api.domains.account.email.services.EmailSender;
 import com.buddy.api.domains.account.email.services.EmailVerificationService;
+import com.buddy.api.domains.account.services.FindAccount;
 import com.buddy.api.domains.account.services.UpdateAccount;
+import com.buddy.api.domains.valueobjects.EmailAddress;
 import jakarta.annotation.PostConstruct;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @RequiredArgsConstructor
 public class EmailVerificationServiceImpl implements EmailVerificationService {
+    private final FindAccount findAccount;
     private final UpdateAccount updateAccount;
     private final CacheInitializer cacheInitializer;
     private final TokenManager tokenManager;
@@ -30,38 +36,40 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     @Override
-    public void requestEmail(final AccountDto account) {
-        String userEmail = account.email().value();
-        UUID accountId = account.accountId();
-        log.info("Received request for email verification for account={}", accountId);
+    public void requestEmail(final EmailAddress email) {
+        try {
+            final AccountDto account = findAccount.findByEmail(email.value());
+            final String userEmail = account.email().value();
+            final UUID accountId = account.accountId();
+            log.info("Received request for email verification for account={}", accountId);
 
-        accountValidator.validateAccountNotVerified(account);
+            accountValidator.validateAccountNotVerified(account);
 
-        String token = tokenManager.generateAndStoreToken(userEmail);
-        emailSender.dispatchVerificationEmail(accountId, userEmail, token);
+            final String token = tokenManager.generateAndStoreToken(userEmail);
+            emailSender.dispatchVerificationEmail(accountId, userEmail, token);
 
-        log.info("Verification email request for account={} "
-            + "accepted and dispatched for async processing.", accountId);
+            log.info("Verification email request for account={} "
+                + "accepted and dispatched for async processing.", accountId);
+        } catch (NotFoundException | AccountUnavailableException
+                 | AccountAlreadyVerifiedException ex) {
+            log.debug("Email verification request processed (account state protected):", ex);
+        }
     }
 
     @Override
     @Transactional
-    public void confirmEmail(final String token, final AccountDto account) {
-        UUID accountId = account.accountId();
-        log.info("Attempting to confirm email for account={}", accountId);
-
-        String emailFromToken = tokenManager.validateAndGetTokenEmail(token, accountId);
-        accountValidator.validateTokenMatchesAccount(account, emailFromToken, accountId);
+    public void confirmEmail(final String token) {
+        log.info("Attempting to confirm email via verification token");
+        final String emailFromToken = tokenManager.consumeToken(token);
+        final AccountDto account = findAccount.findByEmail(emailFromToken);
+        final UUID accountId = account.accountId();
 
         if (account.isVerified()) {
             log.warn("Account {} is already verified. Ignoring confirmation request.", accountId);
-            tokenManager.evictToken(token);
             return;
         }
 
         updateAccount.updateIsVerified(account.email().value(), true);
-        tokenManager.evictToken(token);
-
         log.info("Email successfully verified for account={}", accountId);
     }
 }
